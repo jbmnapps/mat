@@ -25,7 +25,9 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 import {
   getSupabase,
   supabaseEnabled,
@@ -543,4 +545,45 @@ function tolkAuthFejl(
     return 'Ingen forbindelse. Tjek dit internet.';
   }
   return 'Kunne ikke logge ind. Prøv igen.';
+}
+
+// ─────── Auth-gate ───────
+
+/**
+ * Wrap en side i `<AuthGate>` for at kræve login før indholdet vises.
+ *
+ * Adfærd:
+ *  - Mens auth-state hentes: spinner.
+ *  - Ikke logget ind: redirect til /login/, viser spinner mens redirect kører.
+ *  - Logget ind (elev eller lærer): viser children.
+ *  - Hvis backend ikke er konfigureret (env-vars mangler): vis altid children
+ *    så lokal dev fungerer som før.
+ */
+export function AuthGate({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { loading, signedIn } = useAuth();
+
+  useEffect(() => {
+    if (!supabaseEnabled) return;
+    if (loading) return;
+    if (!signedIn && pathname !== '/login') {
+      router.replace('/login/');
+    }
+  }, [loading, signedIn, router, pathname]);
+
+  if (!supabaseEnabled) return <>{children}</>;
+  if (loading || !signedIn) return <FuldsideSpinner />;
+  return <>{children}</>;
+}
+
+function FuldsideSpinner() {
+  return (
+    <main
+      className="min-h-[100dvh] bg-slate-50/40 flex items-center justify-center"
+      aria-label="Indlæser"
+    >
+      <Loader2 className="h-6 w-6 animate-spin text-slate-400" aria-hidden />
+    </main>
+  );
 }

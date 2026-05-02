@@ -11,13 +11,19 @@
  *    bare "log ind".
  *  - Når logget ind: vi merger localStorage med server-progress og redirecter
  *    til dashboard.
+ *
+ * Visuel sammenhæng med dashboardet:
+ *  - Samme yder-container (mx-auto + horisontal padding-trapper)
+ *  - Samme typografi: font-display headings, italic font-serif subtitles
+ *  - Form i et hvidt card med rounded-xl border-slate-200, samme som
+ *    disciplin-kortene
+ *  - Samme eyebrow-stil ("FP9 Matematik · Login")
  */
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { motion } from 'motion/react';
-import { ArrowLeft, LogIn, Loader2, AlertCircle } from 'lucide-react';
+import { LogIn, Loader2, AlertCircle } from 'lucide-react';
 import {
   logIndEllerOpret,
   useAuth,
@@ -43,10 +49,8 @@ export default function LoginPage() {
     navnRef.current?.focus();
   }, []);
 
-  // Hvis allerede logget ind: vis kort bekræftelse + send tilbage
   useEffect(() => {
     if (signedIn && !success) {
-      // Lille forsinkelse så brugeren ser at noget skete
       const t = setTimeout(() => router.push('/'), 600);
       return () => clearTimeout(t);
     }
@@ -78,31 +82,21 @@ export default function LoginPage() {
     setTimeout(() => router.push('/'), 1200);
   }
 
-  // Backend ikke konfigureret (lokal dev uden .env.local) — vis venlig besked
+  // Backend ikke konfigureret (lokal dev uden .env.local)
   if (!supabaseEnabled) {
     return (
-      <main className="min-h-[100dvh] bg-slate-50/40 flex flex-col">
-        <header className="px-6 py-6 lg:px-12 lg:py-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-            Tilbage
-          </Link>
-        </header>
-        <div className="flex-1 flex items-center justify-center px-6 -mt-12">
-          <div className="max-w-md text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">
-              Login
+      <main className="min-h-[100dvh] bg-slate-50/40">
+        <div className="mx-auto max-w-md px-4 py-12 sm:px-6 sm:py-20 lg:py-28">
+          <div className="text-center">
+            <p className="mb-3 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              FP9 Matematik · Login
             </p>
-            <h1 className="font-display text-3xl font-bold tracking-tight text-slate-900 mb-3">
+            <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-slate-900 mb-3 lg:text-5xl">
               Login er ikke klar
             </h1>
-            <p className="text-slate-600">
+            <p className="text-slate-600 italic font-serif">
               Træningen virker stadig — din status gemmes på din egen enhed.
-              Hvis du vil gemme status på tværs af enheder, så spørg din lærer
-              om login er sat op endnu.
+              Spørg din lærer hvis login skal sættes op.
             </p>
           </div>
         </div>
@@ -110,7 +104,6 @@ export default function LoginPage() {
     );
   }
 
-  // Venter på auth-tjek (kort)
   if (authLoading) {
     return (
       <main className="min-h-[100dvh] bg-slate-50/40 flex items-center justify-center">
@@ -120,55 +113,55 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-[100dvh] bg-slate-50/40 flex flex-col">
-      <header className="px-6 py-6 lg:px-12 lg:py-8">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden />
-          Tilbage til oversigten
-        </Link>
-      </header>
+    <main className="min-h-[100dvh] bg-slate-50/40">
+      <div className="mx-auto max-w-md px-4 py-10 sm:px-6 sm:py-16 lg:py-24">
+        {/* HEADER — matcher dashboardets eyebrow + h1 + subtitle-mønster */}
+        <header className="mb-8 sm:mb-10 text-center">
+          <p className="mb-3 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            FP9 Matematik · Træn til prøven
+          </p>
+          {success ? (
+            <>
+              <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl">
+                Hej, {success.navn}
+              </h1>
+              <p className="mt-2 text-slate-600 italic font-serif">
+                {success.nyKonto
+                  ? 'Din kode er gemt. Husk den — du skal bruge den næste gang.'
+                  : 'Din status er hentet ind.'}
+              </p>
+            </>
+          ) : signedIn ? (
+            <>
+              <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl">
+                Hej, {visningsnavn ?? 'elev'}
+              </h1>
+              <p className="mt-2 text-slate-600 italic font-serif">
+                Du er allerede logget ind.
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl">
+                Log ind
+              </h1>
+              <p className="mt-2 text-slate-600 italic font-serif">
+                Brug det samme navn og kode som sidst. Hvis du er ny, oprettes
+                din konto automatisk.
+              </p>
+            </>
+          )}
+        </header>
 
-      <div className="flex-1 flex flex-col items-center justify-center px-6 -mt-12">
-        {success ? (
+        {/* INDHOLD */}
+        {success || signedIn ? (
           <motion.div
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="text-center max-w-md"
+            className="rounded-xl border border-slate-200 bg-white p-6 text-center"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">
-              {success.nyKonto ? 'Konto oprettet' : 'Logget ind'}
-            </p>
-            <h1 className="font-display text-3xl font-bold tracking-tight text-slate-900 mb-2">
-              Hej, {success.navn}
-            </h1>
-            <p className="text-slate-600">
-              {success.nyKonto
-                ? 'Din kode er gemt. Husk den — du skal bruge den næste gang.'
-                : 'Din status er hentet ind.'}
-            </p>
-          </motion.div>
-        ) : signedIn ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center"
-          >
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">
-              Allerede logget ind
-            </p>
-            <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900 mb-2">
-              Hej, {visningsnavn ?? 'elev'}
-            </h1>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-md"
-            >
-              Til oversigten
-            </Link>
+            <Loader2 className="h-5 w-5 animate-spin text-slate-400 mx-auto" aria-hidden />
+            <p className="mt-2 text-sm text-slate-500">Sender dig videre…</p>
           </motion.div>
         ) : (
           <motion.form
@@ -176,19 +169,8 @@ export default function LoginPage() {
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full max-w-sm"
+            className="rounded-xl border border-slate-200 bg-white p-5 sm:p-7"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3 text-center">
-              FP9 Matematik · Login
-            </p>
-            <h1 className="font-display text-3xl font-bold tracking-tight text-slate-900 mb-2 text-center">
-              Log ind
-            </h1>
-            <p className="text-sm text-slate-600 mb-8 text-center italic font-serif">
-              Brug det samme navn og kode som sidst. Hvis du er ny, vælges din
-              konto automatisk.
-            </p>
-
             <div className="space-y-4">
               <div>
                 <label
@@ -278,11 +260,15 @@ export default function LoginPage() {
                 </>
               )}
             </button>
-
-            <p className="mt-6 text-center text-xs text-slate-400">
-              Husk din kode — den kan ikke nulstilles. Glemt? Spørg din lærer.
-            </p>
           </motion.form>
+        )}
+
+        {!success && !signedIn && (
+          <p className="mt-6 text-center text-xs text-slate-400">
+            Husk din kode — den kan ikke nulstilles.
+            <br />
+            Glemt den? Spørg din lærer.
+          </p>
         )}
       </div>
     </main>

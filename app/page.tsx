@@ -30,6 +30,7 @@ import {
 } from '@/lib/disciplines';
 import { useStore, type DisciplinProgress } from '@/lib/store';
 import { useHydrated } from '@/lib/use-hydrated';
+import { AuthGate } from '@/lib/auth';
 import { DisciplineCard } from '@/components/discipline-card';
 import { SaveActions, NameInput } from '@/components/save-actions';
 
@@ -42,6 +43,14 @@ const tomDisciplinProgress: DisciplinProgress = {
 };
 
 export default function Dashboard() {
+  return (
+    <AuthGate>
+      <DashboardIndhold />
+    </AuthGate>
+  );
+}
+
+function DashboardIndhold() {
   const hydreret = useHydrated();
   const progress = useStore((s) => s.progress);
 
