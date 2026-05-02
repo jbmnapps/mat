@@ -11,12 +11,16 @@ import { additionOpgaver } from './addition';
 import { subtraktionOpgaver } from './subtraktion';
 import { multiplikationOpgaver } from './multiplikation';
 import { divisionOpgaver } from './division';
+import { procentOpgaver } from './procent';
+import { ligningerOpgaver } from './ligninger';
 
 export const OPGAVER: Partial<Record<DisciplinId, Opgave[]>> = {
   addition: additionOpgaver,
   subtraktion: subtraktionOpgaver,
   multiplikation: multiplikationOpgaver,
   division: divisionOpgaver,
+  procent: procentOpgaver,
+  ligninger: ligningerOpgaver,
 };
 
 export function harOpgaver(id: DisciplinId): boolean {

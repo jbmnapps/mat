@@ -76,7 +76,7 @@ export const subtraktionOpgaver: Opgave[] = [
     type: 'numeric',
     spørgsmål: 'I 9.B er der 27 elever. 13 er piger. Hvor mange drenge er der?',
     svar: 14,
-    enhed: 'drenge',
+    enhed: 'elever',
   },
   {
     id: 'sub-11',

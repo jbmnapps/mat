@@ -43,7 +43,7 @@ export const multiplikationOpgaver: Opgave[] = [
     type: 'numeric',
     spørgsmål: 'Udregn: 35 · 100',
     svar: 3500,
-    forklaring: 'Tip: gange med 100 = sæt to nuller på.',
+    forklaring: 'Tip: hver gang du ganger med 10, rykker cifrene én plads til venstre.',
   },
   {
     id: 'mul-06',
@@ -84,6 +84,7 @@ export const multiplikationOpgaver: Opgave[] = [
     spørgsmål: 'Et abonnement koster 79 kr om måneden. Hvad koster et helt år?',
     svar: 948,
     enhed: 'kr',
+    forklaring: 'Tip: 79 er næsten 80. Gang 80 · 12 og træk 12 fra.',
   },
   {
     id: 'mul-12',

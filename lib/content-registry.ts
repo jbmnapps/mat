@@ -14,6 +14,8 @@ const INDHOLD: Partial<Record<DisciplinId, Mode[]>> = {
   subtraktion: ['traening'],
   multiplikation: ['traening'],
   division: ['traening'],
+  procent: ['traening'],
+  ligninger: ['traening'],
 };
 
 export function harIndhold(disciplin: DisciplinId, mode: Mode): boolean {
