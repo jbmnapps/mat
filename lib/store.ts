@@ -9,6 +9,14 @@
  *  - Zustand persist hydrerer på klient-siden efter mount
  *  - Brug useHydrated() i komponenter der viser progress-afhængig UI for
  *    at undgå hydration-mismatch
+ *
+ * Sync-lag (tilføjet i Supabase-bølgen):
+ *  - `signedInId` / `signedInNavn` afspejler aktuel Supabase-auth-bruger.
+ *    Sættes via lib/auth.ts. Når null = offline-only mode.
+ *  - En subscription nederst i filen detekterer ændringer i `progress` og
+ *    pusher den ændrede disciplin til Supabase fire-and-forget.
+ *  - localStorage er stadig PRIMÆR. Hvis push fejler, sker der intet —
+ *    næste gang sync trigges, prøver vi igen.
  */
 
 import { create } from 'zustand';
@@ -46,6 +54,11 @@ export interface AppState {
   /** Progress pr. disciplin. */
   progress: Record<DisciplinId, DisciplinProgress>;
 
+  /** Supabase auth.uid() — sættes når eleven er logget ind. null = offline-only. */
+  signedInId: string | null;
+  /** Visningsnavn for indlogget elev. */
+  signedInNavn: string | null;
+
   // Actions
   registrérPrøveklarForsoeg: (disciplin: DisciplinId, score: number) => void;
   sætElevNavn: (navn: string | null) => void;
@@ -58,6 +71,8 @@ export interface AppState {
   nulstilDisciplin: (disciplin: DisciplinId) => void;
   /** Nulstil alt. */
   nulstilAlt: () => void;
+  /** Sæt eller ryd login-status (kaldes fra lib/auth.ts). */
+  setSignedIn: (id: string | null, navn: string | null) => void;
 }
 
 /** Default-progress for én disciplin (eleven har ikke rørt den endnu). */
@@ -83,6 +98,8 @@ export const useStore = create<AppState>()(
     (set) => ({
       elevNavn: null,
       progress: initialProgress(),
+      signedInId: null,
+      signedInNavn: null,
 
       registrérPrøveklarForsoeg: (disciplinId, score) => {
         const tidspunkt = new Date().toISOString();
@@ -123,6 +140,8 @@ export const useStore = create<AppState>()(
           elevNavn: null,
           progress: initialProgress(),
         }),
+
+      setSignedIn: (id, navn) => set({ signedInId: id, signedInNavn: navn }),
     }),
     {
       name: STORAGE_KEY,
@@ -130,6 +149,15 @@ export const useStore = create<AppState>()(
       version: STORE_VERSION,
       // Ved fremtidige schema-ændringer:
       // migrate: (persistedState, version) => { ... }
+
+      // Vi persister IKKE signedInId/signedInNavn — Supabase Auth har sin
+      // egen session-storage (storageKey: 'fp9-auth'). Hvis vi gemte vores
+      // egen kopi, kunne den blive ude-af-sync. Ved app-load læser vi
+      // session fra Supabase i lib/auth.ts og kalder setSignedIn().
+      partialize: (state) => ({
+        elevNavn: state.elevNavn,
+        progress: state.progress,
+      }),
 
       // Sørg for at nye diciplinerne (tilføjet senere) får default-progress
       // selv hvis localStorage er fra en gammel version
@@ -152,3 +180,46 @@ export const useStore = create<AppState>()(
     },
   ),
 );
+
+// ────────────────────────────────────────────────────────────────────────────
+// Sync-subscription: når progress ændres OG eleven er logget ind, push den
+// ændrede disciplin til Supabase. Fire-and-forget — localStorage er stadig
+// primær kilde, så push-fejl er ikke kritisk.
+//
+// Lazy import af lib/auth for at undgå circular dep (auth → store → auth).
+// Subscription installeres kun i browseren, ikke under SSR/static export.
+// ────────────────────────────────────────────────────────────────────────────
+if (typeof window !== 'undefined') {
+  let forrigeProgress = useStore.getState().progress;
+  useStore.subscribe((state) => {
+    if (!state.signedInId) {
+      forrigeProgress = state.progress;
+      return;
+    }
+    if (state.progress === forrigeProgress) return;
+
+    // Find ændrede disciplinerne
+    const ændrede: DisciplinId[] = [];
+    for (const id of Object.keys(state.progress) as DisciplinId[]) {
+      if (state.progress[id] !== forrigeProgress[id]) {
+        ændrede.push(id);
+      }
+    }
+    forrigeProgress = state.progress;
+
+    if (ændrede.length === 0) return;
+
+    const brugerId = state.signedInId;
+    import('./auth')
+      .then(({ pushDisciplin }) => {
+        for (const id of ændrede) {
+          pushDisciplin(brugerId, id, state.progress[id]).catch(() => {
+            /* offline OK */
+          });
+        }
+      })
+      .catch((e) => {
+        console.error('[store] kunne ikke loade auth-modul:', e);
+      });
+  });
+}

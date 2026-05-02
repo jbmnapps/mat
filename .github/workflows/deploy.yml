@@ -28,6 +28,12 @@ jobs:
       - name: Build
         env:
           NEXT_PUBLIC_BASE_PATH: /mat
+          # Supabase-credentials. Sættes som GitHub Secrets i repo-settings.
+          # Hvis de ikke er sat, bygger vi stadig — login-siden viser bare
+          # "Login er ikke klar" og localStorage fortsætter som primær kilde.
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_LAERER_TOKEN: ${{ secrets.NEXT_PUBLIC_LAERER_TOKEN }}
         run: npm run build
 
       - name: Tilføj .nojekyll (for at bevare _next-mappen)

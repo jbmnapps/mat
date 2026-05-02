@@ -56,7 +56,7 @@ Hvis konflikter: bruger og sessioner aftaler i chat hvordan de løses.
 
 > Format: `[YYYY-MM-DD HH:MM] [Session] besked`
 
-- *(første session, skriv her ved start)*
+- [2026-05-02 23:30] [Supabase] Login + sync + lærer-side bygget. Build + types OK. Brugeren skal køre `supabase-schema.sql` og tilføje GitHub Secrets — se [SUPABASE-SETUP.md](SUPABASE-SETUP.md). Ikke merget til weekend endnu — afventer tests.
 
 ## Brugerens ansvar
 
