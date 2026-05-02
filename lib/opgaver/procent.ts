@@ -55,7 +55,7 @@ export const procentOpgaver: Opgave[] = [
     spørgsmål: 'Et abonnement stiger fra 100 kr til 120 kr. Hvor mange procent er det steget?',
     svar: 20,
     enhed: '%',
-    forklaring: 'Tip: stigningen er 20 kr ud af 100 — det er 20%.',
+    forklaring: 'Tip: stigning ÷ startværdi · 100.',
   },
   {
     id: 'pct-07',
@@ -71,7 +71,7 @@ export const procentOpgaver: Opgave[] = [
     spørgsmål: 'Skriv 1/5 som procent.',
     svar: 20,
     enhed: '%',
-    forklaring: 'Tip: 1/5 = 1 ud af 5 = 20 ud af 100.',
+    forklaring: 'Tip: omskriv brøken så nævneren bliver 100.',
   },
   {
     id: 'pct-09',

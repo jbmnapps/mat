@@ -43,7 +43,7 @@ export const tabellerOpgaver: Opgave[] = [
   {
     id: 'tab-06',
     type: 'numeric',
-    spørgsmål: 'Tre tal har gennemsnittet 10. Summen af tallene er ___?',
+    spørgsmål: 'Tre tal har gennemsnittet 10. Hvad er summen af tallene?',
     svar: 30,
     forklaring: 'Tip: sum = gennemsnit · antal.',
   },
@@ -86,9 +86,9 @@ export const tabellerOpgaver: Opgave[] = [
   {
     id: 'tab-12',
     type: 'multiple-choice',
-    spørgsmål: 'Hvilket tal er typetallet i: 3, 5, 5, 7, 5, 8, 5, 9?',
-    muligheder: ['3', '5', '7', '9'],
+    spørgsmål: 'Hvilket tal er typetallet i: 3, 5, 5, 8, 7, 5, 8, 5, 8, 9?',
+    muligheder: ['3', '5', '7', '8'],
     rigtigIndex: 1,
-    forklaring: 'Tip: typetal = det tal der forekommer flest gange.',
+    forklaring: 'Tip: typetal = det tal der forekommer flest gange. Tæl hver mulighed.',
   },
 ];

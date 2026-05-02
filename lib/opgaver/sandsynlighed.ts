@@ -36,9 +36,9 @@ export const sandsynlighedOpgaver: Opgave[] = [
   {
     id: 'san-04',
     type: 'numeric',
-    spørgsmål: 'Hvad er sandsynligheden for at slå mere end 4 med en terning? Skriv som brøk i form af tæller (når nævneren er 6).',
+    spørgsmål: 'Hvor mange af terningens 6 sider giver et tal større end 4?',
     svar: 2,
-    forklaring: 'Tip: kun 5 og 6 er over 4.',
+    forklaring: 'Tip: hvilke tal på en terning er større end 4?',
   },
   {
     id: 'san-05',
@@ -97,8 +97,8 @@ export const sandsynlighedOpgaver: Opgave[] = [
   {
     id: 'san-12',
     type: 'multiple-choice',
-    spørgsmål: 'En pose har 5 bolde: 1 rød, 2 blå, 2 grønne. Hvad er den MEST sandsynlige farve at trække?',
-    muligheder: ['Rød', 'Blå', 'Grøn', 'Lige sandsynlig for blå og grøn'],
+    spørgsmål: 'En pose har 5 bolde: 1 rød, 2 blå, 2 grønne. Hvad er mest sandsynligt at trække?',
+    muligheder: ['Rød', 'Kun blå', 'Kun grøn', 'Blå eller grøn (samme)'],
     rigtigIndex: 3,
     forklaring: 'Tip: blå og grøn har samme antal — to af hver.',
   },

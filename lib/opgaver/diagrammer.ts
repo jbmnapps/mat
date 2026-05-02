@@ -69,7 +69,7 @@ export const diagrammerOpgaver: Opgave[] = [
     id: 'dia-08',
     type: 'numeric',
     spørgsmål:
-      'Et linjediagram viser at en planta voksede 2 cm i januar, 4 cm i februar, 8 cm i marts, 6 cm i april. Hvor mange cm i alt over de 4 måneder?',
+      'Et linjediagram viser at en plante voksede 2 cm i januar, 4 cm i februar, 8 cm i marts, 6 cm i april. Hvor mange cm i alt over de 4 måneder?',
     svar: 20,
     enhed: 'cm',
   },

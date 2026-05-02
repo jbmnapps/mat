@@ -43,7 +43,7 @@ export const hverdagsregningOpgaver: Opgave[] = [
     spørgsmål: 'En pose med 12 boller koster 36 kr. En enkelt bolle koster 4 kr i en anden butik. Hvor mange kr sparer du pr. bolle ved at købe posen?',
     svar: 1,
     enhed: 'kr',
-    forklaring: 'Tip: 36 ÷ 12 = pris pr. bolle i pose. Sammenlign med 4 kr.',
+    forklaring: 'Tip: find pris pr. bolle i posen, og sammenlign med 4 kr.',
   },
   {
     id: 'hvd-06',
@@ -79,10 +79,10 @@ export const hverdagsregningOpgaver: Opgave[] = [
   {
     id: 'hvd-10',
     type: 'numeric',
-    spørgsmål: 'I en pose er der 30 slik. Anna spiser 6, Lars spiser dobbelt så mange som Anna. Hvor mange er tilbage?',
+    spørgsmål: 'I en pose er der 30 stykker slik. Anna spiser 6, Lars spiser dobbelt så mange som Anna. Hvor mange stykker er tilbage?',
     svar: 12,
-    enhed: 'slik',
-    forklaring: 'Tip: Lars spiser 2 · 6 = 12. Træk Anna + Lars fra 30.',
+    enhed: 'stykker',
+    forklaring: 'Tip: regn ud hvor mange Lars spiser, og træk fra det samlede antal.',
   },
   {
     id: 'hvd-11',

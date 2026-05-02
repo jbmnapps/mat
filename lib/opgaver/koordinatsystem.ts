@@ -53,9 +53,10 @@ export const koordinatsystemOpgaver: Opgave[] = [
   },
   {
     id: 'koo-07',
-    type: 'numeric',
-    spørgsmål: 'Hvis et punkt har koordinaterne (0, 5), ligger det på y-aksen. Sandt = 1, falsk = 0.',
-    svar: 1,
+    type: 'multiple-choice',
+    spørgsmål: 'Punktet (0, 5) — på hvilken akse ligger det?',
+    muligheder: ['x-aksen', 'y-aksen', 'Begge', 'Ingen'],
+    rigtigIndex: 1,
     forklaring: 'Tip: punkter med x = 0 ligger på y-aksen.',
   },
   {
