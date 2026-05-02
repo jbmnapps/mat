@@ -38,12 +38,12 @@ export default function DisciplinPage() {
   const progress = useStore((s) => s.progress[id]);
 
   return (
-    <main className="min-h-screen bg-slate-50/40">
-      <div className="mx-auto max-w-4xl px-6 py-10 lg:px-12 lg:py-14">
+    <main className="min-h-[100dvh] bg-slate-50/40">
+      <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-10 lg:px-12 lg:py-14">
         {/* Tilbage-link */}
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors mb-10"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors mb-4 sm:mb-10"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
           Tilbage til oversigten
@@ -54,15 +54,15 @@ export default function DisciplinPage() {
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="mb-12"
+          className="mb-6 sm:mb-12"
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-4">
+          <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-4">
             Disciplin
           </p>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-3 sm:gap-5">
             <div
               className={cn(
-                'flex h-16 w-16 items-center justify-center rounded-2xl font-display text-4xl font-bold',
+                'flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-xl sm:rounded-2xl font-display text-2xl sm:text-4xl font-bold shrink-0',
                 operation
                   ? cn(operation.bg, operation.tekst)
                   : 'bg-slate-100 text-slate-700',
@@ -71,11 +71,11 @@ export default function DisciplinPage() {
             >
               {disciplin.symbol}
             </div>
-            <div>
-              <h1 className="font-display text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl">
+            <div className="min-w-0">
+              <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl leading-tight">
                 {disciplin.navn}
               </h1>
-              <p className="mt-1 text-base text-slate-600 italic font-serif">
+              <p className="mt-0.5 sm:mt-1 text-sm sm:text-base text-slate-600 italic font-serif leading-snug">
                 {disciplin.beskrivelse}
               </p>
             </div>
@@ -83,7 +83,7 @@ export default function DisciplinPage() {
         </motion.header>
 
         {/* Mode-kort */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-3 sm:grid sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <ModeCard
             mode="lektion"
             disciplinId={id}

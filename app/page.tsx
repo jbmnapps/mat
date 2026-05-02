@@ -85,21 +85,21 @@ export default function Dashboard() {
 
   return (
     <main className="min-h-screen bg-slate-50/40">
-      <div className="mx-auto max-w-6xl px-6 py-12 lg:px-12 lg:py-16">
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-12 lg:px-12 lg:py-16">
         {/* HEADER */}
-        <header className="mb-12 lg:mb-16">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <header className="mb-6 sm:mb-12 lg:mb-16">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
             <div>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              <p className="mb-2 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 sm:mb-3">
                 FP9 Matematik · Træn til prøven
               </p>
               <div className="flex items-baseline gap-2">
-                <h1 className="font-display text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl">
+                <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl">
                   Hej,
                 </h1>
                 <NameInput />
               </div>
-              <p className="mt-3 text-base text-slate-600 italic font-serif">
+              <p className="mt-1.5 sm:mt-3 text-sm sm:text-base text-slate-600 italic font-serif">
                 Vælg en disciplin, øv metoden, og tag prøveklar når du er klar.
               </p>
             </div>
@@ -144,13 +144,13 @@ export default function Dashboard() {
         </header>
 
         {/* DISCIPLIN-GRUPPER */}
-        <div className="space-y-12 lg:space-y-16">
+        <div className="space-y-8 sm:space-y-12 lg:space-y-16">
           {(Object.keys(grupperet) as Kategori[]).map((kategori) => (
             <section key={kategori}>
-              <h2 className="font-display mb-5 text-sm font-bold uppercase tracking-[0.18em] text-slate-700 lg:mb-7">
+              <h2 className="font-display mb-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-700 sm:mb-5 sm:text-sm lg:mb-7">
                 {KATEGORI_NAVNE[kategori]}
               </h2>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 xl:grid-cols-5">
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 xl:grid-cols-5">
                 {grupperet[kategori].map((disciplin, i) => (
                   <DisciplineCard
                     key={disciplin.id}

@@ -89,55 +89,66 @@ export function ModeCard({
       <Link
         href={`/${disciplinId}/${mode}/`}
         className={cn(
-          'group relative flex h-full flex-col rounded-2xl border bg-white p-6',
+          'group relative flex rounded-2xl border bg-white',
+          // Mobil: kompakt liste-stil (ikon venstre, tekst til højre, arrow til højre)
+          'items-center gap-4 p-4',
+          // Desktop: kort-stil (ikon top, tekst under, arrow bund)
+          'sm:flex-col sm:items-stretch sm:gap-0 sm:p-6 sm:h-full',
           'transition-all duration-200 ease-out',
           'hover:-translate-y-0.5 hover:shadow-lg',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2',
-          kommerSnart
-            ? 'border-slate-200 hover:border-slate-300'
-            : 'border-slate-200 hover:border-slate-300',
+          'border-slate-200 hover:border-slate-300',
         )}
       >
-        {/* Ikon + kommer-snart-badge */}
-        <div className="flex items-start justify-between mb-5">
-          <div
-            className={cn(
-              'flex h-12 w-12 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110',
-              meta.iconBg,
-              meta.iconText,
-            )}
-          >
-            <Ikon className="h-6 w-6" strokeWidth={2.25} aria-hidden />
-          </div>
-          {kommerSnart && (
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-1 rounded-full">
-              Kommer snart
-            </span>
+        {/* Ikon */}
+        <div
+          className={cn(
+            'flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl shrink-0 transition-transform duration-200 group-hover:scale-110',
+            'sm:mb-5',
+            meta.iconBg,
+            meta.iconText,
           )}
+        >
+          <Ikon className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2.25} aria-hidden />
         </div>
 
         {/* Titel + undertitel */}
-        <div className="flex-1">
-          <h3 className="font-display text-2xl font-bold tracking-tight text-slate-900 mb-1">
-            {meta.titel}
-          </h3>
-          <p className="text-sm text-slate-600 leading-snug">{meta.undertitel}</p>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2 sm:block">
+            <h3 className="font-display text-lg sm:text-2xl font-bold tracking-tight text-slate-900 sm:mb-1">
+              {meta.titel}
+            </h3>
+            {kommerSnart && (
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-0.5 sm:py-1 rounded-full whitespace-nowrap">
+                Kommer snart
+              </span>
+            )}
+          </div>
+          <p className="text-xs sm:text-sm text-slate-600 leading-snug mt-0.5 sm:mt-0">
+            {meta.undertitel}
+          </p>
         </div>
 
         {/* Bund: Status (kun prøveklar) eller arrow */}
-        <div className="mt-6 flex items-center justify-between">
+        <div className="flex items-center justify-between sm:mt-6 shrink-0 sm:shrink">
           {showStatus && statusInfo ? (
-            <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
               <span className={cn('h-2 w-2 rounded-full', statusInfo.dot)} aria-hidden />
               <span className={cn('text-xs font-semibold', statusInfo.tekst)}>
                 {harForsoegt ? `Bedste ${bedsteScore}%` : statusInfo.label}
               </span>
             </div>
           ) : (
-            <span />
+            <span className="hidden sm:inline" />
+          )}
+          {/* Mobil: vis bare bedste-score som lille tal hvis prøvet */}
+          {showStatus && harForsoegt && (
+            <span className={cn('sm:hidden text-xs font-semibold', statusInfo?.tekst)}>
+              {bedsteScore}%
+            </span>
           )}
           <ArrowRight
-            className="h-4 w-4 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-700"
+            className="h-4 w-4 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-700 ml-2 sm:ml-0"
             aria-hidden
           />
         </div>

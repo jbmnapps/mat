@@ -75,7 +75,7 @@ export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
       <Link
         href={`/${disciplin.id}/`}
         className={cn(
-          'group relative block h-full rounded-2xl border border-slate-200 bg-white p-5',
+          'group relative block h-full rounded-xl sm:rounded-2xl border border-slate-200 bg-white p-3 sm:p-5',
           'transition-all duration-200 ease-out',
           'hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md',
           'active:scale-[0.99]',
@@ -86,7 +86,7 @@ export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
         {/* Status-prik øverst til højre */}
         <span
           className={cn(
-            'absolute right-4 top-4 inline-block h-2.5 w-2.5 rounded-full ring-4',
+            'absolute right-2 top-2 inline-block h-2 w-2 rounded-full ring-2 sm:right-4 sm:top-4 sm:h-2.5 sm:w-2.5 sm:ring-4',
             status.dot,
             status.ring,
           )}
@@ -94,10 +94,10 @@ export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
         />
 
         {/* Stort symbol */}
-        <div className="flex justify-center pt-3 pb-4">
+        <div className="flex justify-center pt-1 pb-2 sm:pt-3 sm:pb-4">
           <span
             className={cn(
-              'flex h-16 w-16 items-center justify-center rounded-2xl text-4xl font-bold transition-transform duration-200 ease-out',
+              'flex h-10 w-10 sm:h-16 sm:w-16 items-center justify-center rounded-xl sm:rounded-2xl text-2xl sm:text-4xl font-bold transition-transform duration-200 ease-out',
               'font-display tracking-tight',
               'group-hover:scale-105',
               operation
@@ -112,16 +112,16 @@ export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
 
         {/* Navn + beskrivelse */}
         <div className="text-center">
-          <h3 className="font-display text-base font-bold text-slate-900 leading-tight">
+          <h3 className="font-display text-xs sm:text-base font-bold text-slate-900 leading-tight">
             {disciplin.navn}
           </h3>
-          <p className="mt-1 text-xs text-slate-500 leading-snug">
+          <p className="hidden sm:block mt-1 text-xs text-slate-500 leading-snug">
             {disciplin.beskrivelse}
           </p>
         </div>
 
-        {/* Status-strip i bunden */}
-        <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs">
+        {/* Status-strip i bunden — kun fra sm og op (status-prik øverst er nok på mobil) */}
+        <div className="hidden sm:flex mt-4 items-center justify-between border-t border-slate-100 pt-3 text-xs">
           {harForsoegt ? (
             <>
               <span className={cn('font-semibold', status.tekst)}>
@@ -142,6 +142,13 @@ export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
             </>
           )}
         </div>
+
+        {/* Mini-bedste-score under navnet på mobil (kun hvis attempted) */}
+        {harForsoegt && (
+          <p className={cn('sm:hidden mt-1 text-center text-[10px] font-semibold', status.tekst)}>
+            {progress.bedsteScore}%
+          </p>
+        )}
       </Link>
     </motion.div>
   );
