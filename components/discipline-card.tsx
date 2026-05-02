@@ -110,9 +110,10 @@ export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
             {disciplin.navn}
           </h3>
           {/* Progress-bar — visuelt match med %-pillen i toppen.
-              Vises kun når eleven har forsøgt mindst én gang. */}
+              Vises på alle skærme når eleven har forsøgt — slankere på mobil
+              hvor kortene er små. */}
           {harForsoegt && (
-            <div className="hidden sm:block mx-auto mt-2 h-1.5 w-16 overflow-hidden rounded-full bg-slate-100">
+            <div className="mx-auto mt-1.5 sm:mt-2 h-1 sm:h-1.5 w-10 sm:w-16 overflow-hidden rounded-full bg-slate-100">
               <div
                 className={cn('h-full rounded-full transition-all', status.dot)}
                 style={{ width: `${progress.bedsteScore}%` }}

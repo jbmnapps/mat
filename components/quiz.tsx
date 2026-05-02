@@ -25,7 +25,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, ArrowRight, Check, X, RotateCcw, SkipForward } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -203,7 +203,7 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
           </Link>
         </header>
 
-        <div className="flex-1 flex flex-col items-center justify-center px-6 -mt-12">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 pt-8 lg:-mt-12">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -323,10 +323,10 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
           mellem input og næste-knap; intet shifter ovenfor.
           På mobil holder vi spørgsmål højere oppe (pt-[8vh]) så det
           ikke gemmer sig bag tastaturet når input får fokus. */}
-      <div className="flex-1 flex flex-col items-center px-6 pt-[8vh] sm:pt-[18vh] lg:pt-[20vh]">
+      <div className="flex-1 flex flex-col items-center px-6 pt-[12vh] sm:pt-[18vh] lg:pt-[20vh]">
         <div className="w-full max-w-xl">
           {/* Spørgsmål */}
-          <h2 className="font-display text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 text-center mb-10 leading-snug">
+          <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 text-center mb-6 sm:mb-10 leading-snug">
             {aktivOpgave.spørgsmål}
           </h2>
 
@@ -356,7 +356,7 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
                   autoComplete="off"
                   aria-label="Dit svar"
                   className={cn(
-                    'w-full text-center font-display text-5xl lg:text-6xl font-bold tabular-nums bg-transparent border-b-[3px] focus:outline-none caret-emerald-600 py-2 transition-colors',
+                    'w-full text-center font-display text-4xl sm:text-5xl lg:text-6xl font-bold tabular-nums bg-transparent border-b-[3px] focus:outline-none caret-emerald-600 py-2 transition-colors',
                     !feedbackVist && 'border-slate-300 focus:border-emerald-600 text-slate-900',
                     feedbackVist && sidsteResultat?.rigtigt && 'border-emerald-500 text-emerald-700',
                     feedbackVist && !sidsteResultat?.rigtigt && 'border-rose-500 text-rose-700',
@@ -508,64 +508,71 @@ function FeedbackOgKnap({
 }: FeedbackProps) {
   return (
     <>
-      {/* Feedback — kun når der er svaret. Top-anchored layout sørger for
-          at spørgsmål + input ikke shifter, så vi behøver ingen reserveret højde. */}
-      {feedbackVist && (
-        <motion.div
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="flex flex-col items-center gap-3"
-        >
-          <div
-            className={cn(
-              'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold',
-              rigtigt ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700',
-            )}
+      {/* Feedback animeres ind/ud fra højde 0 → auto, så knappen nedenfor
+          glider på plads i stedet for at hoppe. AnimatePresence + height-auto
+          + overflow:hidden er det rene mønster. */}
+      <AnimatePresence initial={false}>
+        {feedbackVist && (
+          <motion.div
+            key="feedback"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            style={{ overflow: 'hidden', width: '100%' }}
           >
-            {rigtigt ? (
-              <>
-                <Check className="h-4 w-4" aria-hidden />
-                Rigtigt
-              </>
-            ) : (
-              <>
-                <X className="h-4 w-4" aria-hidden />
-                Forkert
-              </>
-            )}
-          </div>
+            <div className="flex flex-col items-center gap-3 pt-2">
+              <div
+                className={cn(
+                  'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold',
+                  rigtigt ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700',
+                )}
+              >
+                {rigtigt ? (
+                  <>
+                    <Check className="h-4 w-4" aria-hidden />
+                    Rigtigt
+                  </>
+                ) : (
+                  <>
+                    <X className="h-4 w-4" aria-hidden />
+                    Forkert
+                  </>
+                )}
+              </div>
 
-          {!rigtigt && forklaring && (
-            <p className="text-center text-sm text-slate-600 italic font-serif max-w-md">
-              {forklaring}
-            </p>
-          )}
-        </motion.div>
-      )}
+              {!rigtigt && forklaring && (
+                <p className="text-center text-sm text-slate-600 italic font-serif max-w-md">
+                  {forklaring}
+                </p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Svar-knap (før submit) eller Næste-knap (efter) — samme position altid */}
-      {!feedbackVist && (
-        <button
-          type="submit"
-          disabled={!kanSubmitte}
-          className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-md disabled:bg-slate-300 disabled:cursor-not-allowed"
-        >
-          Svar
-        </button>
-      )}
-
-      {feedbackVist && (
-        <button
-          ref={næsteKnapRef}
-          type="button"
-          onClick={gåVidere}
-          className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-md"
-        >
-          {erSidste ? 'Se resultat' : 'Næste opgave'}
-          <ArrowRight className="h-4 w-4" aria-hidden />
-        </button>
-      )}
+      {/* Én knap der skifter rolle (submit ↔ næste) i stedet for to der
+          mountes/unmountes. Forbliver i DOM så layout er stabil og focus
+          ikke hopper rundt. */}
+      <button
+        ref={næsteKnapRef}
+        type={feedbackVist ? 'button' : 'submit'}
+        onClick={feedbackVist ? gåVidere : undefined}
+        disabled={!feedbackVist && !kanSubmitte}
+        className={cn(
+          'inline-flex items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-md',
+          'disabled:bg-slate-300 disabled:cursor-not-allowed',
+        )}
+      >
+        {feedbackVist ? (
+          <>
+            {erSidste ? 'Se resultat' : 'Næste opgave'}
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </>
+        ) : (
+          'Svar'
+        )}
+      </button>
     </>
   );
 }
