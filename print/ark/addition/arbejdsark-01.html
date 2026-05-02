@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <title>FP9 Øvelsesark — Ark 01 · Addition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../shared/ark.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #ffffff; color: #111827; }
+    h1, h2, h3, .brand-font { font-family: 'Quicksand', sans-serif; }
+    .serif-it { font-family: 'Georgia', serif; font-style: italic; }
+  </style>
+</head>
+<body class="p-12 max-w-4xl mx-auto">
+
+  <div class="print-tip">
+    <strong>Print:</strong> Cmd/Ctrl + P → "Gem som PDF" eller print direkte. Sidste side er facit.
+  </div>
+
+  <!-- ===========================================================
+       HEADER
+       =========================================================== -->
+  <header class="border-b-[3px] border-black pb-4 mb-12 flex justify-between items-end">
+    <div>
+      <h1 class="text-4xl font-bold text-black tracking-tight mb-2">FP9 Matematik</h1>
+      <p class="text-lg text-gray-600 font-medium serif-it">Ark 01 · Addition</p>
+    </div>
+    <div class="text-right">
+      <div class="flex items-end gap-3 mb-3">
+        <span class="text-gray-500 font-semibold uppercase text-xs tracking-widest">Navn</span>
+        <div class="border-b border-black w-56"></div>
+      </div>
+      <div class="flex items-end gap-3 justify-end">
+        <span class="text-gray-500 font-semibold uppercase text-xs tracking-widest">Dato</span>
+        <div class="border-b border-black w-32"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===========================================================
+       1. METODE
+       =========================================================== -->
+  <section class="mb-14 avoid-break">
+    <div class="flex items-end justify-between gap-6 mb-6 border-b border-gray-200 pb-3">
+      <h2 class="text-2xl font-bold text-black uppercase tracking-wider brand-font">1. Metode</h2>
+      <span class="text-sm font-medium text-gray-500 serif-it">Sådan lægger du sammen på papir.</span>
+    </div>
+
+    <div class="flex justify-center py-8">
+      <div class="text-center">
+        <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.2em] mb-4">Eksempel · 247 + 139</p>
+        <svg viewBox="0 0 320 220" class="w-[280px] h-auto" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+              <path d="M 0 0 L 9 4.5 L 0 9 Z" fill="#059669"/>
+            </marker>
+          </defs>
+
+          <!-- Curved arrow: from units column up and over to tens position -->
+          <path d="M 230 95 C 230 50, 200 30, 175 50"
+                stroke="#059669" stroke-width="1.6" fill="none"
+                stroke-linecap="round"
+                marker-end="url(#arr)"/>
+
+          <!-- Mente: 1 (green) above tens column -->
+          <text x="170" y="50" font-family="Quicksand" font-size="22" font-weight="800" fill="#059669" text-anchor="middle">1</text>
+
+          <!-- Top number: 247 -->
+          <g font-family="Inter" font-size="34" font-weight="600" text-anchor="middle" fill="#0f172a" letter-spacing="2">
+            <text x="130" y="105">2</text>
+            <text x="170" y="105">4</text>
+            <text x="210" y="105">7</text>
+          </g>
+
+          <!-- + and bottom number: 139 -->
+          <g font-family="Inter" font-size="34" font-weight="600" text-anchor="middle" fill="#0f172a" letter-spacing="2">
+            <text x="80" y="148" fill="#059669" font-weight="800">+</text>
+            <text x="130" y="148">1</text>
+            <text x="170" y="148">3</text>
+            <text x="210" y="148">9</text>
+          </g>
+
+          <!-- Line under + row -->
+          <line x1="65" y1="162" x2="230" y2="162" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- Result: 386 -->
+          <g font-family="Inter" font-size="34" font-weight="800" text-anchor="middle" fill="#0f172a" letter-spacing="2">
+            <text x="130" y="200">3</text>
+            <text x="170" y="200">8</text>
+            <text x="210" y="200">6</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===========================================================
+       2. VARM OP
+       =========================================================== -->
+  <section class="mb-12 avoid-break">
+    <div class="flex items-end justify-between gap-6 mb-6 border-b border-gray-200 pb-3">
+      <h2 class="text-2xl font-bold text-black uppercase tracking-wider brand-font">2. Varm op</h2>
+      <span class="text-sm font-medium text-gray-500 serif-it">Skriv svaret bag lighedstegnet.</span>
+    </div>
+
+    <div class="grid grid-cols-2 gap-x-12 gap-y-1 px-2">
+      <div class="flex items-baseline gap-3 py-2.5 border-b border-gray-100">
+        <span class="text-xs font-bold text-gray-400 tracking-widest w-8">2.1</span>
+        <span class="text-lg">42 + 35</span>
+        <span class="text-lg ml-1">=</span>
+        <span class="border-b-[1.5px] border-gray-400 flex-1 h-6"></span>
+      </div>
+      <div class="flex items-baseline gap-3 py-2.5 border-b border-gray-100">
+        <span class="text-xs font-bold text-gray-400 tracking-widest w-8">2.2</span>
+        <span class="text-lg">68 + 24</span>
+        <span class="text-lg ml-1">=</span>
+        <span class="border-b-[1.5px] border-gray-400 flex-1 h-6"></span>
+      </div>
+      <div class="flex items-baseline gap-3 py-2.5 border-b border-gray-100">
+        <span class="text-xs font-bold text-gray-400 tracking-widest w-8">2.3</span>
+        <span class="text-lg">137 + 56</span>
+        <span class="text-lg ml-1">=</span>
+        <span class="border-b-[1.5px] border-gray-400 flex-1 h-6"></span>
+      </div>
+      <div class="flex items-baseline gap-3 py-2.5 border-b border-gray-100">
+        <span class="text-xs font-bold text-gray-400 tracking-widest w-8">2.4</span>
+        <span class="text-lg">209 + 87</span>
+        <span class="text-lg ml-1">=</span>
+        <span class="border-b-[1.5px] border-gray-400 flex-1 h-6"></span>
+      </div>
+      <div class="flex items-baseline gap-3 py-2.5 border-b border-gray-100">
+        <span class="text-xs font-bold text-gray-400 tracking-widest w-8">2.5</span>
+        <span class="text-lg">456 + 178</span>
+        <span class="text-lg ml-1">=</span>
+        <span class="border-b-[1.5px] border-gray-400 flex-1 h-6"></span>
+      </div>
+      <div class="flex items-baseline gap-3 py-2.5 border-b border-gray-100">
+        <span class="text-xs font-bold text-gray-400 tracking-widest w-8">2.6</span>
+        <span class="text-lg">523 + 289</span>
+        <span class="text-lg ml-1">=</span>
+        <span class="border-b-[1.5px] border-gray-400 flex-1 h-6"></span>
+      </div>
+      <div class="flex items-baseline gap-3 py-2.5 border-b border-gray-100">
+        <span class="text-xs font-bold text-gray-400 tracking-widest w-8">2.7</span>
+        <span class="text-lg">8,4 + 2,7</span>
+        <span class="text-lg ml-1">=</span>
+        <span class="border-b-[1.5px] border-gray-400 flex-1 h-6"></span>
+      </div>
+      <div class="flex items-baseline gap-3 py-2.5 border-b border-gray-100">
+        <span class="text-xs font-bold text-gray-400 tracking-widest w-8">2.8</span>
+        <span class="text-lg">12,5 + 6,8</span>
+        <span class="text-lg ml-1">=</span>
+        <span class="border-b-[1.5px] border-gray-400 flex-1 h-6"></span>
+      </div>
+    </div>
+  </section>
+
+  <div class="page-break"></div>
+
+  <!-- ===========================================================
+       3. PÅ PAPIR
+       =========================================================== -->
+  <section class="mb-14">
+    <div class="flex items-end justify-between gap-6 mb-6 border-b border-gray-200 pb-3">
+      <h2 class="text-2xl font-bold text-black uppercase tracking-wider brand-font">3. På papir</h2>
+      <span class="text-sm font-medium text-gray-500 serif-it">Stil tallene op under hinanden i boksen.</span>
+    </div>
+
+    <div class="grid grid-cols-2 gap-x-8 gap-y-7">
+
+      <div class="avoid-break">
+        <div class="flex items-baseline gap-3 mb-2">
+          <span class="text-xs font-bold text-gray-400 tracking-widest">3.1</span>
+          <span class="text-xl font-medium">1 456 + 832</span>
+        </div>
+        <div class="border-[1.5px] border-dashed border-gray-300 rounded-md bg-gray-50/40" style="height: 130px;"></div>
+      </div>
+
+      <div class="avoid-break">
+        <div class="flex items-baseline gap-3 mb-2">
+          <span class="text-xs font-bold text-gray-400 tracking-widest">3.2</span>
+          <span class="text-xl font-medium">2 089 + 567</span>
+        </div>
+        <div class="border-[1.5px] border-dashed border-gray-300 rounded-md bg-gray-50/40" style="height: 130px;"></div>
+      </div>
+
+      <div class="avoid-break">
+        <div class="flex items-baseline gap-3 mb-2">
+          <span class="text-xs font-bold text-gray-400 tracking-widest">3.3</span>
+          <span class="text-xl font-medium">12,5 + 3,75</span>
+        </div>
+        <div class="border-[1.5px] border-dashed border-gray-300 rounded-md bg-gray-50/40" style="height: 130px;"></div>
+      </div>
+
+      <div class="avoid-break">
+        <div class="flex items-baseline gap-3 mb-2">
+          <span class="text-xs font-bold text-gray-400 tracking-widest">3.4</span>
+          <span class="text-xl font-medium">2 089 + 67 + 543</span>
+        </div>
+        <div class="border-[1.5px] border-dashed border-gray-300 rounded-md bg-gray-50/40" style="height: 130px;"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="page-break"></div>
+
+  <!-- ===========================================================
+       4. PRØVEKLAR (FP9-replikering)
+       =========================================================== -->
+  <section class="mb-12">
+    <div class="flex items-end justify-between gap-6 mb-3 border-b border-gray-200 pb-3">
+      <h2 class="text-2xl font-bold text-black uppercase tracking-wider brand-font">4. Prøveklar</h2>
+      <span class="text-sm font-medium text-gray-500 serif-it">Som dem du møder til FP9.</span>
+    </div>
+
+    <div class="bg-amber-50 border-l-[3px] border-amber-500 px-4 py-3 mb-7 text-[13px] text-gray-700 rounded-sm">
+      <span class="font-semibold text-black">Læs hele opgaven først.</span> Find ud af <em>hvad du bliver spurgt om</em>, før du regner.
+    </div>
+
+    <!-- Opgave 4.1 -->
+    <div class="mb-8 avoid-break">
+      <h3 class="text-lg font-bold text-black mb-2 brand-font">Opgave 4.1 · Mathilde sparer op</h3>
+      <p class="text-base mb-3 leading-relaxed">Mathilde har <span class="font-semibold">1 248 kr.</span> i banken. Til sin fødselsdag får hun <span class="font-semibold">350 kr.</span> af mormor og <span class="font-semibold">175 kr.</span> af sin onkel.</p>
+      <div class="flex items-baseline gap-4 mb-3">
+        <span class="text-base flex-1">Hvor mange penge har Mathilde nu i alt?</span>
+        <span class="fp9-svar"></span>
+        <span class="text-gray-600 ml-1">kr.</span>
+      </div>
+      <div class="border-[1.5px] border-dashed border-gray-300 rounded-md bg-gray-50/40" style="height: 130px;"></div>
+    </div>
+
+    <!-- Opgave 4.2 -->
+    <div class="avoid-break">
+      <h3 class="text-lg font-bold text-black mb-2 brand-font">Opgave 4.2 · Stadion-tællingen</h3>
+      <p class="text-base mb-3 leading-relaxed">Til en fodboldkamp blev der talt tilskuere på tre tribuner. Tribune A: <span class="font-semibold">3 458 personer</span>. Tribune B: <span class="font-semibold">2 097 personer</span>. Tribune C: <span class="font-semibold">1 286 personer</span>.</p>
+      <div class="flex items-baseline gap-4 mb-3">
+        <span class="text-base flex-1">Hvor mange tilskuere var der i alt?</span>
+        <span class="fp9-svar"></span>
+        <span class="text-gray-600 ml-1">personer</span>
+      </div>
+      <div class="border-[1.5px] border-dashed border-gray-300 rounded-md bg-gray-50/40" style="height: 130px;"></div>
+    </div>
+  </section>
+
+  <div class="page-break"></div>
+
+  <!-- ===========================================================
+       4. PRØVEKLAR — fortsat (illustrerede opgaver)
+       =========================================================== -->
+  <section class="mb-12">
+    <div class="flex items-end justify-between gap-6 mb-7 border-b border-gray-200 pb-3">
+      <h2 class="text-2xl font-bold text-black uppercase tracking-wider brand-font">4. Prøveklar <span class="text-gray-400 font-normal italic lowercase text-base">(fortsat)</span></h2>
+      <span class="text-sm font-medium text-gray-500 serif-it">Find tallene i illustrationen — ikke alle er relevante.</span>
+    </div>
+
+    <!-- Opgave 4.3: Prisskilte med distractor -->
+    <div class="mb-10 avoid-break">
+      <h3 class="text-lg font-bold text-black mb-3 brand-font">Opgave 4.3 · Indkøb i Brugsen</h3>
+      <p class="text-base mb-4 leading-relaxed">Mads kigger på fire varer i Brugsen.</p>
+
+      <div class="flex justify-center mb-5">
+        <svg viewBox="0 0 540 110" class="w-full max-w-[520px] h-auto">
+          <!-- Tag 1: Avocado -->
+          <g transform="translate(15, 10)">
+            <path d="M 18 0 L 110 0 L 110 90 L 18 90 L 5 45 Z" fill="#fef3c7" stroke="#0f172a" stroke-width="1.5"/>
+            <circle cx="22" cy="45" r="3.5" fill="white" stroke="#0f172a" stroke-width="1.2"/>
+            <text x="68" y="36" text-anchor="middle" font-family="Inter" font-size="11" font-weight="600" fill="#475569">Avocado</text>
+            <text x="68" y="68" text-anchor="middle" font-family="Quicksand" font-size="22" font-weight="800" fill="#0f172a">12 kr.</text>
+          </g>
+          <!-- Tag 2: Pose æbler -->
+          <g transform="translate(150, 10)">
+            <path d="M 18 0 L 110 0 L 110 90 L 18 90 L 5 45 Z" fill="#dcfce7" stroke="#0f172a" stroke-width="1.5"/>
+            <circle cx="22" cy="45" r="3.5" fill="white" stroke="#0f172a" stroke-width="1.2"/>
+            <text x="68" y="36" text-anchor="middle" font-family="Inter" font-size="11" font-weight="600" fill="#475569">Pose æbler</text>
+            <text x="68" y="68" text-anchor="middle" font-family="Quicksand" font-size="22" font-weight="800" fill="#0f172a">27 kr.</text>
+          </g>
+          <!-- Tag 3: Brød -->
+          <g transform="translate(285, 10)">
+            <path d="M 18 0 L 110 0 L 110 90 L 18 90 L 5 45 Z" fill="#fed7aa" stroke="#0f172a" stroke-width="1.5"/>
+            <circle cx="22" cy="45" r="3.5" fill="white" stroke="#0f172a" stroke-width="1.2"/>
+            <text x="68" y="36" text-anchor="middle" font-family="Inter" font-size="11" font-weight="600" fill="#475569">Rugbrød</text>
+            <text x="68" y="68" text-anchor="middle" font-family="Quicksand" font-size="22" font-weight="800" fill="#0f172a">24 kr.</text>
+          </g>
+          <!-- Tag 4: Pose chips -->
+          <g transform="translate(420, 10)">
+            <path d="M 18 0 L 110 0 L 110 90 L 18 90 L 5 45 Z" fill="#fce7f3" stroke="#0f172a" stroke-width="1.5"/>
+            <circle cx="22" cy="45" r="3.5" fill="white" stroke="#0f172a" stroke-width="1.2"/>
+            <text x="68" y="36" text-anchor="middle" font-family="Inter" font-size="11" font-weight="600" fill="#475569">Pose chips</text>
+            <text x="68" y="68" text-anchor="middle" font-family="Quicksand" font-size="22" font-weight="800" fill="#0f172a">19 kr.</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="flex items-baseline gap-4 mb-3">
+        <span class="text-base flex-1">Hvad koster en avocado, et rugbrød og en pose æbler tilsammen?</span>
+        <span class="fp9-svar"></span>
+        <span class="text-gray-600 ml-1">kr.</span>
+      </div>
+      <div class="border-[1.5px] border-dashed border-gray-300 rounded-md bg-gray-50/40" style="height: 120px;"></div>
+    </div>
+
+    <!-- Opgave 4.4: Mobilbank-mockup -->
+    <div class="avoid-break">
+      <h3 class="text-lg font-bold text-black mb-3 brand-font">Opgave 4.4 · Saras konto</h3>
+      <p class="text-base mb-4 leading-relaxed">Sara har modtaget penge på sin bankkonto i dag.</p>
+
+      <div class="flex justify-center mb-5">
+        <svg viewBox="0 0 320 240" class="w-[300px] h-auto">
+          <!-- Phone outline / card -->
+          <rect x="6" y="6" width="308" height="228" rx="14" fill="white" stroke="#0f172a" stroke-width="1.5"/>
+          <!-- Top bar -->
+          <rect x="6" y="6" width="308" height="28" fill="#f1f5f9" rx="14"/>
+          <rect x="6" y="20" width="308" height="14" fill="#f1f5f9"/>
+          <text x="20" y="24" font-family="Inter" font-size="10" font-weight="700" fill="#475569" letter-spacing="1.5">MOBILBANK</text>
+          <text x="300" y="24" text-anchor="end" font-family="Inter" font-size="10" font-weight="500" fill="#94a3b8">14:32</text>
+
+          <!-- Heading -->
+          <text x="20" y="56" font-family="Inter" font-size="12" font-weight="700" fill="#0f172a">Indsætninger i dag</text>
+
+          <!-- Transaction 1 -->
+          <g transform="translate(0, 70)">
+            <rect x="14" y="0" width="292" height="46" rx="6" fill="#fafafa" stroke="#e5e7eb" stroke-width="1"/>
+            <circle cx="34" cy="23" r="11" fill="#fef3c7"/>
+            <text x="34" y="27" text-anchor="middle" font-family="Quicksand" font-size="11" font-weight="800" fill="#92400e">M</text>
+            <text x="54" y="20" font-family="Inter" font-size="11" font-weight="700" fill="#0f172a">Mor</text>
+            <text x="54" y="34" font-family="Inter" font-size="9" fill="#64748b">Lommepenge</text>
+            <text x="296" y="28" text-anchor="end" font-family="Quicksand" font-size="14" font-weight="800" fill="#059669">+ 250 kr.</text>
+          </g>
+
+          <!-- Transaction 2 -->
+          <g transform="translate(0, 124)">
+            <rect x="14" y="0" width="292" height="46" rx="6" fill="#fafafa" stroke="#e5e7eb" stroke-width="1"/>
+            <circle cx="34" cy="23" r="11" fill="#dbeafe"/>
+            <text x="34" y="27" text-anchor="middle" font-family="Quicksand" font-size="11" font-weight="800" fill="#1e40af">L</text>
+            <text x="54" y="20" font-family="Inter" font-size="11" font-weight="700" fill="#0f172a">Onkel Lars</text>
+            <text x="54" y="34" font-family="Inter" font-size="9" fill="#64748b">Til konfirmation</text>
+            <text x="296" y="28" text-anchor="end" font-family="Quicksand" font-size="14" font-weight="800" fill="#059669">+ 500 kr.</text>
+          </g>
+
+          <!-- Transaction 3 -->
+          <g transform="translate(0, 178)">
+            <rect x="14" y="0" width="292" height="46" rx="6" fill="#fafafa" stroke="#e5e7eb" stroke-width="1"/>
+            <circle cx="34" cy="23" r="11" fill="#fce7f3"/>
+            <text x="34" y="27" text-anchor="middle" font-family="Quicksand" font-size="11" font-weight="800" fill="#9d174d">B</text>
+            <text x="54" y="20" font-family="Inter" font-size="11" font-weight="700" fill="#0f172a">Bedstefar</text>
+            <text x="54" y="34" font-family="Inter" font-size="9" fill="#64748b">Til en bog</text>
+            <text x="296" y="28" text-anchor="end" font-family="Quicksand" font-size="14" font-weight="800" fill="#059669">+ 175 kr.</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="flex items-baseline gap-4 mb-3">
+        <span class="text-base flex-1">Hvor meget har Sara modtaget i alt?</span>
+        <span class="fp9-svar"></span>
+        <span class="text-gray-600 ml-1">kr.</span>
+      </div>
+      <div class="border-[1.5px] border-dashed border-gray-300 rounded-md bg-gray-50/40" style="height: 120px;"></div>
+    </div>
+
+  </section>
+
+  <div class="page-break"></div>
+
+  <!-- ===========================================================
+       5. FACIT
+       =========================================================== -->
+  <section>
+    <div class="inline-flex items-center gap-2 bg-black text-white font-bold uppercase text-xs tracking-[0.2em] px-4 py-2 rounded-full mb-6 brand-font">
+      Facit · Ark 01
+    </div>
+    <h1 class="text-3xl font-bold text-black mb-1 brand-font tracking-tight">Addition</h1>
+    <p class="text-base text-gray-600 mb-10 serif-it">Til læreren — eller selv-rettelse.</p>
+
+    <!-- Sektion 2 -->
+    <div class="mb-8">
+      <h3 class="text-base font-bold uppercase tracking-wider text-gray-500 mb-3 brand-font">2. Varm op</h3>
+      <div class="grid grid-cols-4 gap-y-2 gap-x-6 text-base">
+        <div><span class="font-bold text-gray-400 mr-2">2.1</span>77</div>
+        <div><span class="font-bold text-gray-400 mr-2">2.2</span>92</div>
+        <div><span class="font-bold text-gray-400 mr-2">2.3</span>193</div>
+        <div><span class="font-bold text-gray-400 mr-2">2.4</span>296</div>
+        <div><span class="font-bold text-gray-400 mr-2">2.5</span>634</div>
+        <div><span class="font-bold text-gray-400 mr-2">2.6</span>812</div>
+        <div><span class="font-bold text-gray-400 mr-2">2.7</span>11,1</div>
+        <div><span class="font-bold text-gray-400 mr-2">2.8</span>19,3</div>
+      </div>
+    </div>
+
+    <!-- Sektion 3 -->
+    <div class="mb-8">
+      <h3 class="text-base font-bold uppercase tracking-wider text-gray-500 mb-3 brand-font">3. På papir</h3>
+      <div class="grid grid-cols-4 gap-y-2 gap-x-6 text-base">
+        <div><span class="font-bold text-gray-400 mr-2">3.1</span>2 288</div>
+        <div><span class="font-bold text-gray-400 mr-2">3.2</span>2 656</div>
+        <div><span class="font-bold text-gray-400 mr-2">3.3</span>16,25</div>
+        <div><span class="font-bold text-gray-400 mr-2">3.4</span>2 699</div>
+      </div>
+    </div>
+
+    <!-- Sektion 4 -->
+    <div class="mb-10">
+      <h3 class="text-base font-bold uppercase tracking-wider text-gray-500 mb-3 brand-font">4. Prøveklar</h3>
+      <div class="space-y-2 text-base">
+        <div><span class="font-bold text-gray-400 mr-2 inline-block w-8">4.1</span>1 773 kr.</div>
+        <div><span class="font-bold text-gray-400 mr-2 inline-block w-8">4.2</span>6 841 personer</div>
+        <div><span class="font-bold text-gray-400 mr-2 inline-block w-8">4.3</span>63 kr. <span class="text-gray-500 italic ml-2">(12 + 27 + 24 — chips er ikke i spørgsmålet)</span></div>
+        <div><span class="font-bold text-gray-400 mr-2 inline-block w-8">4.4</span>925 kr. <span class="text-gray-500 italic ml-2">(250 + 500 + 175)</span></div>
+      </div>
+    </div>
+
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-5 text-sm leading-relaxed text-gray-700">
+      <p class="font-bold text-black mb-1 brand-font">Til samtalen efter</p>
+      Hvis en elev har lavet samme type fejl flere gange — fx altid glemt det grønne mente-tal når summen er over 9, eller forkert komma-placering ved decimaltal — så fokusér på <strong>den ene fejl</strong> i 5 minutter, og lad eleven prøve 2.6 og 3.3 igen som tjek. På 4.3: hvis svaret er 82 kr., har de inkluderet chips og glemt at læse spørgsmålet helt.
+    </div>
+  </section>
+
+</body>
+</html>

@@ -1,0 +1,125 @@
+'use client';
+
+/**
+ * Disciplin-side — viser tre mode-kort: Lektion, Træning, Prøveklar.
+ *
+ * Viser også elev-progress (status, bedste score) hvis relevant.
+ * Statisk pre-rendret (én side pr. disciplin) via generateStaticParams i layout.
+ */
+
+import { useParams, notFound } from 'next/navigation';
+import Link from 'next/link';
+import { motion } from 'motion/react';
+import { ArrowLeft } from 'lucide-react';
+import { DISCIPLINER, getDisciplin, type DisciplinId } from '@/lib/disciplines';
+import { useStore } from '@/lib/store';
+import { useHydrated } from '@/lib/use-hydrated';
+import { harIndhold } from '@/lib/content-registry';
+import { ModeCard } from '@/components/mode-card';
+import { cn } from '@/lib/utils';
+
+const operationFarver = {
+  add: { tekst: 'text-add', bg: 'bg-add-bg' },
+  sub: { tekst: 'text-sub', bg: 'bg-sub-bg' },
+  mul: { tekst: 'text-mul', bg: 'bg-mul-bg' },
+  div: { tekst: 'text-div', bg: 'bg-div-bg' },
+} as const;
+
+export default function DisciplinPage() {
+  const params = useParams<{ disciplin: string }>();
+  const id = params.disciplin as DisciplinId;
+  const valid = DISCIPLINER.some((d) => d.id === id);
+  if (!valid) notFound();
+
+  const disciplin = getDisciplin(id);
+  const operation = disciplin.farve ? operationFarver[disciplin.farve] : null;
+
+  const hydreret = useHydrated();
+  const progress = useStore((s) => s.progress[id]);
+
+  return (
+    <main className="min-h-screen bg-slate-50/40">
+      <div className="mx-auto max-w-4xl px-6 py-10 lg:px-12 lg:py-14">
+        {/* Tilbage-link */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors mb-10"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+          Tilbage til oversigten
+        </Link>
+
+        {/* Disciplin-header */}
+        <motion.header
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className="mb-12"
+        >
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-4">
+            Disciplin
+          </p>
+          <div className="flex items-center gap-5">
+            <div
+              className={cn(
+                'flex h-16 w-16 items-center justify-center rounded-2xl font-display text-4xl font-bold',
+                operation
+                  ? cn(operation.bg, operation.tekst)
+                  : 'bg-slate-100 text-slate-700',
+              )}
+              aria-hidden
+            >
+              {disciplin.symbol}
+            </div>
+            <div>
+              <h1 className="font-display text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl">
+                {disciplin.navn}
+              </h1>
+              <p className="mt-1 text-base text-slate-600 italic font-serif">
+                {disciplin.beskrivelse}
+              </p>
+            </div>
+          </div>
+        </motion.header>
+
+        {/* Mode-kort */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ModeCard
+            mode="lektion"
+            disciplinId={id}
+            kommerSnart={!harIndhold(id, 'lektion')}
+            index={0}
+          />
+          <ModeCard
+            mode="traening"
+            disciplinId={id}
+            kommerSnart={!harIndhold(id, 'traening')}
+            index={1}
+          />
+          <ModeCard
+            mode="proeveklar"
+            disciplinId={id}
+            bedsteScore={hydreret ? progress.bedsteScore : 0}
+            status={hydreret ? progress.status : 'untouched'}
+            kommerSnart={!harIndhold(id, 'proeveklar')}
+            index={2}
+          />
+        </div>
+
+        {/* Progress-snapshot hvis prøvet */}
+        {hydreret && progress.antalForsoeg > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="mt-10 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm text-slate-600"
+          >
+            Du har taget prøveklar <strong className="text-slate-900">{progress.antalForsoeg}</strong>{' '}
+            {progress.antalForsoeg === 1 ? 'gang' : 'gange'}. Bedste resultat:{' '}
+            <strong className="text-slate-900">{progress.bedsteScore}%</strong>.
+          </motion.div>
+        )}
+      </div>
+    </main>
+  );
+}

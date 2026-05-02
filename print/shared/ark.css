@@ -1,0 +1,187 @@
+/* ============================================================
+   FP9 Øvelsesark — minimal custom CSS
+   Resten af stylingen klares via Tailwind CDN i hvert ark.
+   Her: print-regler, math-specifikke elementer (papirregning,
+   svarbokse), og enkelte globale defaults.
+   ============================================================ */
+
+/* Tabulære tal overalt — ciffer-bredder skal matche i math */
+body { font-variant-numeric: tabular-nums; }
+
+/* ---------- Skærm-only print-tip ---------- */
+.print-tip {
+  max-width: 56rem;
+  margin: 0 auto 12px auto;
+  padding: 10px 16px;
+  background: #fef3c7;
+  border-left: 3px solid #d97706;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #4a3000;
+  font-family: Inter, sans-serif;
+}
+@media print { .print-tip { display: none; } }
+
+/* ---------- Print ---------- */
+@page { size: A4 portrait; margin: 12mm 14mm; }
+
+@media print {
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    padding: 0 !important;
+    max-width: none !important;
+  }
+  .skaerm-only { display: none !important; }
+  .page-break { break-after: page; page-break-after: always; }
+  .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+}
+
+.page-break { break-after: page; }
+.avoid-break { break-inside: avoid; }
+
+/* ============================================================
+   PAPIRREGNING — udregning vist som man ville skrive den
+   ============================================================ */
+.papirregning {
+  display: inline-block;
+  font-family: Inter, sans-serif;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+  font-size: 22pt;
+  line-height: 1.25;
+  letter-spacing: 0.18em;
+  text-align: right;
+  font-weight: 600;
+  color: #111827;
+}
+.papirregning .raekke { display: block; padding-right: 4pt; }
+.papirregning .raekke.streg { border-top: 2px solid #111827; padding-top: 2pt; margin-top: 2pt; }
+.papirregning .op {
+  float: left;
+  margin-right: 14pt;
+  font-weight: 700;
+}
+.papirregning .baere {
+  display: block;
+  font-size: 11pt;
+  color: #059669;
+  font-weight: 700;
+  letter-spacing: 0.34em;
+  height: 14pt;
+  line-height: 14pt;
+  margin-bottom: -2pt;
+}
+.papirregning .resultat { color: #111827; font-weight: 800; }
+.papirregning.add .op, .papirregning.add .baere { color: #059669; }
+.papirregning.sub .op, .papirregning.sub .baere { color: #e11d48; }
+.papirregning.mul .op, .papirregning.mul .baere { color: #7c3aed; }
+.papirregning.div .op, .papirregning.div .baere { color: #d97706; }
+
+/* Stryk-over (lån i subtraktion) */
+.papirregning .stryk {
+  color: #9ca3af;
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  font-weight: 500;
+}
+.papirregning .laan {
+  font-size: 11pt;
+  color: #e11d48;
+  font-weight: 700;
+  vertical-align: super;
+  margin-left: -2pt;
+}
+
+/* Lang-division */
+.langdiv {
+  display: inline-block;
+  font-family: Inter, sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-size: 20pt;
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  color: #111827;
+}
+.langdiv .row { text-align: right; padding: 1pt 4pt; }
+.langdiv .quotient { color: #d97706; font-weight: 800; padding-right: 4pt; }
+.langdiv .body { border-top: 2px solid #111827; padding-top: 3pt; }
+.langdiv .delstreg { border-top: 1.5px solid #111827; padding-top: 2pt; }
+.langdiv .minus { color: #6b7280; }
+
+/* ============================================================
+   SVARFELTER
+   ============================================================ */
+
+/* Linje-svar (fx "= ____") */
+.svarlinje {
+  display: inline-block;
+  border-bottom: 1.5px solid #9ca3af;
+  min-width: 60pt;
+  height: 14pt;
+  vertical-align: bottom;
+  margin: 0 4pt;
+}
+.svarlinje.kort { min-width: 36pt; }
+.svarlinje.lang { min-width: 96pt; }
+
+/* FP9-stil svarboks (kort dashed boks med enhed bagved) */
+.fp9-svar {
+  display: inline-block;
+  border: 1.2px dashed #111827;
+  border-radius: 2pt;
+  padding: 1pt 6pt;
+  min-width: 80pt;
+  height: 18pt;
+  vertical-align: bottom;
+  background: #fff;
+}
+.fp9-svar.kort { min-width: 50pt; }
+.fp9-svar.lang { min-width: 110pt; }
+
+/* Brøk-svar — to bokse med streg imellem */
+.broek-svar {
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+  margin: 0 6pt;
+}
+.broek-svar .taeller, .broek-svar .naevner {
+  display: block;
+  border: 1.2px dashed #6b7280;
+  border-radius: 2pt;
+  width: 40pt; height: 18pt;
+}
+.broek-svar .streg { display: block; border-top: 1px solid #111827; margin: 2pt 0; }
+
+/* Multiple choice */
+.mc-boks {
+  display: inline-block;
+  width: 12pt; height: 12pt;
+  border: 1.2px solid #111827;
+  border-radius: 1pt;
+  vertical-align: middle;
+}
+
+/* ============================================================
+   UDREGNINGSFELT — plads til at vise sin regning
+   ============================================================ */
+.udregning {
+  margin-top: 8pt;
+  border: 1.5px dashed #d1d5db;
+  border-radius: 6pt;
+  min-height: 70pt;
+  padding: 6pt 10pt;
+  background: #fafafa;
+}
+.udregning.lav { min-height: 44pt; }
+.udregning.høj { min-height: 110pt; }
+.udregning .label {
+  font-family: Inter, sans-serif;
+  font-size: 8pt;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #6b7280;
+}
