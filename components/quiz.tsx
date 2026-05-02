@@ -318,9 +318,10 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
         </div>
       </div>
 
-      {/* Center — vertikalt centeret. Feedback-areal har reserveret højde
-          så spørgsmål, input og knap ikke skifter position når feedback dukker op. */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-10">
+      {/* Center — top-anchored så spørgsmål og input står på samme position
+          uafhængigt af om feedback vises eller ej. Feedback dukker op naturligt
+          mellem input og næste-knap; intet shifter ovenfor. */}
+      <div className="flex-1 flex flex-col items-center px-6 pt-[18vh] lg:pt-[20vh]">
         <div className="w-full max-w-xl">
           {/* Spørgsmål */}
           <h2 className="font-display text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 text-center mb-10 leading-snug">
@@ -499,43 +500,41 @@ function FeedbackOgKnap({
 }: FeedbackProps) {
   return (
     <>
-      {/* Feedback-areal — altid renderet (med min-højde) så layoutet ikke skifter
-          når feedback dukker op efter submit. */}
-      <div className="min-h-[100px] w-full flex flex-col items-center justify-start gap-3">
-        {feedbackVist && (
-          <motion.div
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="flex flex-col items-center gap-3"
-          >
-            <div
-              className={cn(
-                'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold',
-                rigtigt ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700',
-              )}
-            >
-              {rigtigt ? (
-                <>
-                  <Check className="h-4 w-4" aria-hidden />
-                  Rigtigt
-                </>
-              ) : (
-                <>
-                  <X className="h-4 w-4" aria-hidden />
-                  Forkert
-                </>
-              )}
-            </div>
-
-            {!rigtigt && forklaring && (
-              <p className="text-center text-sm text-slate-600 italic font-serif max-w-md">
-                {forklaring}
-              </p>
+      {/* Feedback — kun når der er svaret. Top-anchored layout sørger for
+          at spørgsmål + input ikke shifter, så vi behøver ingen reserveret højde. */}
+      {feedbackVist && (
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+          className="flex flex-col items-center gap-3"
+        >
+          <div
+            className={cn(
+              'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold',
+              rigtigt ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700',
             )}
-          </motion.div>
-        )}
-      </div>
+          >
+            {rigtigt ? (
+              <>
+                <Check className="h-4 w-4" aria-hidden />
+                Rigtigt
+              </>
+            ) : (
+              <>
+                <X className="h-4 w-4" aria-hidden />
+                Forkert
+              </>
+            )}
+          </div>
+
+          {!rigtigt && forklaring && (
+            <p className="text-center text-sm text-slate-600 italic font-serif max-w-md">
+              {forklaring}
+            </p>
+          )}
+        </motion.div>
+      )}
 
       {/* Svar-knap (før submit) eller Næste-knap (efter) — samme position altid */}
       {!feedbackVist && (
