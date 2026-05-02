@@ -14,6 +14,9 @@ import { divisionOpgaver } from './division';
 import { procentOpgaver } from './procent';
 import { ligningerOpgaver } from './ligninger';
 import { hverdagsregningOpgaver } from './hverdagsregning';
+import { enhedsomregningOpgaver } from './enhedsomregning';
+import { rumfangOpgaver } from './rumfang';
+import { koordinatsystemOpgaver } from './koordinatsystem';
 
 export const OPGAVER: Partial<Record<DisciplinId, Opgave[]>> = {
   addition: additionOpgaver,
@@ -23,6 +26,9 @@ export const OPGAVER: Partial<Record<DisciplinId, Opgave[]>> = {
   procent: procentOpgaver,
   ligninger: ligningerOpgaver,
   hverdagsregning: hverdagsregningOpgaver,
+  enhedsomregning: enhedsomregningOpgaver,
+  rumfang: rumfangOpgaver,
+  koordinatsystem: koordinatsystemOpgaver,
 };
 
 export function harOpgaver(id: DisciplinId): boolean {
