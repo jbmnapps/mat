@@ -51,6 +51,7 @@ Brugeren lærer også. Forklar kort hvad et værktøj er og hvornår det er nytt
 ## Læs disse først
 
 - **[PROEVE-PREP.md](PROEVE-PREP.md)** — aktivt sprint-dokument med status, plan, beslutninger. *Læs altid først.*
+- **[SMAG.md](SMAG.md)** — brugerens smag, sprog, designprincipper. *Læs ALTID før UI- eller indholdsændringer.*
 - **[BACKEND-TJEK.md](BACKEND-TJEK.md)** — tjekliste for læreren før login-link deles. *Relevant ved Supabase-arbejde.*
 - **[DESIGN.md](DESIGN.md)** — visuelt sprog (typografi, palette, SVG-mønstre).
 - **[PRINCIPPER.md](PRINCIPPER.md)** — pædagogiske principper.
@@ -127,6 +128,7 @@ npx tsc --noEmit # Type-check
 - Ingen rigtig auth (email/password). Login bliver navn + 4-cifret kode (kontekst: klasselokale-værktøj, ikke bank).
 - Ingen tracking ud over hvad der er nødvendigt for elev-progress.
 - **Intet Supabase- eller credentials-arbejde uden at have læst [BACKEND-TJEK.md](BACKEND-TJEK.md) FØRST.** RLS skal være enabled før data inserts. `service_role`-key må aldrig røre kode eller env-vars — kun `anon`-key.
+- **Ingen UI- eller indholdsændringer uden at have læst [SMAG.md](SMAG.md).** Tip-tekster, layout, spacing, sproglig tone — alt har en regel der. Når brugeren retter en ændring, opdatér SMAG.md så reglen lever videre.
 
 ## Sproget
 
