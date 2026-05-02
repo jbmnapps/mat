@@ -17,20 +17,37 @@
  *    tillader læs af alle elev-rækker via is_teacher().
  */
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'motion/react';
-import { ArrowLeft, Loader2, LogOut, RefreshCw, AlertCircle } from 'lucide-react';
+import {
+  ArrowLeft,
+  Loader2,
+  LogOut,
+  RefreshCw,
+  AlertCircle,
+  RotateCcw,
+  KeyRound,
+  ExternalLink,
+} from 'lucide-react';
 import {
   logIndSomLaerer,
   logUd,
   hentAlleEleverForLaerer,
+  nulstilElevProgress,
   type ElevOversigt,
 } from '@/lib/auth';
 import { supabaseEnabled } from '@/lib/supabase-client';
 import { DISCIPLINER, KATEGORI_NAVNE, type Kategori } from '@/lib/disciplines';
 import { cn } from '@/lib/utils';
+
+/** Antal sekunder hvor en elev tæller som "aktiv lige nu". */
+const AKTIV_LIVE_SEK = 120;
+/** Hvor ofte vi auto-refresh'er elev-listen. */
+const AUTO_REFRESH_MS = 30_000;
+/** Supabase project-ID — bruges til at linke til Auth-dashboard for kode-reset. */
+const SUPABASE_PROJECT = 'jkfxirpqhdettipixunl';
 
 export default function LaererPage() {
   const params = useParams<{ token: string }>();
@@ -72,6 +89,25 @@ export default function LaererPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
+  // Auto-refresh elev-listen så live-aktivitet er ægte tæt på real-time
+  useEffect(() => {
+    if (tilstand !== 'klar') return;
+    const id = setInterval(() => {
+      hentEleverNu();
+    }, AUTO_REFRESH_MS);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tilstand]);
+
+  // Tick hvert 10. sekund så "aktiv nu" / "for 2 min siden" opdaterer
+  // mellem refreshes uden at skulle fetche nyt data
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (tilstand !== 'klar') return;
+    const id = setInterval(() => setTick((t) => t + 1), 10_000);
+    return () => clearInterval(id);
+  }, [tilstand]);
+
   async function hentEleverNu() {
     setHenter(true);
     try {
@@ -85,6 +121,19 @@ export default function LaererPage() {
     } finally {
       setHenter(false);
     }
+  }
+
+  async function bekraeftNulstil(elev: ElevOversigt) {
+    const ok = window.confirm(
+      `Slet alle scores for ${elev.visningsnavn}?\n\nKontoen og koden bevares — kun progress nulstilles. Kan ikke fortrydes.`,
+    );
+    if (!ok) return;
+    const res = await nulstilElevProgress(elev.brugerId);
+    if (!res.ok) {
+      alert(`Kunne ikke nulstille: ${res.fejl}`);
+      return;
+    }
+    await hentEleverNu();
   }
 
   async function håndterLogUd() {
@@ -217,9 +266,7 @@ export default function LaererPage() {
                         {elev.navnSlug}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Sidst aktiv {tidsForskel(elev.sidstAktiv)}
-                    </p>
+                    <SidstAktivLinje sidstAktiv={elev.sidstAktiv} />
                   </div>
 
                   <div className="hidden sm:flex items-center gap-3 text-xs">
@@ -232,6 +279,29 @@ export default function LaererPage() {
 
                 {erUdvidet && (
                   <div className="border-t border-slate-200 bg-slate-50/40 px-5 py-4">
+                    {/* Lærer-handlinger — flyttet til toppen så de er synlige med det samme */}
+                    <div className="mb-4 flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => bekraeftNulstil(elev)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 transition-colors"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+                        Nulstil progress
+                      </button>
+                      <a
+                        href={`https://supabase.com/dashboard/project/${SUPABASE_PROJECT}/auth/users?filter=${encodeURIComponent(`${elev.navnSlug}@elev.fp9.local`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:bg-white hover:text-slate-900 transition-colors"
+                        title="Åbner Supabase-dashboard hvor du kan resette koden"
+                      >
+                        <KeyRound className="h-3.5 w-3.5" aria-hidden />
+                        Reset kode
+                        <ExternalLink className="h-3 w-3" aria-hidden />
+                      </a>
+                    </div>
+
                     {(Object.keys(disciplinerEfterKategori) as Kategori[]).map((kat) => (
                       <div key={kat} className="mb-4 last:mb-0">
                         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 mb-2">
@@ -334,4 +404,30 @@ function tidsForskel(iso: string): string {
   if (t < 24) return `for ${t} ${t === 1 ? 'time' : 'timer'} siden`;
   const dage = Math.floor(t / 24);
   return `for ${dage} ${dage === 1 ? 'dag' : 'dage'} siden`;
+}
+
+/**
+ * Viser "Aktiv nu" med pulserende grøn prik hvis eleven har sat
+ * progress for under AKTIV_LIVE_SEK siden, ellers normal "for X min siden".
+ */
+function SidstAktivLinje({ sidstAktiv }: { sidstAktiv: string }) {
+  const sek = Math.floor((Date.now() - new Date(sidstAktiv).getTime()) / 1000);
+  const erAktiv = sek < AKTIV_LIVE_SEK;
+
+  if (erAktiv) {
+    return (
+      <p className="mt-0.5 inline-flex items-center gap-1.5 text-xs">
+        <span className="relative flex h-2 w-2" aria-hidden>
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-gron opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-status-gron" />
+        </span>
+        <span className="font-semibold text-status-gron">Aktiv nu</span>
+      </p>
+    );
+  }
+  return (
+    <p className="text-xs text-slate-500 mt-0.5">
+      Sidst aktiv {tidsForskel(sidstAktiv)}
+    </p>
+  );
 }

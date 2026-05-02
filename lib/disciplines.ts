@@ -255,3 +255,57 @@ export function statusFraScore(score: number): Status {
   if (score >= 50) return 'gul';
   return 'rod';
 }
+
+/**
+ * Anbefalet træningssekvens, baseret på analyse af FP9-prøvesæt fra
+ * 2023-2025 (se Elevprøver_FP9guidelines/FP9 matematik som designgrundlag).
+ *
+ * Kort version: lavthængende frugt først. FP9 vægter procent/brøk/forhold
+ * tungest i delprøve uden hjælpemidler, derefter basal regnesikkerhed.
+ * Først DEREFTER kommer kernegeometri og åbne undersøgelser.
+ *
+ * Hver elev guides gennem trinnene i rækkefølge — næste forslag er den
+ * første disciplin der ikke er grøn endnu (og som har bygget træning).
+ */
+export interface TræningsTrin {
+  titel: string;
+  disciplinerne: DisciplinId[];
+  begrundelse: string;
+}
+
+export const TRÆNINGS_TRIN: TræningsTrin[] = [
+  {
+    titel: 'Procent og forhold',
+    disciplinerne: ['procent', 'hverdagsregning', 'decimaltal'],
+    begrundelse: 'Vægter mest på FP9 — start her for hurtige point.',
+  },
+  {
+    titel: 'Regnesikkerhed',
+    disciplinerne: [
+      'addition',
+      'subtraktion',
+      'multiplikation',
+      'division',
+      'ligninger',
+      'overslagsregning',
+      'regneudtryk',
+    ],
+    begrundelse: 'Sikker basal regning giver point i næsten hver opgave.',
+  },
+  {
+    titel: 'Statistik og sandsynlighed',
+    disciplinerne: ['diagrammer', 'tabeller', 'sandsynlighed'],
+    begrundelse: 'Forudsigelige opgavetyper — gode point at hente.',
+  },
+  {
+    titel: 'Geometri',
+    disciplinerne: [
+      'enhedsomregning',
+      'koordinatsystem',
+      'rumfang',
+      'vinkler',
+      'ligedannethed',
+    ],
+    begrundelse: 'Når basis sidder, er geometri lettere at angribe.',
+  },
+];

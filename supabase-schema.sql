@@ -113,6 +113,14 @@ create policy "progress_update_self"
   using (student_id = auth.uid())
   with check (student_id = auth.uid());
 
+-- Læreren kan slette progress (bruges af "Nulstil progress"-knappen i lærer-UI).
+-- Kun læreren — eleven har ikke en delete-knap nogen steder.
+drop policy if exists "progress_delete_teacher" on public.progress;
+create policy "progress_delete_teacher"
+  on public.progress for delete
+  to authenticated
+  using ((auth.jwt() ->> 'email') = 'laerer@fp9.local');
+
 -- 6. AUTO-UPDATE last_active når progress ændres
 create or replace function public.touch_last_active() returns trigger
 language plpgsql

@@ -464,6 +464,27 @@ export interface ElevOversigt {
   progress: Record<DisciplinId, DisciplinProgress>;
 }
 
+/**
+ * Nulstil al progress for en elev (lærer-handling).
+ * Kræver at lærer-RLS-policy tillader DELETE på progress (se supabase-schema.sql).
+ * Eleven beholder sin konto og kode — kun progress-rækkerne slettes.
+ */
+export async function nulstilElevProgress(
+  brugerId: string,
+): Promise<{ ok: true } | { ok: false; fejl: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return { ok: false, fejl: 'Backend ikke tilgængelig' };
+  const { error } = await supabase
+    .from('progress')
+    .delete()
+    .eq('student_id', brugerId);
+  if (error) {
+    console.error('[laerer] kunne ikke nulstille:', error);
+    return { ok: false, fejl: error.message };
+  }
+  return { ok: true };
+}
+
 export async function hentAlleEleverForLaerer(): Promise<ElevOversigt[]> {
   const supabase = getSupabase();
   if (!supabase) return [];
