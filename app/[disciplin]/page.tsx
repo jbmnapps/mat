@@ -11,19 +11,12 @@ import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import { ArrowLeft } from 'lucide-react';
-import { DISCIPLINER, getDisciplin, type DisciplinId } from '@/lib/disciplines';
+import { DISCIPLINER, DISCIPLIN_FARVE, getDisciplin, type DisciplinId } from '@/lib/disciplines';
 import { useStore } from '@/lib/store';
 import { useHydrated } from '@/lib/use-hydrated';
 import { harIndhold } from '@/lib/content-registry';
 import { ModeCard } from '@/components/mode-card';
 import { cn } from '@/lib/utils';
-
-const operationFarver = {
-  add: { tekst: 'text-add', bg: 'bg-add-bg' },
-  sub: { tekst: 'text-sub', bg: 'bg-sub-bg' },
-  mul: { tekst: 'text-mul', bg: 'bg-mul-bg' },
-  div: { tekst: 'text-div', bg: 'bg-div-bg' },
-} as const;
 
 export default function DisciplinPage() {
   const params = useParams<{ disciplin: string }>();
@@ -32,7 +25,7 @@ export default function DisciplinPage() {
   if (!valid) notFound();
 
   const disciplin = getDisciplin(id);
-  const operation = disciplin.farve ? operationFarver[disciplin.farve] : null;
+  const farve = DISCIPLIN_FARVE[id];
 
   const hydreret = useHydrated();
   const progress = useStore((s) => s.progress[id]);
@@ -63,9 +56,8 @@ export default function DisciplinPage() {
             <div
               className={cn(
                 'flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-xl sm:rounded-2xl font-display text-2xl sm:text-4xl font-bold shrink-0',
-                operation
-                  ? cn(operation.bg, operation.tekst)
-                  : 'bg-slate-100 text-slate-700',
+                farve.bg,
+                farve.tekst,
               )}
               aria-hidden
             >

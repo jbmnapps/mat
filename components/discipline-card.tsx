@@ -21,7 +21,7 @@ import Link from 'next/link';
 import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Disciplin, Status } from '@/lib/disciplines';
+import { DISCIPLIN_FARVE, type Disciplin, type Status } from '@/lib/disciplines';
 import type { DisciplinProgress } from '@/lib/store';
 
 interface Props {
@@ -54,16 +54,9 @@ const statusFarver: Record<Status, { dot: string; tekst: string; ring: string }>
   },
 };
 
-const operationFarver = {
-  add: { tekst: 'text-add', bg: 'bg-add-bg' },
-  sub: { tekst: 'text-sub', bg: 'bg-sub-bg' },
-  mul: { tekst: 'text-mul', bg: 'bg-mul-bg' },
-  div: { tekst: 'text-div', bg: 'bg-div-bg' },
-} as const;
-
 export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
   const status = statusFarver[progress.status];
-  const operation = disciplin.farve ? operationFarver[disciplin.farve] : null;
+  const farve = DISCIPLIN_FARVE[disciplin.id];
   const harForsoegt = progress.antalForsoeg > 0;
 
   return (
@@ -102,9 +95,8 @@ export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
               'flex h-10 w-10 sm:h-16 sm:w-16 items-center justify-center rounded-xl sm:rounded-2xl text-2xl sm:text-4xl font-bold transition-transform duration-200 ease-out',
               'font-display tracking-tight',
               'group-hover:scale-105',
-              operation
-                ? cn(operation.bg, operation.tekst)
-                : 'bg-slate-50 text-slate-700',
+              farve.bg,
+              farve.tekst,
             )}
             aria-hidden
           >

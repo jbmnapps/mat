@@ -198,6 +198,38 @@ export function getDisciplin(id: DisciplinId): Disciplin {
 }
 
 /**
+ * Farve-palette pr. disciplin.
+ * Bg er pastel (Tailwind -100), tekst er mættet (Tailwind -600).
+ * De fire regnearter (add/sub/mul/div) bevarer print-projektets DNA.
+ * De øvrige er valgt så hver disciplin er visuelt identificerbar uden at
+ * gridet bliver garish.
+ */
+export const DISCIPLIN_FARVE: Record<DisciplinId, { tekst: string; bg: string }> = {
+  // Regnearter (print-DNA)
+  addition: { tekst: 'text-emerald-600', bg: 'bg-emerald-100' },
+  subtraktion: { tekst: 'text-rose-600', bg: 'bg-rose-100' },
+  multiplikation: { tekst: 'text-violet-600', bg: 'bg-violet-100' },
+  division: { tekst: 'text-amber-600', bg: 'bg-amber-100' },
+  // Resten af tal-og-algebra
+  decimaltal: { tekst: 'text-cyan-600', bg: 'bg-cyan-100' },
+  procent: { tekst: 'text-pink-600', bg: 'bg-pink-100' },
+  ligninger: { tekst: 'text-indigo-600', bg: 'bg-indigo-100' },
+  regneudtryk: { tekst: 'text-lime-600', bg: 'bg-lime-100' },
+  overslagsregning: { tekst: 'text-sky-600', bg: 'bg-sky-100' },
+  hverdagsregning: { tekst: 'text-yellow-600', bg: 'bg-yellow-100' },
+  // Geometri
+  enhedsomregning: { tekst: 'text-teal-600', bg: 'bg-teal-100' },
+  vinkler: { tekst: 'text-orange-600', bg: 'bg-orange-100' },
+  koordinatsystem: { tekst: 'text-blue-600', bg: 'bg-blue-100' },
+  rumfang: { tekst: 'text-purple-600', bg: 'bg-purple-100' },
+  ligedannethed: { tekst: 'text-fuchsia-600', bg: 'bg-fuchsia-100' },
+  // Statistik
+  tabeller: { tekst: 'text-slate-600', bg: 'bg-slate-200' },
+  diagrammer: { tekst: 'text-green-600', bg: 'bg-green-100' },
+  sandsynlighed: { tekst: 'text-red-600', bg: 'bg-red-100' },
+};
+
+/**
  * Beregn status fra en prøveklar-score.
  *  <50%: rod
  *  50-79%: gul
