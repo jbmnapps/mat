@@ -28,6 +28,7 @@ import {
 } from '@/lib/disciplines';
 import { useStore, type DisciplinProgress } from '@/lib/store';
 import { useHydrated } from '@/lib/use-hydrated';
+import Link from 'next/link';
 import { DisciplineCard } from '@/components/discipline-card';
 import { SaveActions, NameInput } from '@/components/save-actions';
 
@@ -101,7 +102,15 @@ export default function Dashboard() {
 
         {/* FOOTER */}
         <footer className="mt-20 border-t border-slate-200 pt-8 text-center text-xs text-slate-400">
-          FP9 Matematik · Træn til prøven uden hjælpemidler
+          <p>FP9 Matematik · Træn til prøven uden hjælpemidler</p>
+          <p className="mt-2">
+            <Link
+              href="/gangetabeller"
+              className="font-semibold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:text-slate-900"
+            >
+              Tabel-træner →
+            </Link>
+          </p>
         </footer>
       </div>
     </main>

@@ -106,7 +106,7 @@ export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
 
         {/* Navn + progress-bar */}
         <div className="text-center">
-          <h3 className="font-display text-xs sm:text-base font-bold text-slate-900 leading-tight">
+          <h3 className="font-display text-[11px] sm:text-base font-bold text-slate-900 leading-tight break-words hyphens-auto">
             {disciplin.navn}
           </h3>
           {/* Progress-bar — visuelt match med %-pillen i toppen.
