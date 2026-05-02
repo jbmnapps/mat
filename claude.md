@@ -1,5 +1,7 @@
 # FP9 Matematikopgaver — WEB version
 
+> **AKUT WEEKEND-ARBEJDE (FP9 mandag 4. maj 2026):** Vi bygger en hurtig prøvetrænings-version til eleverne. Deployer fra `weekend`-branch, `main` står urørt. Plan og beslutninger ligger i [PROEVE-PREP.md](PROEVE-PREP.md). Læs den FØR du laver ændringer i denne session.
+
 Web-app der lader 9.-klasses elever træne FP9 Matematik uden hjælpemidler hjemmefra. Arvtager til print-projektet i `print/`.
 
 ## Sådan arbejder jeg
