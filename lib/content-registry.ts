@@ -20,6 +20,9 @@ const INDHOLD: Partial<Record<DisciplinId, Mode[]>> = {
   enhedsomregning: ['traening'],
   rumfang: ['traening'],
   koordinatsystem: ['traening'],
+  tabeller: ['traening'],
+  diagrammer: ['traening'],
+  sandsynlighed: ['traening'],
 };
 
 export function harIndhold(disciplin: DisciplinId, mode: Mode): boolean {
