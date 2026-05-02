@@ -102,9 +102,6 @@ export default function Dashboard() {
               </h1>
               <NameInput />
             </div>
-            <p className="hidden sm:block mt-3 text-base text-slate-600 italic font-serif">
-              Vælg en disciplin, øv metoden, og tag prøveklar når du er klar.
-            </p>
           </div>
 
           {/* Oversigts-pille — vises kun når hydreret og noget er prøvet */}
