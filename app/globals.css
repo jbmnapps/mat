@@ -15,6 +15,9 @@ html, body {
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Forhindrer rubber-band-bounce på iOS når content allerede passer på skærmen.
+     Forhindrer også scroll-chaining til parent elementer. */
+  overscroll-behavior: none;
 }
 
 /* Respect reduced motion preferences (princip 9) */

@@ -192,7 +192,7 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
   // ─────── Score-skærm ───────
   if (erFærdig) {
     return (
-      <main className="min-h-screen bg-slate-50/40 flex flex-col">
+      <main className="min-h-[100dvh] bg-slate-50/40 flex flex-col">
         <header className="px-6 py-6 lg:px-12 lg:py-8">
           <Link
             href={`/${disciplinId}/`}
@@ -291,7 +291,7 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
   if (!aktivOpgave) return null;
 
   return (
-    <main className="min-h-screen bg-slate-50/40 flex flex-col">
+    <main className="min-h-[100dvh] bg-slate-50/40 flex flex-col">
       {/* Header */}
       <header className="px-6 py-6 lg:px-12 lg:py-8 flex items-center justify-between gap-4">
         <Link
@@ -320,8 +320,10 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
 
       {/* Center — top-anchored så spørgsmål og input står på samme position
           uafhængigt af om feedback vises eller ej. Feedback dukker op naturligt
-          mellem input og næste-knap; intet shifter ovenfor. */}
-      <div className="flex-1 flex flex-col items-center px-6 pt-[18vh] lg:pt-[20vh]">
+          mellem input og næste-knap; intet shifter ovenfor.
+          På mobil holder vi spørgsmål højere oppe (pt-[8vh]) så det
+          ikke gemmer sig bag tastaturet når input får fokus. */}
+      <div className="flex-1 flex flex-col items-center px-6 pt-[8vh] sm:pt-[18vh] lg:pt-[20vh]">
         <div className="w-full max-w-xl">
           {/* Spørgsmål */}
           <h2 className="font-display text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 text-center mb-10 leading-snug">

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Quicksand } from "next/font/google";
 import "./globals.css";
 
@@ -18,6 +18,16 @@ const quicksand = Quicksand({
 export const metadata: Metadata = {
   title: "FP9 Matematik",
   description: "Træn til FP9 Matematik uden hjælpemidler",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // Forhindrer iOS' automatiske zoom på input-fokus (font-size ≥ 16px gør det samme,
+  // men dette er en sikker garanti for hele appen).
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
