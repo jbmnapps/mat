@@ -12,9 +12,20 @@ Branch: `weekend`. `main` står urørt.
 
 **Sidst opdateret:** 2026-05-02, lørdag aften
 
-**Live deployet:** https://jbmnapps.github.io/mat/
+**To sessions kører parallelt:**
+- **Denne session (weekend-branch)**: site-iteration, indhold, UI, share-snapshot. Pusher til `weekend` → auto-deploy til `https://jbmnapps.github.io/mat/`.
+- **Anden session (main-branch)**: bygger Supabase-backend (login + sync). Arbejder i søster-mappe `Matematikopgaver-WEB-main/` via `git worktree`. Må IKKE røre weekend-branch eller pushe noget der trigger gh-pages deploy.
 
-**Færdige bølger:** 1, 2, 3, 4, 5 (indhold + design + deploy + cache-fix + mobile-tap)
+**Koordinerings-regler mellem sessions:**
+- Weekend-session ejer: `weekend`-branch, `gh-pages`-branch, alt der vises på live URL.
+- Main-session ejer: `main`-branch, Supabase-projekt-setup, login-arkitektur.
+- Ingen af sessionerne ændrer den andens branch direkte. Cherry-pick efter mandag.
+- Migration-kompatibilitet (se `lib/progress-io.ts`): JSON-format og DisciplinId-strenge er stabile på tværs af sessions — main-session må ikke ændre dem så elever kan importere deres weekend-eksporter.
+
+**Live deployet:** https://jbmnapps.github.io/mat/  
+**Snapshot til deling:** https://jbmnapps.github.io/mat/share/ (frosset, opdateres kun manuelt)
+
+**Færdige bølger:** 1, 2, 3, 4, 5 (indhold + design + deploy + cache-fix + mobile-tap + farver + status-indikator)
 
 **13 discipliner med træning** (12 opgaver hver = 156 opgaver):
 - Tal & algebra: addition, subtraktion, multiplikation, division, procent, ligninger, hverdagsregning
@@ -33,9 +44,18 @@ Branch: `weekend`. `main` står urørt.
 - Auto-memory: `proeveprep_weekend.md`, `feedback_collaboration_style.md`, `feedback_footguns.md`, `reference_repo_deploy.md`.
 - Code-map og common operations findes længere nede i dette dokument.
 
-**Næste op:**
+**Næste op (denne session):**
 - Brugerens telefon-test feedback
-- Bølge 6: Backend (Supabase) — kræver brugerens input til projekt-setup
+- Kollegaens review-feedback fra share-URL
+- Indhold: vinkler, ligedannethed, overslagsregning, regneudtryk hvis tid
+- Eventuelt: prøveklar-mode (bølge 7)
+
+**Næste op (main-session, Supabase):**
+- Supabase-projekt setup (manuel: konto + project + tabeller)
+- Klient-integration: install `@supabase/supabase-js`, env vars
+- Login-flow: brugernavn + 4-cifret kode, ingen rigtige passwords
+- Store-sync: erstat localStorage med Supabase når logget ind
+- Import-flow udvidet: når elev importerer JSON, push også til Supabase
 
 **Kendte begrænsninger:**
 - Kun lektion bygget for addition (premium-stil). Andre discipliner viser "Lektion kommer snart".
