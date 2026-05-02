@@ -39,3 +39,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./out
           publish_branch: gh-pages
+          # Bevar manuelt-pushede undermapper (fx share/) på tværs af deploys
+          keep_files: true
+          exclude_assets: ''
