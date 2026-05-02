@@ -150,13 +150,17 @@ export const useStore = create<AppState>()(
       // Ved fremtidige schema-ændringer:
       // migrate: (persistedState, version) => { ... }
 
-      // Vi persister IKKE signedInId/signedInNavn — Supabase Auth har sin
-      // egen session-storage (storageKey: 'fp9-auth'). Hvis vi gemte vores
-      // egen kopi, kunne den blive ude-af-sync. Ved app-load læser vi
-      // session fra Supabase i lib/auth.ts og kalder setSignedIn().
+      // Persister auth-state så første render kan vise dashboardet uden
+      // at vente på en Supabase-session-tjek. Supabase har sin egen
+      // session-storage (storageKey: 'fp9-auth') som er truth — vi cacher
+      // bare brugeren's id+navn her for snappier UX.
+      // Hvis vores cache er ude af sync med Supabase, opdaterer
+      // useAuth-hooket den i baggrunden.
       partialize: (state) => ({
         elevNavn: state.elevNavn,
         progress: state.progress,
+        signedInId: state.signedInId,
+        signedInNavn: state.signedInNavn,
       }),
 
       // Sørg for at nye diciplinerne (tilføjet senere) får default-progress

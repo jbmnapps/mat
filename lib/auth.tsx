@@ -216,25 +216,27 @@ export interface AuthStatus {
 }
 
 /**
- * Hook der eksponerer den aktuelle auth-tilstand. Lytter til Supabase's
- * auth-events og opdaterer Zustand-storen så resten af appen kan se
- * via useStore.
+ * Hook der eksponerer den aktuelle auth-tilstand.
+ *
+ * Snappy strategi: vi læser signedInId fra Zustand-store (som persisteres
+ * i localStorage) og returnerer det med det samme — ingen "loading"-fase.
+ * I baggrunden verificerer vi mod Supabase og opdaterer cachen hvis den
+ * er ude af sync.
+ *
+ * Det betyder at brugere med en aktiv session ser dashboardet INSTANT
+ * når siden åbnes; vi spørger ikke "er du logget ind?" hver gang.
  */
 export function useAuth(): AuthStatus {
-  const [loading, setLoading] = useState(true);
   const signedInId = useStore((s) => s.signedInId);
   const signedInNavn = useStore((s) => s.signedInNavn);
 
   useEffect(() => {
     const supabase = getSupabase();
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
+    if (!supabase) return;
 
     let aktiv = true;
 
-    // Hent eksisterende session
+    // Verificér mod Supabase i baggrunden — opdater cache hvis nødvendigt
     supabase.auth.getSession().then(({ data }) => {
       if (!aktiv) return;
       const session = data.session;
@@ -251,9 +253,9 @@ export function useAuth(): AuthStatus {
           });
         }
       } else {
+        // Cached state var forkert — ryd den
         useStore.getState().setSignedIn(null, null);
       }
-      setLoading(false);
     });
 
     // Lyt til skift
@@ -293,7 +295,9 @@ export function useAuth(): AuthStatus {
   }, [signedInId]);
 
   return {
-    loading,
+    // Altid false — vi rendrer instant baseret på cachet state.
+    // (Felt bevaret af bagudkompatibilitet med eksisterende callers.)
+    loading: false,
     signedIn: Boolean(signedInId),
     brugerId: signedInId,
     visningsnavn: signedInNavn,
@@ -552,24 +556,24 @@ function tolkAuthFejl(
 /**
  * Wrap en side i `<AuthGate>` for at kræve login før indholdet vises.
  *
+ * Snappy strategi: ingen spinner. Vi læser cachet auth-state fra Zustand
+ * (persisteret i localStorage) og rendrer øjeblikkeligt enten dashboardet
+ * eller overlay'en. I baggrunden verificerer useAuth mod Supabase.
+ *
  * Adfærd:
- *  - Mens auth-state hentes: kun spinner (children renderes ikke endnu, så
- *    vi undgår en kort flash af et tomt dashboard).
+ *  - Logget ind (cached): rendrer children direkte. Hvis cachen er forkert
+ *    fanger background-verify det og overlay'en dukker op.
  *  - Ikke logget ind: rendrer children (blurred via wrapperen) + overlay
  *    med login-form. Eleven kan se dashboardet bag ved men ikke interagere.
- *  - Logget ind: rendrer children direkte.
  *  - Backend ikke konfigureret (env mangler): viser children, ingen overlay.
  */
 export function AuthGate({ children }: { children: ReactNode }) {
-  const { loading, signedIn } = useAuth();
+  const { signedIn } = useAuth();
 
   if (!supabaseEnabled) return <>{children}</>;
-  if (loading) return <FuldsideSpinner />;
   if (signedIn) return <>{children}</>;
 
   // Ikke logget ind: vis dashboardet i baggrunden + overlay ovenpå.
-  // `inert` (når understøttet) gør baggrunden ikke-fokuserbar; pointer-events
-  // og blur er styling.
   return (
     <>
       <div
@@ -580,17 +584,6 @@ export function AuthGate({ children }: { children: ReactNode }) {
       </div>
       <LoginOverlay />
     </>
-  );
-}
-
-function FuldsideSpinner() {
-  return (
-    <main
-      className="min-h-[100dvh] bg-slate-50/40 flex items-center justify-center"
-      aria-label="Indlæser"
-    >
-      <Loader2 className="h-6 w-6 animate-spin text-slate-400" aria-hidden />
-    </main>
   );
 }
 
