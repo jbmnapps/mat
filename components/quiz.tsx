@@ -446,7 +446,7 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
       {/* Bund: hint + (lærer) skip */}
       <div className="px-6 pb-8 flex items-center justify-between gap-4">
         {!feedbackVist ? (
-          <span className="text-xs uppercase tracking-[0.2em] font-semibold text-slate-400">
+          <span className="hidden sm:inline-flex text-xs uppercase tracking-[0.2em] font-semibold text-slate-400">
             Tryk{' '}
             <kbd className="inline-flex items-center justify-center min-w-[28px] h-6 px-1.5 mx-1 rounded border border-slate-300 bg-white text-[11px] font-mono">
               Enter

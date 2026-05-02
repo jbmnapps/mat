@@ -186,6 +186,40 @@ export function AdditionInteractive({ disciplinId }: Props) {
     }
   }, [fase]);
 
+  // Avancering — bruges af både Enter-tast og touch/click-knap.
+  // Returnerer true hvis fase blev avanceret, false hvis nuværende fase
+  // ikke skal reagere (input-faser, auto-advance).
+  const advance = useCallback((): boolean => {
+    switch (fase) {
+      case 'intro-1':
+        setFase('vis-horisontal-1');
+        return true;
+      case 'vis-horisontal-1':
+        setFase('spørg-hvordan-1');
+        return true;
+      case 'spørg-hvordan-1':
+        setFase('forklarer-omarranger-1');
+        return true;
+      case 'forklarer-omarranger-1':
+        setFase('spørg-enere-1');
+        return true;
+      case 'fejr-1':
+        setFase('broen');
+        return true;
+      case 'broen':
+        setFase('broen-morph');
+        return true;
+      case 'mente-undervisning':
+        setFase('spørg-tier-2');
+        return true;
+      case 'fejr-2':
+        setFase('færdig');
+        return true;
+      default:
+        return false;
+    }
+  }, [fase]);
+
   // Enter-handler for ikke-input faser
   useEffect(() => {
     const inputFaser: Fase[] = [
@@ -195,42 +229,16 @@ export function AdditionInteractive({ disciplinId }: Props) {
       'spørg-tier-2',
     ];
     if (inputFaser.includes(fase)) return;
-    // Auto-advance faser tager ikke imod Enter
     if (fase === 'broen-morph') return;
 
     const handler = (e: KeyboardEvent) => {
       if (e.key !== 'Enter') return;
       e.preventDefault();
-      switch (fase) {
-        case 'intro-1':
-          setFase('vis-horisontal-1');
-          break;
-        case 'vis-horisontal-1':
-          setFase('spørg-hvordan-1');
-          break;
-        case 'spørg-hvordan-1':
-          setFase('forklarer-omarranger-1');
-          break;
-        case 'forklarer-omarranger-1':
-          setFase('spørg-enere-1');
-          break;
-        case 'fejr-1':
-          setFase('broen');
-          break;
-        case 'broen':
-          setFase('broen-morph');
-          break;
-        case 'mente-undervisning':
-          setFase('spørg-tier-2');
-          break;
-        case 'fejr-2':
-          setFase('færdig');
-          break;
-      }
+      advance();
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [fase]);
+  }, [fase, advance]);
 
   const fail = useCallback(() => {
     setShake(true);
@@ -348,7 +356,7 @@ export function AdditionInteractive({ disciplinId }: Props) {
 
       {/* HINT SLOT */}
       <div className="absolute bottom-[12vh] left-1/2 -translate-x-1/2 px-6 text-center pointer-events-auto z-[5]">
-        <Hint fase={fase} disciplinId={disciplinId} />
+        <Hint fase={fase} disciplinId={disciplinId} advance={advance} />
       </div>
     </main>
   );
@@ -649,7 +657,15 @@ function ResultCell({ col, row, value, variant, isFinal, inputProps }: ResultCel
 // Hint
 // ============================================================================
 
-function Hint({ fase, disciplinId }: { fase: Fase; disciplinId: DisciplinId }) {
+function Hint({
+  fase,
+  disciplinId,
+  advance,
+}: {
+  fase: Fase;
+  disciplinId: DisciplinId;
+  advance: () => boolean;
+}) {
   const enterFaser: Fase[] = [
     'intro-1',
     'vis-horisontal-1',
@@ -663,19 +679,24 @@ function Hint({ fase, disciplinId }: { fase: Fase; disciplinId: DisciplinId }) {
 
   if (enterFaser.includes(fase)) {
     return (
-      <motion.div
+      <motion.button
         key="enter-hint"
+        type="button"
+        onClick={advance}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="text-xs uppercase tracking-[0.2em] font-semibold text-slate-400"
+        className="text-xs uppercase tracking-[0.2em] font-semibold text-slate-400 hover:text-slate-700 transition-colors px-4 py-3 -mx-4 -my-3"
       >
-        Tryk{' '}
-        <kbd className="inline-flex items-center justify-center min-w-[28px] h-6 px-1.5 mx-1 rounded border border-slate-300 bg-white text-[11px] font-mono">
-          Enter
-        </kbd>{' '}
-        for at gå videre
-      </motion.div>
+        <span className="hidden sm:inline">
+          Tryk{' '}
+          <kbd className="inline-flex items-center justify-center min-w-[28px] h-6 px-1.5 mx-1 rounded border border-slate-300 bg-white text-[11px] font-mono">
+            Enter
+          </kbd>{' '}
+          for at gå videre
+        </span>
+        <span className="sm:hidden">Tryk her for at gå videre</span>
+      </motion.button>
     );
   }
 
