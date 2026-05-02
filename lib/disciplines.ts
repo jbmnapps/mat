@@ -11,6 +11,21 @@
  * for de fire regnearter; andre disciplinerne får en neutral grå indtil vi vælger).
  */
 
+/**
+ * ⚠️ STABILE NØGLER — ÆNDRE IKKE EKSISTERENDE STRENGE.
+ *
+ * DisciplinId-strenge bruges som localStorage-nøgler OG som nøgler i
+ * eksporterede JSON-filer. Elever importerer gamle filer i nye versioner
+ * (særligt når login kommer i bølge 6). Omdøbning = ødelagte filer.
+ *
+ * OK at:
+ *  - Tilføje nye ID'er
+ * IKKE OK at:
+ *  - Omdøbe eksisterende ID'er (fx 'rumfang' → 'areal-rumfang')
+ *  - Fjerne ID'er der har været i en publiceret version
+ *
+ * Se også migration-noten i lib/progress-io.ts.
+ */
 export type DisciplinId =
   | 'addition'
   | 'subtraktion'

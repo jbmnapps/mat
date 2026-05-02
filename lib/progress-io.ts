@@ -5,6 +5,8 @@
  *  - Eleven vil flytte progress mellem enheder
  *  - Læreren vil iterere appen uden at miste elev-data
  *  - Backup hvis browseren ryddes
+ *  - **Migration til login-version (bølge 6)**: eleven importerer sin
+ *    eksisterende JSON-fil ind i den nye Supabase-baserede konto.
  *
  * Format-version: 1
  *
@@ -15,7 +17,22 @@
  *     progress: { addition: { ... }, ... }
  *   }
  *
- * Når vi senere ændrer schema (version 2+), tilføj migration nedenfor.
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * ⚠️ MIGRATION-KOMPATIBILITET — LÆS FØR DU ÆNDRER NOGET HER
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * Elever har JSON-filer eksporteret med format v1. De skal kunne importere
+ * dem i fremtidige versioner — særligt når login bygges. For at bevare
+ * kompatibilitet:
+ *
+ *  1. ÆNDR IKKE `DisciplinId`-strenge i lib/disciplines.ts. JSON refererer
+ *     dem direkte. Omdøbning = ødelagte gamle filer.
+ *  2. ÆNDR IKKE shape af `DisciplinProgress` på en bagudinkompatibel måde.
+ *     Tilføjelser med default-værdier OK. Fjernelser eller omdøbninger ej.
+ *  3. ÆNDR IKKE `SaveFile`-shape uden at bumpe FORMAT_VERSION og tilføje
+ *     migration. Se isSaveFile() og version-tjekket i importerProgress.
+ *  4. NÅR LOGIN KOMMER: udvid importerProgress med "push to Supabase"-step
+ *     EFTER `erstatProgress`. Erstat ikke flowet — udvid det.
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  */
 
 import { useStore } from './store';
