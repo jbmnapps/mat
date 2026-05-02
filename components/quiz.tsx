@@ -318,8 +318,9 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
         </div>
       </div>
 
-      {/* Center — fast layout, intet morfer */}
-      <div className="flex-1 flex flex-col items-center justify-start px-6 pt-16 lg:pt-24">
+      {/* Center — vertikalt centeret. Feedback-areal har reserveret højde
+          så spørgsmål, input og knap ikke skifter position når feedback dukker op. */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-10">
         <div className="w-full max-w-xl">
           {/* Spørgsmål */}
           <h2 className="font-display text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 text-center mb-10 leading-snug">
@@ -373,7 +374,13 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
 
           {/* Multiple choice */}
           {aktivOpgave.type === 'multiple-choice' && (
-            <div className="flex flex-col items-center gap-6">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                submitMC();
+              }}
+              className="flex flex-col items-center gap-6"
+            >
               <div className="grid gap-2 w-full">
                 {aktivOpgave.muligheder.map((m, i) => {
                   const erValgt = valgtMC === i;
@@ -421,30 +428,16 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
                 })}
               </div>
 
-              {!feedbackVist && (
-                <button
-                  type="button"
-                  onClick={submitMC}
-                  disabled={valgtMC === null}
-                  className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-md disabled:bg-slate-300 disabled:cursor-not-allowed"
-                >
-                  Svar
-                </button>
-              )}
-
-              {feedbackVist && (
-                <FeedbackOgKnap
-                  feedbackVist={feedbackVist}
-                  rigtigt={sidsteResultat?.rigtigt ?? false}
-                  forklaring={aktivOpgave.forklaring}
-                  næsteKnapRef={næsteKnapRef}
-                  gåVidere={gåVidere}
-                  erSidste={erSidste}
-                  kanSubmitte={false}
-                  skjulSvarKnap
-                />
-              )}
-            </div>
+              <FeedbackOgKnap
+                feedbackVist={feedbackVist}
+                rigtigt={sidsteResultat?.rigtigt ?? false}
+                forklaring={aktivOpgave.forklaring}
+                næsteKnapRef={næsteKnapRef}
+                gåVidere={gåVidere}
+                erSidste={erSidste}
+                kanSubmitte={valgtMC !== null}
+              />
+            </form>
           )}
         </div>
       </div>
@@ -493,8 +486,6 @@ interface FeedbackProps {
   gåVidere: () => void;
   erSidste: boolean;
   kanSubmitte: boolean;
-  /** Hvis true, vises ikke "Svar"-knap (MC har sin egen). */
-  skjulSvarKnap?: boolean;
 }
 
 function FeedbackOgKnap({
@@ -505,47 +496,49 @@ function FeedbackOgKnap({
   gåVidere,
   erSidste,
   kanSubmitte,
-  skjulSvarKnap = false,
 }: FeedbackProps) {
   return (
     <>
-      {/* Feedback-badge — kun når der er svaret */}
-      {feedbackVist && (
-        <motion.div
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="flex flex-col items-center gap-3"
-        >
-          <div
-            className={cn(
-              'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold',
-              rigtigt ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700',
-            )}
+      {/* Feedback-areal — altid renderet (med min-højde) så layoutet ikke skifter
+          når feedback dukker op efter submit. */}
+      <div className="min-h-[100px] w-full flex flex-col items-center justify-start gap-3">
+        {feedbackVist && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="flex flex-col items-center gap-3"
           >
-            {rigtigt ? (
-              <>
-                <Check className="h-4 w-4" aria-hidden />
-                Rigtigt
-              </>
-            ) : (
-              <>
-                <X className="h-4 w-4" aria-hidden />
-                Forkert
-              </>
+            <div
+              className={cn(
+                'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold',
+                rigtigt ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700',
+              )}
+            >
+              {rigtigt ? (
+                <>
+                  <Check className="h-4 w-4" aria-hidden />
+                  Rigtigt
+                </>
+              ) : (
+                <>
+                  <X className="h-4 w-4" aria-hidden />
+                  Forkert
+                </>
+              )}
+            </div>
+
+            {!rigtigt && forklaring && (
+              <p className="text-center text-sm text-slate-600 italic font-serif max-w-md">
+                {forklaring}
+              </p>
             )}
-          </div>
+          </motion.div>
+        )}
+      </div>
 
-          {!rigtigt && forklaring && (
-            <p className="text-center text-sm text-slate-600 italic font-serif max-w-md">
-              {forklaring}
-            </p>
-          )}
-        </motion.div>
-      )}
-
-      {/* Svar-knap (før submit) eller Næste-knap (efter) */}
-      {!feedbackVist && !skjulSvarKnap && (
+      {/* Svar-knap (før submit) eller Næste-knap (efter) — samme position altid */}
+      {!feedbackVist && (
         <button
           type="submit"
           disabled={!kanSubmitte}
