@@ -61,27 +61,21 @@ create index if not exists progress_student_idx
 create index if not exists students_last_active_idx
   on public.students (last_active desc);
 
--- 4. HELPER: is_teacher()
---    Tjekker om den indloggede bruger er læreren.
---    `stable` betyder at PostgreSQL kan cache resultatet inden for én query.
-create or replace function public.is_teacher() returns boolean
-language sql stable
-security definer
-set search_path = public
-as $$
-  select coalesce(
-    (select email from auth.users where id = auth.uid()) = 'laerer@fp9.local',
-    false
-  );
-$$;
-
--- 5. POLICIES — students
+-- 4. POLICIES — students
 --    Eleven kan kun se/ændre sin egen række. Læreren kan se alle.
+--
+--    Vi bruger `auth.jwt() ->> 'email'` direkte i stedet for en separat
+--    SECURITY DEFINER-funktion. Det undgår at eksponere en hjælpefunktion
+--    via PostgREST RPC (Supabase advisor advarer om det). JWT'en indeholder
+--    altid email-claimet, så det er hurtigere og mere sikkert.
 drop policy if exists "students_select" on public.students;
 create policy "students_select"
   on public.students for select
   to authenticated
-  using (id = auth.uid() or public.is_teacher());
+  using (
+    id = auth.uid()
+    or (auth.jwt() ->> 'email') = 'laerer@fp9.local'
+  );
 
 drop policy if exists "students_insert_self" on public.students;
 create policy "students_insert_self"
@@ -96,12 +90,15 @@ create policy "students_update_self"
   using (id = auth.uid())
   with check (id = auth.uid());
 
--- 6. POLICIES — progress
+-- 5. POLICIES — progress
 drop policy if exists "progress_select" on public.progress;
 create policy "progress_select"
   on public.progress for select
   to authenticated
-  using (student_id = auth.uid() or public.is_teacher());
+  using (
+    student_id = auth.uid()
+    or (auth.jwt() ->> 'email') = 'laerer@fp9.local'
+  );
 
 drop policy if exists "progress_insert_self" on public.progress;
 create policy "progress_insert_self"
@@ -116,7 +113,7 @@ create policy "progress_update_self"
   using (student_id = auth.uid())
   with check (student_id = auth.uid());
 
--- 7. AUTO-UPDATE last_active når progress ændres
+-- 6. AUTO-UPDATE last_active når progress ændres
 create or replace function public.touch_last_active() returns trigger
 language plpgsql
 security definer
@@ -129,6 +126,11 @@ begin
   return new;
 end;
 $$;
+
+-- Skjul trigger-funktionen fra REST API: triggeren virker stadig (den fires
+-- automatisk af PostgreSQL), men ingen kan kalde den direkte via /rpc.
+revoke execute on function public.touch_last_active()
+  from public, anon, authenticated;
 
 drop trigger if exists progress_touch_last_active on public.progress;
 create trigger progress_touch_last_active
