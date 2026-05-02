@@ -126,6 +126,7 @@ npx tsc --noEmit # Type-check
 - Ingen destruktive operationer uden eksplicit godkendelse.
 - Ingen rigtig auth (email/password). Login bliver navn + 4-cifret kode (kontekst: klasselokale-værktøj, ikke bank).
 - Ingen tracking ud over hvad der er nødvendigt for elev-progress.
+- **Intet Supabase- eller credentials-arbejde uden at have læst [BACKEND-TJEK.md](BACKEND-TJEK.md) FØRST.** RLS skal være enabled før data inserts. `service_role`-key må aldrig røre kode eller env-vars — kun `anon`-key.
 
 ## Sproget
 

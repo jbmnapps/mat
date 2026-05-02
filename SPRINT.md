@@ -80,6 +80,12 @@ Din opgave: implementér Supabase-backend til hovedversionen (/mat) — login me
 navn + 4-cifret kode, sync af progress, lærer-side på /laerer/<token>. Du må
 KUN røre filer der står under "Supabase-session må røre" i SPRINT.md.
 
+SIKKERHED (hard rules): Før du laver nogen tabel, læs BACKEND-TJEK.md.
+Verificér at RLS er enabled på alle tabeller FØR der inserts data — default
+på Supabase er FRA, det er en footgun. Brug aldrig service_role-key, kun anon.
+Tjek Supabase → Logs → API efter setup, og rapportér hvis du ser noget
+mistænkeligt. Aldrig commit .env-filer.
+
 Mine credentials:
 - NEXT_PUBLIC_SUPABASE_URL: <indsæt>
 - NEXT_PUBLIC_SUPABASE_ANON_KEY: <indsæt>
