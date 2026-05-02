@@ -10,7 +10,10 @@ import type { Mode } from '@/components/mode-card';
 
 /** Map: disciplin → modes der har indhold bygget. */
 const INDHOLD: Partial<Record<DisciplinId, Mode[]>> = {
-  addition: ['lektion', 'traening'], // lektion + træning bygget; prøveklar kommer
+  addition: ['lektion', 'traening'], // lektion + træning; prøveklar kommer
+  subtraktion: ['traening'],
+  multiplikation: ['traening'],
+  division: ['traening'],
 };
 
 export function harIndhold(disciplin: DisciplinId, mode: Mode): boolean {
