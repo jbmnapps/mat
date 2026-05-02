@@ -1,8 +1,42 @@
 # Prøve-prep weekend (FP9 mandag 4. maj 2026)
 
+> **For nye Claude-sessions:** start her. Læs hele dokumentet. Du arbejder i en kort, presset sprint, ikke et langsigtet projekt. Kvalitet > omfang. Spørg før du udvider scope. Pluk-op-fra-status-sektionen herunder for at vide hvor vi er.
+
 Akut arbejdsdokument. Eleverne har FP9 Matematik på mandag. Vi bygger træningsapp i weekenden så de kan øve på telefon. Live på `https://jbmnapps.github.io/mat/`.
 
 Branch: `weekend`. `main` står urørt.
+
+---
+
+## Status nu (opdateres efter hver session)
+
+**Sidst opdateret:** 2026-05-02, lørdag eftermiddag
+
+**Live deployet:** https://jbmnapps.github.io/mat/
+
+**Færdige bølger:** 1, 2, 3, 4, 5 (indhold + design + deploy + cache-fix)
+
+**13 discipliner med træning** (12 opgaver hver = 156 opgaver):
+- Tal & algebra: addition, subtraktion, multiplikation, division, procent, ligninger, hverdagsregning
+- Geometri: enhedsomregning, rumfang, koordinatsystem
+- Statistik: tabeller, diagrammer, sandsynlighed
+
+**Mangler:** vinkler, ligedannethed, overslagsregning, regneudtryk (mindre kritiske).
+
+**Næste op:**
+- Bølge 6: Backend (Supabase) — kræver brugerens input til projekt-setup
+- Brugerens browser-test og feedback på det deployede
+
+**Kendte begrænsninger:**
+- Kun lektion bygget for addition (premium-stil). Andre discipliner viser "Lektion kommer snart".
+- Prøveklar-mode endnu ikke bygget (træning bruger samme metode `registrérPrøveklarForsoeg` for at status vises på dashboard — splittes når prøveklar kommer).
+- Koordinatsystem-opgaver er rent tekstuelle. Visualiseringer kræver eget format.
+- Login og remote control virker ikke i den nuværende Claude-session (auth-restriktion).
+
+**Vigtigste arbejds-løkke:**
+1. Lav ændring → push til `weekend` → GitHub Actions bygger og deployer → ~2 min så live
+2. Brug Claude in Chrome til visuelt selvstjek FØR push på UI-ændringer
+3. Brug review-agent (general-purpose) til opgave-QC efter en bølge
 
 ---
 
