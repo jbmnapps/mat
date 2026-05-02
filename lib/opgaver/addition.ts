@@ -29,7 +29,7 @@ export const additionOpgaver: Opgave[] = [
     type: 'numeric',
     spørgsmål: 'Udregn: 27 + 38',
     svar: 65,
-    forklaring: 'Enerne giver 15 — skriv 5, husk mente 1. Tier-søjlen: 2 + 3 + 1 = 6.',
+    forklaring: 'Tip: enerne giver 15 — husk mente 1 oppe i tier-søjlen.',
   },
   {
     id: 'add-04',
@@ -54,14 +54,14 @@ export const additionOpgaver: Opgave[] = [
     type: 'numeric',
     spørgsmål: 'Udregn: 47 + 28 + 19',
     svar: 94,
-    forklaring: 'Læg sammen to ad gangen: 47 + 28 = 75, og 75 + 19 = 94.',
+    forklaring: 'Tip: læg to ad gangen sammen først, læg så det tredje til.',
   },
   {
     id: 'add-08',
     type: 'numeric',
     spørgsmål: 'Hvad mangler? 65 + ___ = 100',
     svar: 35,
-    forklaring: 'Tænk: hvor langt er der fra 65 op til 100? 65 + 35 = 100.',
+    forklaring: 'Tip: hvor langt er der fra 65 op til 100?',
   },
   {
     id: 'add-09',
@@ -83,7 +83,7 @@ export const additionOpgaver: Opgave[] = [
     spørgsmål: 'En cykel koster 1.450 kr. Hjelmen koster 299 kr. Hvad koster det tilsammen?',
     svar: 1749,
     enhed: 'kr',
-    forklaring: '299 er tæt på 300. Tag 1.450 + 300 = 1.750, og træk 1 fra: 1.749.',
+    forklaring: 'Tip: 299 er næsten 300. Læg 300 til, og træk 1 fra bagefter.',
   },
   {
     id: 'add-12',
@@ -91,6 +91,6 @@ export const additionOpgaver: Opgave[] = [
     spørgsmål: 'Hvad er 199 + 199?',
     muligheder: ['388', '398', '400', '408'],
     rigtigIndex: 1,
-    forklaring: '199 + 199 = (200 + 200) − 2 = 400 − 2 = 398.',
+    forklaring: 'Tip: tænk 200 + 200, og træk lidt fra.',
   },
 ];
