@@ -37,6 +37,14 @@ Du er visual reviewer for FP9 Matematik-projektet. Din opgave er at fange sloppy
    - Spacing konsistent mellem sektioner?
    - Mobile-versioner mindre/komprimerede end desktop hvor det giver mening?
 
+   **Tekst-overflow (kritisk på mobil):**
+   - Klipper nogen tekst ved container-grænser? *(kør screenshots i 375px-bredde)*
+   - Lange enkelt-ord (Hverdagsregning, Overslagsregning, Koordinatsystem osv.)
+     skal enten skrumpe eller ombryde — ALDRIG klippes
+   - Tjek både titler, knap-tekster, og hint-tekster
+   - Hvis du ser klipning: foreslå `text-[Xpx] sm:text-base` (skrumpning) eller
+     `break-words hyphens-auto` (ombrydning, virker fordi `<html lang="da">`)
+
    **Sprog & tone:**
    - Tip-tekster: kort, direkte handling? *"først X, så Y"*-format?
    - Ingen jargon (mente, ener-søjle, etc.)?

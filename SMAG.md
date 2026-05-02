@@ -36,6 +36,13 @@
   (fx prøveklar) skal være visuelt markeret som inaktive.
 - **Mindre er mere.** Fjern hvad der ikke giver elev-værdi. Subtitle
   *"Læg sammen på papir"* var overflødig — symbolet + navnet er nok.
+- **Tekst må aldrig klippe ved container-grænse.** Lange titler eller
+  beskrivelser skal enten skrumpe (mindre font-size på mobil) eller
+  ombryde (`break-words`, `hyphens-auto` — vi har `lang="da"` så dansk
+  ordbogs-hyphenering virker). Fanges af visual-reviewer-agenten.
+- **Test i flere viewports.** Mindst iPhone (375px), iPad (768px),
+  desktop (1280px). Lange ord som "Hverdagsregning", "Overslagsregning",
+  "Koordinatsystem" SKAL fitte/ombryde — ikke klippes.
 
 ## UX-flow
 
