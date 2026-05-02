@@ -333,10 +333,16 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
           {/* Numeric input */}
           {aktivOpgave.type === 'numeric' && (
             <form onSubmit={submitNumeric} className="flex flex-col items-center gap-6">
+              {/* Input-wrapper er fixed-width og centreret. Enhed er absolut
+                  positioneret til højre, så input ALTID forbliver centreret
+                  uanset om enhed vises eller ej. Tidligere flex-row centrerede
+                  HELE rækken, hvilket skubbede input til venstre når enhed
+                  fyldte plads — det fik feedback/næste-knap til at virke
+                  forskudt på opgaver som "elever"-opgaven. */}
               <motion.div
                 animate={{ x: shake ? [-6, 6, -6, 6, 0] : 0 }}
                 transition={{ duration: 0.4 }}
-                className="flex items-baseline gap-2"
+                className="relative mx-auto w-48"
               >
                 <input
                   ref={inputRef}
@@ -350,14 +356,14 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
                   autoComplete="off"
                   aria-label="Dit svar"
                   className={cn(
-                    'w-48 text-center font-display text-5xl lg:text-6xl font-bold tabular-nums bg-transparent border-b-[3px] focus:outline-none caret-emerald-600 py-2 transition-colors',
+                    'w-full text-center font-display text-5xl lg:text-6xl font-bold tabular-nums bg-transparent border-b-[3px] focus:outline-none caret-emerald-600 py-2 transition-colors',
                     !feedbackVist && 'border-slate-300 focus:border-emerald-600 text-slate-900',
                     feedbackVist && sidsteResultat?.rigtigt && 'border-emerald-500 text-emerald-700',
                     feedbackVist && !sidsteResultat?.rigtigt && 'border-rose-500 text-rose-700',
                   )}
                 />
                 {aktivOpgave.enhed && (
-                  <span className="font-display text-3xl font-bold text-slate-500">
+                  <span className="pointer-events-none absolute left-full top-1/2 ml-2 -translate-y-1/2 font-display text-3xl font-bold text-slate-500 whitespace-nowrap">
                     {aktivOpgave.enhed}
                   </span>
                 )}

@@ -29,7 +29,7 @@ export const additionOpgaver: Opgave[] = [
     type: 'numeric',
     spørgsmål: 'Udregn: 27 + 38',
     svar: 65,
-    forklaring: 'Tip: enerne giver 15 — husk mente 1 oppe i tier-søjlen.',
+    forklaring: 'Tip: læg tier-tallene først (20 + 30), så ener-tallene (7 + 8).',
   },
   {
     id: 'add-04',
@@ -54,7 +54,7 @@ export const additionOpgaver: Opgave[] = [
     type: 'numeric',
     spørgsmål: 'Udregn: 47 + 28 + 19',
     svar: 94,
-    forklaring: 'Tip: læg to ad gangen sammen først, læg så det tredje til.',
+    forklaring: 'Tip: læg de to første sammen først (47 + 28). Læg så 19 til.',
   },
   {
     id: 'add-08',
@@ -83,7 +83,7 @@ export const additionOpgaver: Opgave[] = [
     spørgsmål: 'En cykel koster 1.450 kr. Hjelmen koster 299 kr. Hvad koster det tilsammen?',
     svar: 1749,
     enhed: 'kr',
-    forklaring: 'Tip: 299 er næsten 300. Læg 300 til, og træk 1 fra bagefter.',
+    forklaring: 'Tip: rund op til 300 først (1.450 + 300). Træk så 1 fra svaret, fordi 299 er 1 mindre end 300.',
   },
   {
     id: 'add-12',

@@ -20,13 +20,11 @@
  *  └──────────────────────────────────────────────────┘
  */
 
-import { motion } from 'motion/react';
 import { useMemo } from 'react';
 import {
   DISCIPLINER,
   KATEGORI_NAVNE,
   type Kategori,
-  type DisciplinId,
 } from '@/lib/disciplines';
 import { useStore, type DisciplinProgress } from '@/lib/store';
 import { useHydrated } from '@/lib/use-hydrated';
@@ -45,7 +43,7 @@ export default function Dashboard() {
   const hydreret = useHydrated();
   const progress = useStore((s) => s.progress);
 
-  // Grupper diciplinerne efter kategori
+  // Grupper disciplinerne efter kategori
   const grupperet = useMemo(() => {
     const grupper: Record<Kategori, typeof DISCIPLINER> = {
       'tal-og-algebra': [],
@@ -57,31 +55,6 @@ export default function Dashboard() {
     }
     return grupper;
   }, []);
-
-  // Aggregér samlet status til en lille sammenfatning øverst
-  const oversigt = useMemo(() => {
-    if (!hydreret) return null;
-    let gron = 0;
-    let gul = 0;
-    let rod = 0;
-    let utouchet = 0;
-    for (const id of Object.keys(progress) as DisciplinId[]) {
-      switch (progress[id].status) {
-        case 'gron':
-          gron++;
-          break;
-        case 'gul':
-          gul++;
-          break;
-        case 'rod':
-          rod++;
-          break;
-        default:
-          utouchet++;
-      }
-    }
-    return { gron, gul, rod, utouchet };
-  }, [progress, hydreret]);
 
   return (
     <main className="min-h-screen bg-slate-50/40">
@@ -103,42 +76,6 @@ export default function Dashboard() {
               <NameInput />
             </div>
           </div>
-
-          {/* Oversigts-pille — vises kun når hydreret og noget er prøvet */}
-          {hydreret && oversigt && (oversigt.gron + oversigt.gul + oversigt.rod) > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              className="mt-8 inline-flex flex-wrap items-center gap-4 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm shadow-sm"
-            >
-              <span className="font-semibold text-slate-700">Din status:</span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-status-gron" aria-hidden />
-                <span className="text-slate-700">
-                  <strong>{oversigt.gron}</strong> grøn
-                </span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-status-gul" aria-hidden />
-                <span className="text-slate-700">
-                  <strong>{oversigt.gul}</strong> gul
-                </span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-status-rod" aria-hidden />
-                <span className="text-slate-700">
-                  <strong>{oversigt.rod}</strong> rød
-                </span>
-              </span>
-              <span className="flex items-center gap-1.5 text-slate-400">
-                <span className="h-2 w-2 rounded-full bg-slate-300" aria-hidden />
-                <span>
-                  <strong>{oversigt.utouchet}</strong> ikke startet
-                </span>
-              </span>
-            </motion.div>
-          )}
         </header>
 
         {/* DISCIPLIN-GRUPPER */}

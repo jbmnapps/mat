@@ -4,13 +4,13 @@
  * Disciplin-kort til dashboardet.
  *
  *  ┌──────────────────────────┐
- *  │  ●  ← status (top-right) │
+ *  │                     58%  │  ← score-pille (kun hvis attempted)
  *  │                          │
  *  │           +              │  ← stort symbol (operation-farve)
  *  │       Addition           │  ← navn (Quicksand bold)
- *  │     Læg sammen på papir  │  ← beskrivelse (italic, lille)
+ *  │       ▰▰▰▱▱▱             │  ← progress-bar (kun hvis attempted)
  *  │                          │
- *  │  Bedste 88% →            │  ← score-pille (vises kun hvis attempted)
+ *  │  Ikke startet         →  │  ← bund-række (arrow + status)
  *  └──────────────────────────┘
  *
  *  Hover: subtil løft + skygge + symbol-skalering
@@ -104,14 +104,22 @@ export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
           </span>
         </div>
 
-        {/* Navn + beskrivelse */}
+        {/* Navn + progress-bar */}
         <div className="text-center">
           <h3 className="font-display text-xs sm:text-base font-bold text-slate-900 leading-tight">
             {disciplin.navn}
           </h3>
-          <p className="hidden sm:block mt-1 text-xs text-slate-500 leading-snug">
-            {disciplin.beskrivelse}
-          </p>
+          {/* Progress-bar — visuelt match med %-pillen i toppen.
+              Vises kun når eleven har forsøgt mindst én gang. */}
+          {harForsoegt && (
+            <div className="hidden sm:block mx-auto mt-2 h-1.5 w-16 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className={cn('h-full rounded-full transition-all', status.dot)}
+                style={{ width: `${progress.bedsteScore}%` }}
+                aria-hidden
+              />
+            </div>
+          )}
         </div>
 
         {/* Bund-rækken på desktop — bevarer arrow + ikke-startet-tekst */}
@@ -131,17 +139,6 @@ export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
               aria-hidden
             />
           </div>
-        )}
-
-        {/* Bundstribe — farvet efter status, kun hvis prøvet */}
-        {harForsoegt && (
-          <span
-            className={cn(
-              'absolute bottom-0 left-0 right-0 h-1 sm:h-1.5',
-              status.dot,
-            )}
-            aria-hidden
-          />
         )}
       </Link>
     </motion.div>
