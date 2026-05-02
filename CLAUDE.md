@@ -48,9 +48,21 @@ Foreslå proaktivt subagents, skills og tools når de konkret giver værdi — f
 
 Brugeren lærer også. Forklar kort hvad et værktøj er og hvornår det er nyttigt, så han kan tage informerede beslutninger fremover.
 
+### Custom subagents til kvalitetskontrol (`.claude/agents/`)
+
+Disse er bygget til projektet og skal bruges proaktivt:
+
+- **visual-reviewer** — kald FØR push af UI-ændringer (komponent- eller side-filer, styling). Tjekker mod SMAG.md/DESIGN.md via Claude in Chrome i flere viewport-størrelser.
+- **forklaringer-reviewer** — kald når `forklaring`-felter ændres i `lib/opgaver/*.ts`. Sikrer kort, simple, jargon-fri tip-tekster der ikke afslører svaret.
+- **opgaver-reviewer** — kald når en opgavebank ændres eller tilføjes. Verificerer korrekthed, FP9-niveau, progression, dækning.
+- **ux-reviewer** — kald når et helt flow skal valideres (træning, eksport/import, login). Tester som elev, fanger dødvinkler.
+
+Princippet: hvis du ændrer noget der falder under en agents domæne, kald agenten før push. Hvis ❌, fix og kald igen.
+
 ## Læs disse først
 
 - **[PROEVE-PREP.md](PROEVE-PREP.md)** — aktivt sprint-dokument med status, plan, beslutninger. *Læs altid først.*
+- **[SMAG.md](SMAG.md)** — brugerens smag, sprog, designprincipper. *Læs ALTID før UI- eller indholdsændringer.*
 - **[BACKEND-TJEK.md](BACKEND-TJEK.md)** — tjekliste for læreren før login-link deles. *Relevant ved Supabase-arbejde.*
 - **[DESIGN.md](DESIGN.md)** — visuelt sprog (typografi, palette, SVG-mønstre).
 - **[PRINCIPPER.md](PRINCIPPER.md)** — pædagogiske principper.
@@ -127,6 +139,7 @@ npx tsc --noEmit # Type-check
 - Ingen rigtig auth (email/password). Login bliver navn + 4-cifret kode (kontekst: klasselokale-værktøj, ikke bank).
 - Ingen tracking ud over hvad der er nødvendigt for elev-progress.
 - **Intet Supabase- eller credentials-arbejde uden at have læst [BACKEND-TJEK.md](BACKEND-TJEK.md) FØRST.** RLS skal være enabled før data inserts. `service_role`-key må aldrig røre kode eller env-vars — kun `anon`-key.
+- **Ingen UI- eller indholdsændringer uden at have læst [SMAG.md](SMAG.md).** Tip-tekster, layout, spacing, sproglig tone — alt har en regel der. Når brugeren retter en ændring, opdatér SMAG.md så reglen lever videre.
 
 ## Sproget
 
