@@ -25,9 +25,9 @@
 
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { useEffect, useState, useRef, type ReactNode } from 'react';
+import { motion } from 'motion/react';
+import { Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 import {
   getSupabase,
   supabaseEnabled,
@@ -553,28 +553,34 @@ function tolkAuthFejl(
  * Wrap en side i `<AuthGate>` for at kræve login før indholdet vises.
  *
  * Adfærd:
- *  - Mens auth-state hentes: spinner.
- *  - Ikke logget ind: redirect til /login/, viser spinner mens redirect kører.
- *  - Logget ind (elev eller lærer): viser children.
- *  - Hvis backend ikke er konfigureret (env-vars mangler): vis altid children
- *    så lokal dev fungerer som før.
+ *  - Mens auth-state hentes: kun spinner (children renderes ikke endnu, så
+ *    vi undgår en kort flash af et tomt dashboard).
+ *  - Ikke logget ind: rendrer children (blurred via wrapperen) + overlay
+ *    med login-form. Eleven kan se dashboardet bag ved men ikke interagere.
+ *  - Logget ind: rendrer children direkte.
+ *  - Backend ikke konfigureret (env mangler): viser children, ingen overlay.
  */
 export function AuthGate({ children }: { children: ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
   const { loading, signedIn } = useAuth();
 
-  useEffect(() => {
-    if (!supabaseEnabled) return;
-    if (loading) return;
-    if (!signedIn && pathname !== '/login') {
-      router.replace('/login/');
-    }
-  }, [loading, signedIn, router, pathname]);
-
   if (!supabaseEnabled) return <>{children}</>;
-  if (loading || !signedIn) return <FuldsideSpinner />;
-  return <>{children}</>;
+  if (loading) return <FuldsideSpinner />;
+  if (signedIn) return <>{children}</>;
+
+  // Ikke logget ind: vis dashboardet i baggrunden + overlay ovenpå.
+  // `inert` (når understøttet) gør baggrunden ikke-fokuserbar; pointer-events
+  // og blur er styling.
+  return (
+    <>
+      <div
+        className="pointer-events-none select-none blur-[6px] saturate-50 opacity-70"
+        aria-hidden
+      >
+        {children}
+      </div>
+      <LoginOverlay />
+    </>
+  );
 }
 
 function FuldsideSpinner() {
@@ -585,5 +591,209 @@ function FuldsideSpinner() {
     >
       <Loader2 className="h-6 w-6 animate-spin text-slate-400" aria-hidden />
     </main>
+  );
+}
+
+// ─────── LoginOverlay ───────
+//
+// Overlay som ligger oven på dashboardet (blurred). Premium / sparsom card med
+// underline-inputs i stedet for kasser.
+
+function LoginOverlay() {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-white/40 backdrop-blur-md p-4 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Log ind"
+    >
+      <LoginCard />
+    </div>
+  );
+}
+
+function LoginCard() {
+  const { signedIn, visningsnavn } = useAuth();
+  const [navn, setNavn] = useState('');
+  const [kode, setKode] = useState('');
+  const [fejl, setFejl] = useState<string | null>(null);
+  const [submitter, setSubmitter] = useState(false);
+  const [success, setSuccess] = useState<{ nyKonto: boolean; navn: string } | null>(null);
+  const navnRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Fokus på navne-feltet når overlay'en mounter
+    const t = setTimeout(() => navnRef.current?.focus(), 100);
+    return () => clearTimeout(t);
+  }, []);
+
+  async function håndterSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setFejl(null);
+
+    if (!erGyldigNavnLokal(navn)) {
+      setFejl('Skriv et navn (mindst 2 bogstaver).');
+      return;
+    }
+    if (!erGyldigKodeLokal(kode)) {
+      setFejl('Koden skal være præcis 4 cifre.');
+      return;
+    }
+
+    setSubmitter(true);
+    const resultat = await logIndEllerOpret(navn, kode);
+    setSubmitter(false);
+
+    if (!resultat.ok) {
+      setFejl(resultat.fejl);
+      return;
+    }
+    setSuccess({ nyKonto: resultat.nyKonto, navn: resultat.visningsnavn });
+    // AuthGate skjuler overlay'en automatisk når signedIn flipper
+  }
+
+  if (success || signedIn) {
+    return (
+      <MotionDivWrapper>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 text-center mb-3">
+          {success?.nyKonto ? 'Konto oprettet' : 'Logget ind'}
+        </p>
+        <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 text-center">
+          Hej, {success?.navn ?? visningsnavn ?? 'elev'}
+        </h2>
+        <p className="mt-2 text-sm text-slate-500 italic font-serif text-center">
+          {success?.nyKonto
+            ? 'Din kode er gemt. Husk den til næste gang.'
+            : 'Din status er hentet ind.'}
+        </p>
+        <div className="mt-6 flex justify-center">
+          <Loader2 className="h-4 w-4 animate-spin text-slate-300" aria-hidden />
+        </div>
+      </MotionDivWrapper>
+    );
+  }
+
+  return (
+    <MotionDivWrapper>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 text-center mb-3">
+        FP9 Matematik
+      </p>
+      <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 text-center">
+        Log ind
+      </h2>
+      <p className="mt-2 mb-8 text-sm text-slate-500 italic font-serif text-center">
+        Brug samme navn og kode som sidst.
+      </p>
+
+      <form onSubmit={håndterSubmit} className="space-y-7">
+        <div>
+          <label
+            htmlFor="login-navn"
+            className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 mb-1"
+          >
+            Navn
+          </label>
+          <input
+            id="login-navn"
+            ref={navnRef}
+            type="text"
+            value={navn}
+            onChange={(e) => setNavn(e.target.value)}
+            placeholder="Sara"
+            autoComplete="off"
+            spellCheck={false}
+            maxLength={32}
+            disabled={submitter}
+            className="w-full bg-transparent border-0 border-b-2 border-slate-200 rounded-none px-0 py-2.5 font-display text-xl font-semibold text-slate-900 placeholder:text-slate-300 placeholder:font-normal focus:border-slate-900 focus:outline-none transition-colors disabled:opacity-60"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="login-kode"
+            className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 mb-1"
+          >
+            4-cifret kode
+          </label>
+          <input
+            id="login-kode"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={kode}
+            onChange={(e) =>
+              setKode(e.target.value.replace(/\D/g, '').slice(0, 4))
+            }
+            placeholder="0000"
+            autoComplete="off"
+            maxLength={4}
+            disabled={submitter}
+            className="w-full bg-transparent border-0 border-b-2 border-slate-200 rounded-none px-0 py-2.5 font-display text-2xl font-bold tabular-nums tracking-[0.6em] text-slate-900 placeholder:text-slate-300 placeholder:font-normal placeholder:tracking-[0.4em] focus:border-slate-900 focus:outline-none transition-colors disabled:opacity-60"
+          />
+        </div>
+
+        {fejl && (
+          <motion.div
+            initial={{ opacity: 0, y: -2 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-start gap-2 text-sm text-rose-600"
+            role="alert"
+          >
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" aria-hidden />
+            <span>{fejl}</span>
+          </motion.div>
+        )}
+
+        <button
+          type="submit"
+          disabled={submitter || !navn || kode.length !== 4}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
+        >
+          {submitter ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              Logger ind…
+            </>
+          ) : (
+            <>
+              Log ind
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </>
+          )}
+        </button>
+      </form>
+
+      <p className="mt-7 text-center text-[11px] text-slate-400">
+        Glemt din kode? Spørg din lærer.
+      </p>
+    </MotionDivWrapper>
+  );
+}
+
+/** Lokale validators så vi ikke skaber en cykel ved at importere fra supabase-client */
+function erGyldigNavnLokal(navn: string): boolean {
+  const slug = navn
+    .toLowerCase()
+    .replace(/æ/g, 'ae')
+    .replace(/ø/g, 'oe')
+    .replace(/å/g, 'aa')
+    .replace(/[^a-z0-9]/g, '');
+  return slug.length >= 2;
+}
+function erGyldigKodeLokal(kode: string): boolean {
+  return /^\d{4}$/.test(kode);
+}
+
+/** Card-wrapper med entry-animation. */
+function MotionDivWrapper({ children }: { children: ReactNode }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.97, y: 4 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      className="w-full max-w-sm rounded-2xl border border-slate-100 bg-white px-7 py-9 sm:px-9 sm:py-11 shadow-2xl shadow-slate-900/10"
+    >
+      {children}
+    </motion.div>
   );
 }
