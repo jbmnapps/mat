@@ -75,7 +75,7 @@ export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
       <Link
         href={`/${disciplin.id}/`}
         className={cn(
-          'group relative block h-full rounded-xl sm:rounded-2xl border border-slate-200 bg-white p-3 sm:p-5',
+          'group relative block h-full overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200 bg-white p-3 sm:p-5',
           'transition-all duration-200 ease-out',
           'hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md',
           'active:scale-[0.99]',
@@ -83,15 +83,17 @@ export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
         )}
         aria-label={`${disciplin.navn} — ${progress.status === 'untouched' ? 'ikke startet' : `bedste resultat ${progress.bedsteScore}%`}`}
       >
-        {/* Status-prik øverst til højre */}
-        <span
-          className={cn(
-            'absolute right-2 top-2 inline-block h-2 w-2 rounded-full ring-2 sm:right-4 sm:top-4 sm:h-2.5 sm:w-2.5 sm:ring-4',
-            status.dot,
-            status.ring,
-          )}
-          aria-hidden
-        />
+        {/* Score øverst til højre — kun hvis prøvet, farvet efter status */}
+        {harForsoegt && (
+          <span
+            className={cn(
+              'absolute right-2 top-2 sm:right-3 sm:top-3 text-[10px] sm:text-xs font-bold tabular-nums',
+              status.tekst,
+            )}
+          >
+            {progress.bedsteScore}%
+          </span>
+        )}
 
         {/* Stort symbol */}
         <div className="flex justify-center pt-1 pb-2 sm:pt-3 sm:pb-4">
@@ -120,34 +122,34 @@ export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
           </p>
         </div>
 
-        {/* Status-strip i bunden — kun fra sm og op (status-prik øverst er nok på mobil) */}
-        <div className="hidden sm:flex mt-4 items-center justify-between border-t border-slate-100 pt-3 text-xs">
-          {harForsoegt ? (
-            <>
-              <span className={cn('font-semibold', status.tekst)}>
-                Bedste {progress.bedsteScore}%
-              </span>
-              <ArrowRight
-                className="h-3.5 w-3.5 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-700"
-                aria-hidden
-              />
-            </>
-          ) : (
-            <>
-              <span className="text-slate-400 italic font-serif">Ikke startet</span>
-              <ArrowRight
-                className="h-3.5 w-3.5 text-slate-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-500"
-                aria-hidden
-              />
-            </>
-          )}
-        </div>
-
-        {/* Mini-bedste-score under navnet på mobil (kun hvis attempted) */}
+        {/* Bund-rækken på desktop — bevarer arrow + ikke-startet-tekst */}
+        {!harForsoegt && (
+          <div className="hidden sm:flex mt-4 items-center justify-between border-t border-slate-100 pt-3 text-xs">
+            <span className="text-slate-400 italic font-serif">Ikke startet</span>
+            <ArrowRight
+              className="h-3.5 w-3.5 text-slate-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-500"
+              aria-hidden
+            />
+          </div>
+        )}
         {harForsoegt && (
-          <p className={cn('sm:hidden mt-1 text-center text-[10px] font-semibold', status.tekst)}>
-            {progress.bedsteScore}%
-          </p>
+          <div className="hidden sm:flex mt-4 items-center justify-end border-t border-slate-100 pt-3 text-xs">
+            <ArrowRight
+              className="h-3.5 w-3.5 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-700"
+              aria-hidden
+            />
+          </div>
+        )}
+
+        {/* Bundstribe — farvet efter status, kun hvis prøvet */}
+        {harForsoegt && (
+          <span
+            className={cn(
+              'absolute bottom-0 left-0 right-0 h-1 sm:h-1.5',
+              status.dot,
+            )}
+            aria-hidden
+          />
         )}
       </Link>
     </motion.div>

@@ -87,23 +87,24 @@ export default function Dashboard() {
     <main className="min-h-screen bg-slate-50/40">
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-12 lg:px-12 lg:py-16">
         {/* HEADER */}
-        <header className="mb-6 sm:mb-12 lg:mb-16">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
-            <div>
-              <p className="mb-2 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 sm:mb-3">
-                FP9 Matematik · Træn til prøven
-              </p>
-              <div className="flex items-baseline gap-2">
-                <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl">
-                  Hej,
-                </h1>
-                <NameInput />
-              </div>
-              <p className="mt-1.5 sm:mt-3 text-sm sm:text-base text-slate-600 italic font-serif">
-                Vælg en disciplin, øv metoden, og tag prøveklar når du er klar.
-              </p>
-            </div>
+        <header className="relative mb-6 sm:mb-12 lg:mb-16">
+          {/* Save-actions øverst til højre, alle skærme */}
+          <div className="absolute right-0 top-0">
             <SaveActions />
+          </div>
+          <div className="pr-20">
+            <p className="mb-2 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 sm:mb-3">
+              FP9 Matematik · Træn til prøven
+            </p>
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl">
+                Hej,
+              </h1>
+              <NameInput />
+            </div>
+            <p className="hidden sm:block mt-3 text-base text-slate-600 italic font-serif">
+              Vælg en disciplin, øv metoden, og tag prøveklar når du er klar.
+            </p>
           </div>
 
           {/* Oversigts-pille — vises kun når hydreret og noget er prøvet */}

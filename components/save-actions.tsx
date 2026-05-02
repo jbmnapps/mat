@@ -48,32 +48,34 @@ export function SaveActions() {
 
   return (
     <div className="flex flex-col items-end gap-2">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <button
           type="button"
           onClick={handleImportClick}
+          title="Importér status fra fil"
+          aria-label="Importér status"
           className={cn(
-            'inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5',
-            'text-xs font-semibold text-slate-700',
-            'transition-colors hover:border-slate-300 hover:bg-slate-50',
+            'inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white',
+            'text-slate-500',
+            'transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2',
           )}
         >
-          <Upload className="h-3.5 w-3.5" aria-hidden />
-          Importér status
+          <Upload className="h-4 w-4" aria-hidden />
         </button>
         <button
           type="button"
           onClick={handleEksport}
+          title="Eksportér status til fil"
+          aria-label="Eksportér status"
           className={cn(
-            'inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5',
-            'text-xs font-semibold text-slate-700',
-            'transition-colors hover:border-slate-300 hover:bg-slate-50',
+            'inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white',
+            'text-slate-500',
+            'transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2',
           )}
         >
-          <Download className="h-3.5 w-3.5" aria-hidden />
-          Eksportér status
+          <Download className="h-4 w-4" aria-hidden />
         </button>
         <input
           ref={fileInputRef}
