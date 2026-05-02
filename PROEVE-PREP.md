@@ -40,6 +40,80 @@ Branch: `weekend`. `main` står urørt.
 
 ---
 
+## Code-map
+
+```
+app/
+  layout.tsx                    Root HTML + chunk-cache-auto-reload script
+  page.tsx                      Dashboard (alle 18 discipliner grupperet)
+  [disciplin]/
+    layout.tsx                  generateStaticParams for alle 18
+    page.tsx                    Disciplin-side med 3 mode-kort
+    lektion/page.tsx            Switcher → premium-lektion eller "kommer snart"
+    traening/page.tsx           Træning — bruger Quiz-komponent
+
+components/
+  quiz.tsx                      ⭐ Quiz-engine. Numeric + MC. Lærer-skip.
+  mode-card.tsx                 Lektion/Træning/Prøveklar-kort
+  discipline-card.tsx           Disciplin-kort på dashboard
+  save-actions.tsx              Eksport/import + navn-input
+  lektion/
+    addition-interactive.tsx    Premium-lektion (kun addition pt.)
+
+lib/
+  disciplines.ts                Master-liste over 18 discipliner
+  quiz-types.ts                 Opgave-typer (numeric, multiple-choice)
+  store.ts                      Zustand + localStorage-persistens
+  use-hydrated.ts               Hook for SSR-safe progress-visning
+  content-registry.ts           ⭐ Hvilken mode er bygget pr. disciplin
+  opgaver/
+    index.ts                    ⭐ Opgave-registry (per-disciplin map)
+    addition.ts, subtraktion.ts, ...   Opgave-bank pr. disciplin (12 stk)
+```
+
+⭐ = filer der røres når du tilføjer en ny disciplin med opgaver.
+
+## Common operations
+
+### Tilføj opgaver til en disciplin der ikke har dem endnu
+
+1. Lav `lib/opgaver/<disciplin-id>.ts` (kopiér struktur fra `addition.ts`).
+2. I `lib/opgaver/index.ts`: import + entry i `OPGAVER`-map.
+3. I `lib/content-registry.ts`: tilføj `'traening'` til `INDHOLD[disciplin-id]`.
+4. `npx tsc --noEmit` for at verificere.
+5. `git commit + push` → ~2 min senere live.
+
+Disciplin-knappen på dashboard og træning-routen er allerede pre-rendret for alle 18 — du behøver ikke ændre routes.
+
+### Verificér deploy uden gh CLI
+
+```bash
+curl -s "https://api.github.com/repos/jbmnapps/mat/actions/runs?branch=weekend&per_page=1" \
+  | python3 -c "import json,sys; r=json.load(sys.stdin)['workflow_runs'][0]; print(f\"{r['status']} / {r['conclusion']}\")"
+```
+
+### Self-check UI-ændring før push
+
+```bash
+npm run dev   # lokal på :3000
+# eller hvis ændring er pushet:
+# brug Claude in Chrome til at navigere til https://jbmnapps.github.io/mat/...
+```
+
+### Delegér QC af opgave-bølge
+
+Brug `Agent` med `general-purpose`-subagent. Send filer-listen og specifik checkliste (korrekthed, hint-stil, distraktorer, tone). Eksempel-prompt findes i tidligere sessioner — typisk format: ✅/⚠️/❌ pr. opgave-id.
+
+### Build lokalt med produktions-basePath
+
+```bash
+NEXT_PUBLIC_BASE_PATH=/mat npm run build
+```
+
+Uden env-var bygges til root (for local dev).
+
+---
+
 ## Plan
 
 ### Bølge 1 — Live i dag (færdig undtagen deploy-godkendelse)
