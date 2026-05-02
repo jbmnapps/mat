@@ -32,10 +32,16 @@ interface SaveFile {
 }
 
 /**
- * Eksporter den nuværende state som en JSON-fil og trigger download.
+ * Eksporter den nuværende state som en JSON-fil.
  * Filnavn: fp9-status-YYYY-MM-DD.json (eller -elevnavn hvis sat)
+ *
+ * iOS Safari understøtter ikke `<a download>`-attributten, så vi bruger
+ * Web Share API når den er tilgængelig (åbner iOS' delings-ark hvor
+ * eleven kan vælge "Gem i Filer" eller maile filen).
+ *
+ * Fallback for desktop og browsere uden Share API: traditionel `<a download>`.
  */
-export function eksporterProgress(state: AppState): void {
+export async function eksporterProgress(state: AppState): Promise<void> {
   const payload: SaveFile = {
     version: FORMAT_VERSION,
     exportedAt: new Date().toISOString(),
@@ -43,17 +49,29 @@ export function eksporterProgress(state: AppState): void {
     progress: state.progress,
   };
 
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {
-    type: 'application/json',
-  });
-  const url = URL.createObjectURL(blob);
-
+  const json = JSON.stringify(payload, null, 2);
   const dato = new Date().toISOString().split('T')[0];
   const navnDel = state.elevNavn
     ? `-${state.elevNavn.toLowerCase().replace(/[^a-zæøå0-9]/gi, '')}`
     : '';
   const filnavn = `fp9-status${navnDel}-${dato}.json`;
 
+  // Web Share API med fil — virker på iOS Safari 14+ og Android Chrome
+  const file = new File([json], filnavn, { type: 'application/json' });
+  if (typeof navigator !== 'undefined' && navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: filnavn });
+      return;
+    } catch (e) {
+      // AbortError = bruger annullerede; gør ingenting
+      if ((e as Error).name === 'AbortError') return;
+      // Andre fejl: fald igennem til download-fallback
+    }
+  }
+
+  // Fallback: traditionel download (desktop browsere)
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = filnavn;
