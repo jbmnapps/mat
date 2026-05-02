@@ -10,11 +10,11 @@ Branch: `weekend`. `main` står urørt.
 
 ## Status nu (opdateres efter hver session)
 
-**Sidst opdateret:** 2026-05-02, lørdag eftermiddag
+**Sidst opdateret:** 2026-05-02, lørdag aften
 
 **Live deployet:** https://jbmnapps.github.io/mat/
 
-**Færdige bølger:** 1, 2, 3, 4, 5 (indhold + design + deploy + cache-fix)
+**Færdige bølger:** 1, 2, 3, 4, 5 (indhold + design + deploy + cache-fix + mobile-tap)
 
 **13 discipliner med træning** (12 opgaver hver = 156 opgaver):
 - Tal & algebra: addition, subtraktion, multiplikation, division, procent, ligninger, hverdagsregning
@@ -23,9 +23,19 @@ Branch: `weekend`. `main` står urørt.
 
 **Mangler:** vinkler, ligedannethed, overslagsregning, regneudtryk (mindre kritiske).
 
+**Mobile-fixes deployet:**
+- Addition lektion: hint er nu en touch-knap der avancerer (samt Enter på desktop). Label skifter mellem "Tryk Enter for at gå videre" (sm+) og "Tryk her for at gå videre" (mobil).
+- Quiz: "Tryk Enter for at svare"-hint skjules under sm-breakpoint. Svar-knappen er allerede tappable.
+- Bruger tester selv på telefon — afventer feedback.
+
+**Onboarding-setup for fremtidige sessions:**
+- claude.md banner peger på dette dokument.
+- Auto-memory: `proeveprep_weekend.md`, `feedback_collaboration_style.md`, `feedback_footguns.md`, `reference_repo_deploy.md`.
+- Code-map og common operations findes længere nede i dette dokument.
+
 **Næste op:**
+- Brugerens telefon-test feedback
 - Bølge 6: Backend (Supabase) — kræver brugerens input til projekt-setup
-- Brugerens browser-test og feedback på det deployede
 
 **Kendte begrænsninger:**
 - Kun lektion bygget for addition (premium-stil). Andre discipliner viser "Lektion kommer snart".
