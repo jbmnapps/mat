@@ -35,11 +35,10 @@ interface SaveFile {
  * Eksporter den nuværende state som en JSON-fil.
  * Filnavn: fp9-status-YYYY-MM-DD.json (eller -elevnavn hvis sat)
  *
- * iOS Safari understøtter ikke `<a download>`-attributten, så vi bruger
- * Web Share API når den er tilgængelig (åbner iOS' delings-ark hvor
- * eleven kan vælge "Gem i Filer" eller maile filen).
- *
- * Fallback for desktop og browsere uden Share API: traditionel `<a download>`.
+ * Strategi:
+ *  - iOS (touch + ingen rigtig fil-download): brug Web Share API → delings-ark
+ *  - Andre platforme: blob + <a download>, med delayed revoke for at undgå
+ *    race med browserens download-initiering.
  */
 export async function eksporterProgress(state: AppState): Promise<void> {
   const payload: SaveFile = {
@@ -56,29 +55,39 @@ export async function eksporterProgress(state: AppState): Promise<void> {
     : '';
   const filnavn = `fp9-status${navnDel}-${dato}.json`;
 
-  // Web Share API med fil — virker på iOS Safari 14+ og Android Chrome
-  const file = new File([json], filnavn, { type: 'application/json' });
-  if (typeof navigator !== 'undefined' && navigator.canShare?.({ files: [file] })) {
-    try {
-      await navigator.share({ files: [file], title: filnavn });
-      return;
-    } catch (e) {
-      // AbortError = bruger annullerede; gør ingenting
-      if ((e as Error).name === 'AbortError') return;
-      // Andre fejl: fald igennem til download-fallback
+  // iOS-specifik: Web Share API. Andre platforme får traditionel download
+  // selv hvis Share API findes (giver bedre UX på desktop).
+  const erIOS =
+    typeof navigator !== 'undefined' &&
+    /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+  if (erIOS && typeof navigator !== 'undefined' && 'canShare' in navigator) {
+    const file = new File([json], filnavn, { type: 'application/json' });
+    if (navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: filnavn });
+        return;
+      } catch (e) {
+        // AbortError = bruger annullerede; ikke fald tilbage til download
+        if ((e as Error).name === 'AbortError') return;
+        // Andre fejl: fald igennem til download
+      }
     }
   }
 
-  // Fallback: traditionel download (desktop browsere)
+  // Standard: blob + <a download>. Delayed revoke så browseren når at
+  // initiere download før blob'en frigives.
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = filnavn;
+  a.rel = 'noopener';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  // Delay på 1 sek — sikrer at download er startet før blob'en frigives
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export interface ImportResultat {

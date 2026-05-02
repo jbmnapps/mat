@@ -20,9 +20,22 @@ export function SaveActions() {
     besked: string;
   } | null>(null);
 
-  const handleEksport = () => {
+  const handleEksport = async () => {
     const state = useStore.getState();
-    eksporterProgress(state);
+    try {
+      await eksporterProgress(state);
+      setFeedback({
+        type: 'success',
+        besked: 'Status eksporteret — tjek Downloads-mappen.',
+      });
+      setTimeout(() => setFeedback(null), 4000);
+    } catch {
+      setFeedback({
+        type: 'error',
+        besked: 'Eksport fejlede.',
+      });
+      setTimeout(() => setFeedback(null), 4000);
+    }
   };
 
   const handleImportClick = () => {
