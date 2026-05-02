@@ -48,6 +48,17 @@ Foreslå proaktivt subagents, skills og tools når de konkret giver værdi — f
 
 Brugeren lærer også. Forklar kort hvad et værktøj er og hvornår det er nyttigt, så han kan tage informerede beslutninger fremover.
 
+### Custom subagents til kvalitetskontrol (`.claude/agents/`)
+
+Disse er bygget til projektet og skal bruges proaktivt:
+
+- **visual-reviewer** — kald FØR push af UI-ændringer (komponent- eller side-filer, styling). Tjekker mod SMAG.md/DESIGN.md via Claude in Chrome i flere viewport-størrelser.
+- **forklaringer-reviewer** — kald når `forklaring`-felter ændres i `lib/opgaver/*.ts`. Sikrer kort, simple, jargon-fri tip-tekster der ikke afslører svaret.
+- **opgaver-reviewer** — kald når en opgavebank ændres eller tilføjes. Verificerer korrekthed, FP9-niveau, progression, dækning.
+- **ux-reviewer** — kald når et helt flow skal valideres (træning, eksport/import, login). Tester som elev, fanger dødvinkler.
+
+Princippet: hvis du ændrer noget der falder under en agents domæne, kald agenten før push. Hvis ❌, fix og kald igen.
+
 ## Læs disse først
 
 - **[PROEVE-PREP.md](PROEVE-PREP.md)** — aktivt sprint-dokument med status, plan, beslutninger. *Læs altid først.*
