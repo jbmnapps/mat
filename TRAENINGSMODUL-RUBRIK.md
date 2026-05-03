@@ -79,8 +79,68 @@ Tilføj nyt indhold parallelt. Slet eller omdøb først efter et modul har ersta
 
 ## Bærende regler *(opdateres løbende)*
 
-*Tom indtil vi laver første nye modul. Hver retning brugeren giver mig
-oversættes til en regel her — i hans formulering, ikke min.*
+### Vis, vis ikke fortæl
+*Tilføjet 2026-05-03 efter gennemgang af addition-lektionen.*
+
+**Reglen:** Det vigtigste begreb i lektionen skal læres gennem en **visuel handling** eleven ser eller selv udfører — ikke gennem en sætning der beskriver handlingen.
+
+**Hvorfor:** Addition-lektionen viste det modsatte — menten blev "forklaret" ved at et 1-tal poofer ind oven over et ciffer, mens en sætning sagde "tieren flytter over". Men tieren flyttede ikke synligt nogen steder hen. Vi fortalte om bevægelsen i stedet for at vise den. En elev der ikke allerede kan stoffet, lærer intet af det. Hun bliver guidet gennem en kortere quiz, ikke en lektion.
+
+**Hvordan:** For hvert lektion-modul (lag 1), identificér det centrale begreb — det ene "aha"-moment der bærer hele disciplinen. Spørg: *"hvilken bevægelse, animation eller manipulation gør denne idé synlig?"* Hvis svaret er "vi skriver en sætning der forklarer det", omformulér scenen indtil svaret er en visuel handling. Tekst er kun støtte; scenen er det lærings-bærende.
+
+### Anti-pro skal fanges automatisk
+*Tilføjet 2026-05-03 efter brugerens gennemgang af addition-lektionen.*
+
+**Reglen:** Når basale designvalg går galt — layout-shifts, fantom-elementer, mismatched timing, ulæselige farver, crammed indhold — skal det fanges som *symptom* på at en ramme eller proces er forkert. Ikke kun som en bug.
+
+**Hvorfor:** Brugeren mistede tillid til lektionen ikke fordi enkelte ting var forkerte, men fordi de virkede uprofessionelt. Han forventer at jeg selv ser det og siger *"det her er sgu ikke godt nok"* før han ser det. Hvis jeg lader basale ting passere, skubber jeg vurderings-byrden over på ham.
+
+**Hvordan:** Før push, se på det med "fremmedøjne". Hvis du selv ville rynke brynene som bruger, så fortæl det — også hvis det betyder at scope vokser. Hvis det er framework- eller arkitektur-valg der gør det svært at undgå basale fejl, sig det højt. Aldrig accepter "det fungerer godt nok" som svar på noget der visuelt ikke holder.
+
+### Layout må aldrig hint at noget skal udfyldes der ikke skal
+*Tilføjet 2026-05-03 efter brugerens fund af "fantom-kolonne 3"-stregen.*
+
+**Reglen:** Visuelle pladsholdere (linjer, bokse, tomme felter) må kun vises hvis de modsvarer en handling eleven skal udføre. Et 5-søjlet grid der reserverer plads til 100-kolonnen i et 2-cifret stykke er en koncept-bug — ikke et visuelt bug.
+
+**Hvorfor:** Eleven læser visuelle hints som instruktioner. Hvis der er en streg under en tom plads, tror hun at noget skal stå der. Det forvirrer fra den faktiske opgave.
+
+**Hvordan:** Tilpas grid og scene-elementer dynamisk til hvad opgaven faktisk kræver. 2-cifret addition viser 2 kolonner + 1 mente-position. 3-cifret viser 3 kolonner. Layoutet må gerne kunne *bære* op til 4-5 kolonner (for fleksibilitet), men kun *vise* dem der bruges.
+
+### Klik avancerer overalt — Tjek-knap kun når der er flere mulige handlinger
+*Tilføjet 2026-05-03.*
+
+**Reglen:** I lektion-faser hvor eleven skal "fortsætte til næste trin", skal hele skærmen være klik-flade — ikke kun en specifik knap. En "Tjek"-knap er kun nødvendig hvis eleven har flere handlinger at vælge mellem (fx svare eller springe over).
+
+**Hvorfor:** "Tryk her for at gå videre" som lille tekst nederst er passiv-aggressiv UI. Det reducerer momentum og tvinger eleven til præcision-mus-arbejde. Hele scenen er konteksten — den skal være interaktionen.
+
+**Hvordan:** I avance-faser: lyt til klik på et large baggrunds-div + Enter på tastatur. Hint-tekst kan vises subtilt, men er ikke den eneste klik-flade. I input-faser hvor eleven har taster i, behold submit-knap (iOS-keypad har ikke return). Hvis der ER en knap (fx fejl-handling med "prøv igen"), skal den være tydelig CTA, ikke et lille link.
+
+### Forkert svar = prøv igen + bedre forklaring. Aldrig "dit svar accepteres bare"
+*Tilføjet 2026-05-03.*
+
+**Reglen:** Når eleven svarer forkert, skal modulet (a) tydeligt vise at svaret var forkert, (b) give en visuel forklaring der hjælper hende videre, (c) lade hende prøve igen med samme opgave. Aldrig acceptere et "tilstrækkeligt nært" forkert svar som rigtigt for at undgå friktion.
+
+**Hvorfor:** Eksisterende addition-lektion accepterer både "5" og "15" som svar på 7+8 — den ene er den rigtige tankegang (forstår mente), den anden er det rå svar. Det føles som om vi skåner eleven, men reelt: vi springer over det vigtigste lærings-moment. Eleven der svarede "15" har ikke forstået menten endnu — det skal være en pause-og-vis-momentum, ikke et "du vidste det".
+
+**Hvordan:** Definér det forventede svar pr. fase præcist. Forkert svar → shake + ryd input + animeret forklaring + "prøv igen". Ikke "accepter forkert-men-tæt-på".
+
+### Lektion ender ikke — den bygger bro ind i træning
+*Tilføjet 2026-05-03.*
+
+**Reglen:** En lektion afsluttes ikke med "du har lært det" og en knap til "Start træning". Lektionen *fortsætter* ind i progressiv træning: små bidder med stigende sværhed, indenfor samme session, så eleven mærker at hun går fra "lige forstået" til "kan bruge det" uden brud.
+
+**Hvorfor:** Den klassiske skole-struktur ("nu har du lært det, gå hjem og øv") taber den svage elev. Hun har lige set det ene gang. Hun skal bruge det STRAKS, mange gange, i stigende sværhed. Først der bliver det fast.
+
+**Hvordan:** Efter "lektion-delen" (gennemgang af metoden), lad eleven løse 5 lette opgaver i samme stil som lektionen. Tilbyd så 5 mere eller skift til næste sværhedsgrad. Slut på en FP9-lign opgave hvor metoden anvendes på en virkelig prøveformulering — gerne med visualiseret oversættelse fra problem-tekst → opstilling → svar. Eleven skal mærke en kontinuerlig opbygning, ikke en eksamen-til-træning-overgang.
+
+### Eleven skal kunne navigere frem og tilbage
+*Tilføjet 2026-05-03.*
+
+**Reglen:** I alle interaktive moduler (lag 1, 2, 3) skal eleven kunne gå tilbage til forrige trin/opgave/fase og frem igen. Aldrig fanget på en skærm hun ikke ville være.
+
+**Hvorfor:** Eleven kan have misset noget. Eller hun vil tjekke et tidligere svar. Eller hun trykte for hurtigt. Hvis hun ikke kan gå tilbage, skal hun starte forfra — det dræber både tålmodighed og læring.
+
+**Hvordan:** Pile-knapper (← →) i header eller header-area. Tastatur-shortcuts (← →). Bagud bevarer state (input, svar). Frem efter bagud genoptager hvor man var. Aldrig tab af progress ved navigation.
 
 ### Format på regel-tilføjelser
 
