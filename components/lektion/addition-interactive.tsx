@@ -250,11 +250,32 @@ export function AdditionInteractive({ disciplinId }: Props) {
   }, [fase]);
 
   // Tilbage-navigation (regel: eleven skal kunne navigere frem og tilbage).
-  // Går én fase tilbage. State (input, godkendt-status) bevares — eleven
-  // kan se hvor hun var. Frem håndteres via klik/Enter (advance).
+  // Når tilbage lander på en input-fase, nulstilles dens godkendt-flag og
+  // input-værdi — ellers er feltet låst og eleven sidder fast på et tidligere
+  // godkendt svar uden at kunne svare igen. broen-morph springes over fordi
+  // den er en transition der auto-advancerer; at lande på den ved tilbage
+  // ville bare kaste eleven frem igen efter 800ms.
   const forrigeFase = useCallback(() => {
     const idx = ALLE_FASER.indexOf(fase);
-    if (idx > 0) setFase(ALLE_FASER[idx - 1]);
+    if (idx <= 0) return;
+    let previousPhase = ALLE_FASER[idx - 1];
+    if (previousPhase === 'broen-morph') previousPhase = 'broen';
+
+    if (previousPhase === 'spørg-enere-1') {
+      setEnereGodkendt(false);
+      setEnereInput('');
+    } else if (previousPhase === 'spørg-tier-1') {
+      setTierGodkendt(false);
+      setTierInput('');
+    } else if (previousPhase === 'spørg-enere-2') {
+      setEnereSvar2(null);
+      setEnereInput('');
+    } else if (previousPhase === 'spørg-tier-2') {
+      setTierGodkendt(false);
+      setTierInput('');
+    }
+
+    setFase(previousPhase);
   }, [fase]);
 
   const erFørsteFase = ALLE_FASER.indexOf(fase) === 0;
