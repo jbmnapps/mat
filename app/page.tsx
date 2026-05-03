@@ -60,7 +60,6 @@ export default function Dashboard() {
 function DashboardIndhold() {
   const hydreret = useHydrated();
   const progress = useStore((s) => s.progress);
-  const totalAktiv = useStore((s) => s.totalActiveSeconds);
 
   // Grupper diciplinerne efter kategori
   const grupperet = useMemo(() => {
@@ -119,11 +118,6 @@ function DashboardIndhold() {
               </h1>
               <NameInput />
             </div>
-            {hydreret && totalAktiv >= 60 && (
-              <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-500 italic font-serif">
-                Du har trænet {formatVarighed(totalAktiv)} i alt.
-              </p>
-            )}
           </div>
 
           {/* Næste op-card — anbefalet sekvens baseret på FP9-vægtning */}
@@ -226,17 +220,6 @@ function findNæsteAnbefalede(
     }
   }
   return null;
-}
-
-/** Format varighed i sekunder som menneske-læsning. */
-function formatVarighed(sek: number): string {
-  if (sek < 60) return `${sek} sek`;
-  const min = Math.floor(sek / 60);
-  if (min < 60) return `${min} min`;
-  const t = Math.floor(min / 60);
-  const restMin = min % 60;
-  if (restMin === 0) return `${t}t`;
-  return `${t}t ${restMin}min`;
 }
 
 function NæsteOpCard({
