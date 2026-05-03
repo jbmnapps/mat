@@ -8,10 +8,22 @@
 
 ---
 
-## Status
+## Status (opdateret 2026-05-03 søndag aften ~23:30)
 
-- 2026-05-03 søndag eftermiddag: gennemgang af nuværende `addition-interactive.tsx` lavet (Claude + brugeren). 20+ findings dokumenteret. 7 nye regler tilføjet til `TRAENINGSMODUL-RUBRIK.md`.
-- Næste skridt: Fase 2 (visuelle og strukturelle bugs).
+- **Fase 2 låst** — alle visuelle og strukturelle bugs fixet. Intro→aktiv-overgangen virker nu smooth (det blev løst sent på dagen — det var motion's manglende interpolation mellem unit-typer der gav et "hak"; løst med CSS-transition på transform).
+- **Fase 3 (mente-redesign) ikke startet.**
+- **4 kritiske UX-issues** fundet ved review — se AUDIT.md. Skal fixes før mandag eller leve med.
+- **Live på `/mat/test/`** (weekend-vision deployer auto). Eleverne ser stadig den oprindelige version på `/mat/`. Merge til `weekend` når brugeren er klar.
+
+### Hvad der virker nu
+- Intro→aktiv-overgang: tekst rykker op + skrumper smooth, plusstykket fader ind med delay
+- Klik-overalt avancerer i ikke-input-faser; klik på baggrund i input-fase re-fokuserer input
+- Tilbage-knap i header (← knap + ArrowLeft tastatur-shortcut)
+- Math står stille når overskrift har flere linjer (bottom-anchored layout)
+- Mente-undervisning sekventielt: tekst skifter → '1' lander → '5' lander
+- Dynamisk math-grid (rows er 0px når unused) → math-højde matcher synligt indhold
+- Addition-stregen er h-[2px] (matcher input-border) — ikke længere "for bred"
+- Animation-faldgruber dokumenteret i ANIMATIONER.md
 
 ---
 

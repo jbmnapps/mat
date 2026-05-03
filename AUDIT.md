@@ -9,15 +9,64 @@
 
 ---
 
-## Status
+## Aktive findings — addition-lektion (2026-05-03 søndag aften)
 
-**Ingen aktive findings.** Første audit på 3-lag-modellen kører når lag 1 for
-første disciplin er bygget. Udfør i denne rækkefølge:
+UX-review fandt 4 kritiske issues + flere mindre. Visual-reviewer: ingen
+blockers. Træningsmodul-reviewer kunne ikke køre (agent-registret var stale
+ved session-start; kræver Claude Code-restart for at se den nye agent-fil).
 
-1. `traeningsmodul-reviewer` — er modulet i tråd med rubrikken?
-2. `forklaringer-reviewer` — er hint-tekster lag-passende?
-3. `visual-reviewer` — visuel polish + designsmag
-4. `ux-reviewer` — flow virker for elev
+### 🔥 Kritisk — bryder regler
+
+- **Tilbage-knap mental model.** Header har "Afslut lektion" (link) + rund
+  pile-knap der gør forskellige ting. Eleven kan tro pilen tager dem helt
+  ud. *Forslag:* skjul pilen helt på første fase i stedet for at disable.
+
+- **Tilbage efter godkendt svar = sidder fast.** Hvis eleven trykker tilbage
+  efter at have svaret rigtigt på fx 4+4, kommer hun til input-fasen igen,
+  men `enereGodkendt`-flag er stadig sat → input er ikke aktivt. Hun kan se
+  sit godkendte svar, men ikke svare igen. Bryder
+  TRAENINGSMODUL-RUBRIK.md-reglen om frem/tilbage-navigation.
+  *Forslag:* `forrigeFase` skal nulstille korrekt-flag og input-værdi når
+  ny fase er en input-fase.
+
+- **Forkert svar = bare shake + tomt felt. Ingen besked.** Eleven ved ikke
+  om det var forkert eller om noget bare gik galt med hendes input. Bryder
+  rubrik-reglen "forkert svar = prøv igen + bedre forklaring".
+  *Forslag:* vis kort hint-besked under input ("Prøv igen") eller skift
+  overskriften kortvarigt — pædagogisk tone, ikke "FEJL".
+
+- **På 67+78 enere accepteres BÅDE 5 og 15** uden at eleven informeres om
+  at begge er gyldige. Kan forvirre — hun kan tro hun trykkede tasten
+  forkert. *Forslag:* eksplicit besked når 5 accepteres
+  ("Du gav enere-cifret 5 — det er rigtigt. Vi rykker 1 op.")
+
+### ⚠️ Bør fixes
+
+- **`broen-morph` 800ms auto-advance bryder tilbage-navigation.** Hvis
+  eleven trykker tilbage fra `spørg-enere-2`, lander hun i `broen-morph`,
+  og 800ms senere kastes hun frem igen. Tilbage virker ikke i praksis fra
+  den fase. *Forslag:* skip `broen-morph` i `forrigeFase` eller annullér
+  timeout ved fase-skift.
+
+- **"1 skal rykkes"-tekst kan være jargon-grænseland.** SMAG.md siger
+  "mente" er ikke OK — "rykkes" er tæt på samme. *Forslag:* alternativt
+  fraseret som *"15 er for stort til én plads. Vi flytter 1 op."*
+
+- **Fejringer ("Flot. Det giver 78.") mangler visualisering** af hvor
+  resultatet kommer fra. For svag elev kan det være uklart hvorfor "78"
+  pludselig nævnes. *Forslag:* highlight resultat-rækken eller animér
+  cifrene som læses sammen.
+
+### 💡 Idéer til fremtid
+
+- "Spring til træning"-genvej for stærkere elever
+- Progress-indikator i header (fx "Trin 3 af 14")
+- Re-spil mente-animation (tap på mente '1' for at se den igen)
+- Lyd-feedback (ding/buzz) som option
+
+---
+
+## Carryover fra pre-pivot-auditen *(stadig relevante)*
 
 ---
 

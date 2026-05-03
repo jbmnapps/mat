@@ -32,42 +32,78 @@ Detaljerede krav i [TRAENINGSMODUL-RUBRIK.md](TRAENINGSMODUL-RUBRIK.md).
 
 ---
 
-## Status nu (2026-05-03 søndag eftermiddag)
+## Status nu (2026-05-03 søndag aften ~23:30)
 
-**Live for eleverne:** Den gamle quiz-version (12 spørgsmål pr. disciplin
-for 13 disciplinerne). Eleverne kan teste sig selv. Det er IKKE den vision
-vi bygger mod — men det er funktionelt og nok som "hvor står jeg?"-værktøj
-indtil det nye er klart.
+**Live for eleverne:** Den gamle quiz-version på `/mat/`. Brugeren sendte
+link til klassen ca. kl. 18 — eleverne kan teste sig selv mens vi bygger
+videre. Den oprindelige addition-lektion var også med (men ikke det nye
+modul vi har bygget i dag).
 
-**Brugeren sender link til klassen kl. ~18:00 i dag** med det vi har.
-Mens de øver, bygger vi første nye modul.
+**Live for udvikling:** `/mat/test/` — auto-deployer fra `weekend-vision`-
+branch. Det nye addition-modul kan testes der uden at påvirke eleverne.
+Brugeren kan dele linket hvis han vil have feedback.
 
-### Hvad er bygget (gamle quiz-model)
+### Hvad er bygget i dag
 
-- 13 disciplinerne med 12 quiz-opgaver hver = 156 opgaver, svar verificeret
-- 1 lektion (addition) i den nye interaktive stil — er prototypen for resten
-- Login (navn + 4-cifret kode), Supabase-sync, lærer-side, PWA-installation
-- 4 custom subagents til kvalitetskontrol
+**Doc-pivot (eftermiddag):**
+- Arkiverede pre-pivot docs (PROEVE-PREP, AUDIT, SPRINT)
+- 3-lag-model dokumenteret i ny TRAENINGSMODUL-RUBRIK.md
+- 7 bærende regler udledt fra brugerens feedback
+- North Star, focus-reminder, multi-session, live-site beskyttelse i CLAUDE.md
+- Princip 4a "byg bro mellem sværhedsgrader" i PRINCIPPER.md
+- Custom agent `traeningsmodul-reviewer` (erstatter `opgaver-reviewer`)
+- Codex-filer samlet i `codex/`-mappe
+- `/mat/test/` deploy-workflow tilsat
 
-### Hvad er IKKE bygget (men hører i den nye model)
+**Addition-lektion (aften — fase 2 af PLAN-ADDITION.md):**
+- Fjernet fantom-kolonne 3-streg (regel: layout må aldrig hint udfyldning)
+- Klik-overalt-avancerer i ikke-input-faser; klik på baggrund i input-fase
+  re-fokuserer input
+- Tilbage-knap i header med ArrowLeft tastatur-shortcut
+- Math står stille når overskrift har flere linjer (bottom-anchored layout)
+- Mente-undervisning sekventielt: tekst skifter → '1' lander → '5' lander
+- Dynamisk math-grid (rows er 0px når unused) → math-højde matcher synligt indhold
+- Addition-stregen er h-[2px] (matcher input-border)
+- Intro→aktiv-overgang er smooth (var en motion-interpolations-bug — fixet
+  med CSS-transition på transform)
+- Animation-faldgruber dokumenteret i ANIMATIONER.md
 
+### Hvad mangler
+
+**Addition (fase 3-4):**
+- Mente-momentet redesign (vis-vis-ikke-fortæl): 15 splittes synligt, eleven
+  skriver mente-tallet, røde pile ved 1+6+7
+- 4 kritiske UX-issues fra reviewet (se AUDIT.md): tilbage-knap forvirring,
+  tilbage efter godkendt = sidder fast, forkert-svar uden besked, 5/15-
+  tvetydighed
+- Lektion-til-træning-broen (fase 4): efter "Du har lært det" → 5 stk 2-cifret
+  → 5 stk 3-cifret → FP9-replika
+
+**Andre disciplinerne:**
 - Lektion-træning for 12 ud af 13 disciplinerne
-- Terpe-opgaver med variant-valg (alle nuværende quiz blandes på tværs)
+- Terpe-opgaver med variant-valg
 - FP9-replika
-- Bro-princippet i opgavebanker (de er progressive, men ikke broede)
+- Bro-princippet i opgavebanker
 
 ---
 
-## Næste skridt (resten af søndag aften + nat hvis lyst)
+## Næste skridt (mandag morgen / før prøven)
 
-1. ✅ Doc-ryd-op (denne pivot) — *færdig kl. ~15:30 søndag*
-2. ⏳ Læs `addition-interactive.tsx` sammen og vurdér om den skal generaliseres før vi laver disciplin #2
-3. ⏳ Vælg første nye disciplin — kandidater: addition (færdiggør prototype) eller procent (vægter tungest på FP9)
-4. ⏳ Byg lag 1 (lektion-træning) for valgt disciplin. Iterér én sektion ad gangen — hver retning fra brugeren oversættes til regel i `TRAENINGSMODUL-RUBRIK.md`
-5. ⏳ Når den første discipline er solid: byg lag 2 + 3 for samme, ELLER replikér lag 1 til næste discipline. Brugeren beslutter.
+1. ✅ Doc-ryd-op (pivot) — *færdig søndag eftermiddag*
+2. ✅ Fase 2 af addition-lektion (visuelle og strukturelle bugs) — *færdig søndag aften*
+3. ⏳ **Beslut: skal det nye addition-modul gå live?** Det ligger på `/mat/test/`.
+   Hvis ja: merge `weekend-vision` → `weekend`, nyt modul deployer til `/mat/`.
+   Hvis nej: eleverne fortsætter med original version til efter prøven.
+4. ⏳ **Adressér 4 kritiske UX-issues** før merge (se AUDIT.md):
+   - Tilbage-knap mental model (skjul i stedet for disable på første fase)
+   - Tilbage efter godkendt svar = sidder fast (skal nulstille godkendt-flag)
+   - Forkert svar = bare shake, ingen besked (tilføj prøv-igen-feedback)
+   - 67+78 enere accepterer både 5 og 15 uden eksplicit besked
+5. ⏳ Fase 3 (mente-redesign) er separat session. Se PLAN-ADDITION.md.
+6. ⏳ Andre disciplinerne — efter prøven.
 
-**Realistisk forventning:** 1 disciplin fuldt færdig før mandag morgen er
-ambitiøst men muligt hvis vi holder fokus.
+**Realistisk:** mandag morgen kl. 7-8 er sidste vindue til ændringer før
+prøven. Hvis fase 3 ikke er færdig, kører eleverne med det vi har.
 
 ---
 
