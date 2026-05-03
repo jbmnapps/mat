@@ -374,11 +374,15 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </button>
       </header>
 
-      {/* MESSAGE SLOT */}
+      {/* MESSAGE SLOT — "overskriften". I intro centeret på skærmen,
+          ellers lige over opstillingen. Tidligere y=-220 + krymp til 26px
+          gjorde at overskriften flyttede sig dramatisk væk fra stykket;
+          nu er flytningen mindre (-130) og krympet er mildere så
+          overskrift og stykke føles forbundne. */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-6 text-center w-full max-w-2xl pointer-events-none z-[5]">
         <motion.div
           initial={false}
-          animate={{ y: erIntro ? 0 : keyboardViewport.keyboardOpen ? -150 : -220 }}
+          animate={{ y: erIntro ? 0 : keyboardViewport.keyboardOpen ? -110 : -130 }}
           transition={{ duration: 0.6, ease: [0.4, 0.0, 0.2, 1] }}
         >
           <motion.div
@@ -386,7 +390,7 @@ export function AdditionInteractive({ disciplinId }: Props) {
             animate={{
               fontSize: erIntro
                 ? 'clamp(26px, 7vw, 40px)'
-                : 'clamp(18px, 5vw, 26px)',
+                : 'clamp(20px, 5.5vw, 30px)',
             }}
             transition={{ duration: 0.6, ease: [0.4, 0.0, 0.2, 1] }}
             className="font-display font-bold tracking-tight text-slate-900 leading-snug"
@@ -441,8 +445,11 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </AnimatePresence>
       </div>
 
-      {/* HINT SLOT */}
-      <div className="absolute bottom-[12vh] left-1/2 -translate-x-1/2 px-6 text-center pointer-events-auto z-[5]">
+      {/* HINT SLOT — placeret midt mellem stykket og viewport-bunden så
+          den ikke klistrer for langt nede. Var bottom-[12vh] (ca. 87px),
+          nu bottom-[22vh] (ca. 160px) — visuel balance mellem stykke,
+          hint og bund-edge. */}
+      <div className="absolute bottom-[22vh] left-1/2 -translate-x-1/2 px-6 text-center pointer-events-auto z-[5]">
         <Hint fase={fase} disciplinId={disciplinId} advance={advance} />
       </div>
     </main>
@@ -605,15 +612,26 @@ function FormulaScene(props: FormulaSceneProps) {
         )}
       </AnimatePresence>
 
-      {/* Streg */}
+      {/* Streg — entry har delay 0.5s så den lander efter cifrene har
+          morfet på plads. Exit har INGEN delay og kort duration, så
+          stregen forsvinder med det samme når vi forlader vertikal-mode
+          (fx fejr-1 → broen). Tidligere brugte exit den samme delay,
+          hvilket fik stregen til at "spawne" i et sekund efter fasen
+          var skiftet — det er den lille streg under 67+78 brugeren så. */}
       <AnimatePresence>
         {erVertikal && (
           <motion.div
             key="line"
             initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, delay: 0.5 }}
+            animate={{
+              opacity: 1,
+              scaleX: 1,
+              transition: { duration: 0.4, delay: 0.5 },
+            }}
+            exit={{
+              opacity: 0,
+              transition: { duration: 0.2 },
+            }}
             style={{ gridColumn: '3 / span 2', gridRow: 4 }}
             className="bg-slate-900 h-[3px] w-full origin-left rounded-full"
           />
