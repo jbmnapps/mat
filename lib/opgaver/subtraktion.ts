@@ -29,7 +29,7 @@ export const subtraktionOpgaver: Opgave[] = [
     type: 'numeric',
     spørgsmål: 'Udregn: 73 − 28',
     svar: 45,
-    forklaring: 'Tip: 3 er mindre end 8 — lån 1 fra tier-søjlen.',
+    forklaring: 'Tip: regn 73 − 30 først. Læg så 2 til svaret.',
   },
   {
     id: 'sub-04',
@@ -42,7 +42,7 @@ export const subtraktionOpgaver: Opgave[] = [
     type: 'numeric',
     spørgsmål: 'Udregn: 503 − 247',
     svar: 256,
-    forklaring: 'Tip: når der står 0 i midten, må du låne fra hundrede-søjlen først.',
+    forklaring: 'Tip: tænk 503 som 500 + 3. Træk 247 fra 500 først.',
   },
   {
     id: 'sub-06',

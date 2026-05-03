@@ -43,7 +43,7 @@ export const multiplikationOpgaver: Opgave[] = [
     type: 'numeric',
     spørgsmål: 'Udregn: 35 · 100',
     svar: 3500,
-    forklaring: 'Tip: hver gang du ganger med 10, rykker cifrene én plads til venstre.',
+    forklaring: 'Tip: når du ganger med 100, rykker cifrene to pladser til venstre.',
   },
   {
     id: 'mul-06',

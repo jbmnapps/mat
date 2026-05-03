@@ -39,8 +39,9 @@ skills-lock.json
 # Build artifacts
 tsconfig.tsbuildinfo
 
-# Reference materials (not committed — may have copyright)
+# Reference materials (not committed — copyrighted FP9-PDF'er)
 Elevprøver_FP9guidelines/
+prøvebanken/
 
 # Impeccable live mode setup (symlink + project-local config; agent-internal)
 .agents/

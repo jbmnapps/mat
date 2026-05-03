@@ -66,9 +66,6 @@ export default function DisciplinPage() {
               <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl leading-tight">
                 {disciplin.navn}
               </h1>
-              <p className="mt-0.5 sm:mt-1 text-sm sm:text-base text-slate-600 italic font-serif leading-snug">
-                {disciplin.beskrivelse}
-              </p>
             </div>
           </div>
         </motion.header>
