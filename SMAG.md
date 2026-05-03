@@ -67,6 +67,12 @@
   indhold (fx en disciplin-side med 3 mode-kort), skal kortene sidde i
   visuel midte af viewporten — ikke klumpe sig under headeren med
   tomrum nedenfor. Brug `flex-1 flex justify-center` på container.
+- **Keyboard-aware sider bruger `h-[100dvh] overflow-hidden`.** På iOS
+  Safari krymper viewport når tastaturet popper op. Med `min-h-[100dvh]`
+  overflower indholdet under tastaturet og siden bliver scrollable —
+  irriterende. Med fixed `h-[100dvh]` + `overflow-hidden` låses højden
+  til faktisk synlig plads. Tastatur skubber ikke content, og siden
+  forbliver fast forankret. Bruges på Quiz og Lektion.
 
 ## UX-flow
 
