@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useKeyboardViewport } from '@/lib/use-keyboard-viewport';
 import type { DisciplinId } from '@/lib/disciplines';
 
 // ============================================================================
@@ -144,6 +145,7 @@ export function AdditionInteractive({ disciplinId }: Props) {
   const [shake, setShake] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const keyboardViewport = useKeyboardViewport();
 
   const erIntro = fase === 'intro-1';
   const erEksempel2 = EKSEMPEL_2_FASER.includes(fase);
@@ -283,9 +285,17 @@ export function AdditionInteractive({ disciplinId }: Props) {
   const beskedTekst = beskedFor(fase, enereSvar2);
 
   return (
-    <main className="h-[100dvh] relative bg-slate-50/40 overflow-hidden">
+    <main
+      className="h-[100dvh] relative bg-slate-50/40 overflow-hidden"
+      style={keyboardViewport.height ? { height: `${keyboardViewport.height}px` } : undefined}
+    >
       {/* Header */}
-      <header className="absolute top-0 left-0 right-0 px-6 py-6 lg:px-12 lg:py-8 z-10">
+      <header
+        className={cn(
+          'absolute top-0 left-0 right-0 px-6 lg:px-12 z-10',
+          keyboardViewport.keyboardOpen ? 'safe-top pb-2' : 'safe-top-roomy pb-5 lg:pb-7',
+        )}
+      >
         <Link
           href={`/${disciplinId}/`}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors"
@@ -299,7 +309,7 @@ export function AdditionInteractive({ disciplinId }: Props) {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-6 text-center w-full max-w-2xl pointer-events-none z-[5]">
         <motion.div
           initial={false}
-          animate={{ y: erIntro ? 0 : -220 }}
+          animate={{ y: erIntro ? 0 : keyboardViewport.keyboardOpen ? -150 : -220 }}
           transition={{ duration: 0.6, ease: [0.4, 0.0, 0.2, 1] }}
         >
           <motion.div
@@ -352,6 +362,7 @@ export function AdditionInteractive({ disciplinId }: Props) {
                 submitTier={submitTier}
                 inputRef={inputRef}
                 erEksempel2={erEksempel2}
+                kompakt={keyboardViewport.keyboardOpen}
               />
             </motion.div>
           )}
@@ -384,6 +395,7 @@ interface FormulaSceneProps {
   submitTier: (e: React.FormEvent) => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
   erEksempel2: boolean;
+  kompakt: boolean;
 }
 
 const POS: Record<'horisontal' | 'vertikal', Record<string, { col: number; row: number }>> = {
@@ -418,6 +430,7 @@ function FormulaScene(props: FormulaSceneProps) {
     submitTier,
     inputRef,
     erEksempel2,
+    kompakt,
   } = props;
 
   const erVertikal = layout === 'vertikal';
@@ -467,10 +480,13 @@ function FormulaScene(props: FormulaSceneProps) {
       className="grid"
       style={{
         // Responsiv kolonne-bredde: 44px på smalle skærme, op til 60px desktop
-        gridTemplateColumns: 'repeat(5, clamp(44px, 13vw, 60px))',
+        gridTemplateColumns: kompakt
+          ? 'repeat(5, clamp(38px, 11vw, 54px))'
+          : 'repeat(5, clamp(44px, 13vw, 60px))',
         // Responsive rækker — første og sidste skalerer med viewport
-        gridTemplateRows:
-          'clamp(28px, 5vw, 36px) clamp(56px, 14vw, 76px) clamp(56px, 14vw, 76px) 8px clamp(56px, 14vw, 76px)',
+        gridTemplateRows: kompakt
+          ? 'clamp(24px, 4vw, 32px) clamp(48px, 12vw, 68px) clamp(48px, 12vw, 68px) 8px clamp(48px, 12vw, 68px)'
+          : 'clamp(28px, 5vw, 36px) clamp(56px, 14vw, 76px) clamp(56px, 14vw, 76px) 8px clamp(56px, 14vw, 76px)',
         placeItems: 'center',
       }}
     >
@@ -486,7 +502,8 @@ function FormulaScene(props: FormulaSceneProps) {
             transition={{ layout: { duration: 0.7, ease: [0.4, 0.0, 0.2, 1] } }}
             style={{ gridColumn: pos.col, gridRow: pos.row }}
             className={cn(
-              'font-display text-4xl sm:text-6xl lg:text-7xl font-bold tabular-nums select-none transition-colors duration-300',
+              'font-display sm:text-6xl lg:text-7xl font-bold tabular-nums select-none transition-colors duration-300',
+              kompakt ? 'text-3xl' : 'text-4xl',
               erOperator ? 'text-emerald-600' : aktiv ? 'text-emerald-600' : 'text-slate-900',
             )}
           >
@@ -556,6 +573,7 @@ function FormulaScene(props: FormulaSceneProps) {
                     onChange: setTierInput,
                     onSubmit: submitTier,
                     ref: inputRef,
+                    kompakt,
                   }
                 : undefined
             }
@@ -575,6 +593,7 @@ function FormulaScene(props: FormulaSceneProps) {
                     onChange: setEnereInput,
                     onSubmit: submitEnere,
                     ref: inputRef,
+                    kompakt,
                   }
                 : undefined
             }
@@ -602,6 +621,7 @@ interface ResultCellProps {
     onChange: (s: string) => void;
     onSubmit: (e: React.FormEvent) => void;
     ref: React.RefObject<HTMLInputElement | null>;
+    kompakt: boolean;
   };
 }
 
@@ -635,20 +655,29 @@ function ResultCell({ col, row, value, variant, isFinal, inputProps }: ResultCel
             ref={inputProps.ref}
             type="text"
             inputMode="numeric"
+            enterKeyHint="done"
             value={inputProps.value}
             onChange={(e) => inputProps.onChange(e.target.value.replace(/[^0-9]/g, ''))}
             maxLength={2}
             autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
             aria-label="Indtast resultat"
             className={cn(
               // Bredt nok til 2 cifre — overflower lidt celle-bredden, fint
-              'w-[60px] sm:w-[80px] h-[44px] sm:h-[63px] box-border p-0',
+              inputProps.kompakt
+                ? 'w-[52px] h-[40px] sm:w-[80px] sm:h-[63px]'
+                : 'w-[60px] h-[44px] sm:w-[80px] sm:h-[63px]',
+              'box-border p-0',
               // Tekst
-              'font-display text-4xl sm:text-6xl lg:text-7xl font-bold tabular-nums text-center',
-              'leading-[40px] sm:leading-[60px]',
+              'font-display sm:text-6xl lg:text-7xl font-bold tabular-nums text-center',
+              inputProps.kompakt
+                ? 'text-3xl leading-[36px] sm:leading-[60px]'
+                : 'text-4xl leading-[40px] sm:leading-[60px]',
               'text-slate-900 bg-transparent',
               // Streg
-              'border-b-[3px] border-slate-900',
+              'border-b-2 border-slate-900',
               'focus:outline-none focus:border-emerald-600',
               // Caret
               'caret-emerald-600',
@@ -663,9 +692,10 @@ function ResultCell({ col, row, value, variant, isFinal, inputProps }: ResultCel
             disabled={inputProps.value.trim() === ''}
             aria-label="Tjek svar"
             className={cn(
-              'sm:hidden absolute left-1/2 -translate-x-1/2 -bottom-12',
+              'sm:hidden absolute left-1/2 -translate-x-1/2',
+              inputProps.kompakt ? '-bottom-10' : '-bottom-12',
               'inline-flex items-center justify-center whitespace-nowrap',
-              'rounded-full bg-slate-900 text-white px-4 py-1.5 text-xs font-semibold',
+              'rounded-full bg-slate-900 text-white px-4 py-2 text-xs font-semibold shadow-sm',
               'disabled:bg-slate-300 disabled:cursor-not-allowed',
             )}
           >
@@ -734,10 +764,10 @@ function Hint({
         className="flex flex-col sm:flex-row gap-3"
       >
         <Link
-          href={`/${disciplinId}/proeveklar/`}
-          className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-700 hover:shadow-md"
+          href={`/${disciplinId}/traening/`}
+          className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-amber-600 hover:shadow-md"
         >
-          Tag prøveklar
+          Start træning
         </Link>
         <Link
           href={`/${disciplinId}/`}

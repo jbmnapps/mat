@@ -36,6 +36,12 @@
   (fx prøveklar) skal være visuelt markeret som inaktive.
 - **Mindre er mere.** Fjern hvad der ikke giver elev-værdi. Subtitle
   *"Læg sammen på papir"* var overflødig — symbolet + navnet er nok.
+- **Dashboardet på mobil starter med overblik, ikke plan.** Ingen stort
+  anbefalings- eller træningsplan-card over disciplin-gridden. Hilsen,
+  gem/eksport og så direkte til disciplinerne.
+- **Svarlinjer på mobil skal være kompakte.** Understregningen skal markere
+  feltet, ikke ligne en bred progressbar. Smal width og 2px streg er
+  default på telefon.
 - **Tekst må aldrig klippe ved container-grænse.** Lange titler eller
   beskrivelser skal enten skrumpe (mindre font-size på mobil) eller
   ombryde (`break-words`, `hyphens-auto` — vi har `lang="da"` så dansk

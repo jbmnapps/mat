@@ -14,7 +14,7 @@ import { ArrowLeft } from 'lucide-react';
 import { DISCIPLINER, DISCIPLIN_FARVE, getDisciplin, type DisciplinId } from '@/lib/disciplines';
 import { useStore } from '@/lib/store';
 import { useHydrated } from '@/lib/use-hydrated';
-import { harIndhold } from '@/lib/content-registry';
+import { harDisciplinIndhold, harIndhold } from '@/lib/content-registry';
 import { ModeCard } from '@/components/mode-card';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +26,7 @@ export default function DisciplinPage() {
 
   const disciplin = getDisciplin(id);
   const farve = DISCIPLIN_FARVE[id];
+  const disciplinHarIndhold = harDisciplinIndhold(id);
 
   const hydreret = useHydrated();
   const progress = useStore((s) => s.progress[id]);
@@ -66,6 +67,11 @@ export default function DisciplinPage() {
               <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl leading-tight">
                 {disciplin.navn}
               </h1>
+              {!disciplinHarIndhold && (
+                <span className="mt-2 inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                  Kommer snart
+                </span>
+              )}
             </div>
           </div>
         </motion.header>
@@ -73,7 +79,7 @@ export default function DisciplinPage() {
         {/* Mode-kort — centreret vertikalt i den ledige plads. På korte
             viewports (mobil med kort indhold) sidder kortene midt på
             skærmen i stedet for at klumpe sig under headeren. */}
-        <div className="flex-1 flex flex-col justify-center py-8 sm:py-12">
+        <div className="flex-1 flex flex-col justify-start py-5 sm:justify-center sm:py-12">
           <div className="flex flex-col gap-3 sm:grid sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <ModeCard
               mode="lektion"

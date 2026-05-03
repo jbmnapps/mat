@@ -27,6 +27,20 @@ a, button, [role="button"], [tabindex] {
   -webkit-tap-highlight-color: transparent;
 }
 
+@layer utilities {
+  .safe-top {
+    padding-top: calc(env(safe-area-inset-top) + 0.75rem);
+  }
+
+  .safe-top-roomy {
+    padding-top: calc(env(safe-area-inset-top) + 1.5rem);
+  }
+
+  .safe-bottom {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+  }
+}
+
 /* Respect reduced motion preferences (princip 9) */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

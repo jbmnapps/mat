@@ -35,6 +35,7 @@ import {
   svarErRigtigt,
 } from '@/lib/quiz-types';
 import { useStore } from '@/lib/store';
+import { useKeyboardViewport } from '@/lib/use-keyboard-viewport';
 import type { DisciplinId } from '@/lib/disciplines';
 
 interface Props {
@@ -69,6 +70,7 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const næsteKnapRef = useRef<HTMLButtonElement>(null);
+  const keyboardViewport = useKeyboardViewport();
 
   const registrér = useStore((s) => s.registrérPrøveklarForsoeg);
 
@@ -374,9 +376,17 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
     // og siden bliver scrollable. Med fixed h + overflow-hidden låses
     // højden til faktisk synlig plads — keyboard skubber ikke content,
     // og side er ikke længere scrollable.
-    <main className="h-[100dvh] overflow-hidden bg-slate-50/40 flex flex-col">
+    <main
+      className="h-[100dvh] overflow-hidden bg-slate-50/40 flex flex-col"
+      style={keyboardViewport.height ? { height: `${keyboardViewport.height}px` } : undefined}
+    >
       {/* Header */}
-      <header className="px-6 py-6 lg:px-12 lg:py-8 flex items-center justify-between gap-4">
+      <header
+        className={cn(
+          'px-6 lg:px-12 flex items-center justify-between gap-4',
+          keyboardViewport.keyboardOpen ? 'safe-top pb-2' : 'safe-top-roomy pb-5 lg:pb-7',
+        )}
+      >
         <Link
           href={`/${disciplinId}/`}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors"
@@ -409,7 +419,7 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
       </header>
 
       {/* Progress-bar */}
-      <div className="px-6 lg:px-12">
+      <div className={cn('px-6 lg:px-12', keyboardViewport.keyboardOpen && 'hidden sm:block')}>
         <div className="h-1 w-full bg-slate-200 rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-slate-900"
@@ -423,18 +433,36 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
       {/* Center — top-anchored så spørgsmål og input står på samme position
           uafhængigt af om feedback vises eller ej. Feedback dukker op naturligt
           mellem input og næste-knap; intet shifter ovenfor.
-          På mobil holder vi spørgsmål højere oppe (pt-[8vh]) så det
-          ikke gemmer sig bag tastaturet når input får fokus. */}
-      <div className="flex-1 flex flex-col items-center px-6 pt-[12vh] sm:pt-[18vh] lg:pt-[20vh]">
+          Når tastaturet er åbent på mobil, komprimerer vi topafstand og
+          skjuler progressbar, så spørgsmålet ikke bliver skåret i toppen. */}
+      <div
+        className={cn(
+          'flex-1 flex flex-col items-center px-6',
+          keyboardViewport.keyboardOpen ? 'pt-[4vh]' : 'pt-[12vh] sm:pt-[18vh] lg:pt-[20vh]',
+        )}
+      >
         <div className="w-full max-w-xl">
           {/* Spørgsmål */}
-          <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 text-center mb-6 sm:mb-10 leading-snug">
+          <h2
+            className={cn(
+              'font-display font-bold tracking-tight text-slate-900 text-center leading-snug',
+              keyboardViewport.keyboardOpen
+                ? 'mb-4 text-lg'
+                : 'mb-6 text-xl sm:mb-10 sm:text-2xl lg:text-3xl',
+            )}
+          >
             {aktivOpgave.spørgsmål}
           </h2>
 
           {/* Numeric input */}
           {aktivOpgave.type === 'numeric' && (
-            <form onSubmit={submitNumeric} className="flex flex-col items-center gap-6">
+            <form
+              onSubmit={submitNumeric}
+              className={cn(
+                'flex flex-col items-center',
+                keyboardViewport.keyboardOpen ? 'gap-4' : 'gap-6',
+              )}
+            >
               {/* Input-wrapper er fixed-width og centreret. Enhed er absolut
                   positioneret til højre, så input ALTID forbliver centreret
                   uanset om enhed vises eller ej. Tidligere flex-row centrerede
@@ -444,21 +472,25 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
               <motion.div
                 animate={{ x: shake ? [-6, 6, -6, 6, 0] : 0 }}
                 transition={{ duration: 0.4 }}
-                className="relative mx-auto w-48"
+                className="relative mx-auto w-28 sm:w-40 lg:w-48"
               >
                 <input
                   ref={inputRef}
                   type="text"
                   inputMode="decimal"
+                  enterKeyHint="done"
                   value={visInputValue}
                   onChange={(e) =>
                     setInput(e.target.value.replace(/[^0-9,.\-\s]/g, ''))
                   }
                   disabled={visFeedback}
                   autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                   aria-label="Dit svar"
                   className={cn(
-                    'w-full text-center font-display text-4xl sm:text-5xl lg:text-6xl font-bold tabular-nums bg-transparent border-b-[3px] focus:outline-none caret-emerald-600 py-2 transition-colors',
+                    'w-full text-center font-display text-4xl sm:text-5xl lg:text-6xl font-bold tabular-nums bg-transparent border-b-2 focus:outline-none caret-emerald-600 py-2 transition-colors',
                     !visFeedback && 'border-slate-300 focus:border-emerald-600 text-slate-900',
                     visFeedback && visResultat?.rigtigt && 'border-emerald-500 text-emerald-700',
                     visFeedback && !visResultat?.rigtigt && 'border-rose-500 text-rose-700',
@@ -554,7 +586,12 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
       </div>
 
       {/* Bund: hint + (lærer) skip */}
-      <div className="px-6 pb-8 flex items-center justify-between gap-4">
+      <div
+        className={cn(
+          'px-6 safe-bottom flex items-center justify-between gap-4',
+          keyboardViewport.keyboardOpen && 'hidden sm:flex',
+        )}
+      >
         {!visFeedback ? (
           <span className="hidden sm:inline-flex text-xs uppercase tracking-[0.2em] font-semibold text-slate-400">
             Tryk{' '}
