@@ -120,6 +120,12 @@
   disciplin-flow. Nielsen-score 25/40. Fund og prioriteret action-plan
   ligger i [`.claude/notes/critique-2026-05-03.md`](.claude/notes/critique-2026-05-03.md).
 
+## Animationer
+
+Designmæssigt skal animationer føles smooth. Hak, overlap eller layout-shifts er ikke OK — det rammer "Pro feel"-princippet. Nye elementer der træder ind skal komme **efter** eksisterende har bevæget sig, ikke samtidigt.
+
+Tekniske faldgruber og hvordan vi har løst dem ligger i [ANIMATIONER.md](ANIMATIONER.md). Læs den når du laver eller ændrer animationer.
+
 ## Konkrete eksempler (anti-mønstre der kostede tid)
 
 - **"Din status"-pille øverst på dashboardet** — for visuelt støjfuld;

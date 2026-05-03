@@ -136,6 +136,7 @@ Princippet: hvis du ændrer noget der falder under en agents domæne, kald agent
 - **[AUDIT.md](AUDIT.md)** — aktive findings fra agent-reviews.
 - **[BACKEND-TJEK.md](BACKEND-TJEK.md)** — tjekliste for læreren før login-link deles. *Relevant ved Supabase-arbejde.*
 - **[DESIGN.md](DESIGN.md)** — visuelt sprog (typografi, palette, SVG-mønstre).
+- **[ANIMATIONER.md](ANIMATIONER.md)** — tekniske regler og faldgruber ved animationer. *Læs ved animation-arbejde.*
 - **[archive/](archive/)** — historik fra tidligere sprints og pre-pivot-docs. Læses kun ved behov.
 - **[print/](print/)** — det oprindelige print-projekt som reference.
 
