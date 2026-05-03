@@ -10,63 +10,77 @@ Branch: `weekend`. `main` står urørt.
 
 ## Status nu (opdateres efter hver session)
 
-**Sidst opdateret:** 2026-05-02, lørdag aften
+**Sidst opdateret:** 2026-05-03, nat (efter share-iteration + audit, før Supabase-merge)
 
-**To sessions kører parallelt:**
-- **Denne session (weekend-branch)**: site-iteration, indhold, UI, share-snapshot. Pusher til `weekend` → auto-deploy til `https://jbmnapps.github.io/mat/`.
-- **Anden session (main-branch)**: bygger Supabase-backend (login + sync). Arbejder i søster-mappe `Matematikopgaver-WEB-main/` via `git worktree`. Må IKKE røre weekend-branch eller pushe noget der trigger gh-pages deploy.
+**Live:** https://jbmnapps.github.io/mat/share/ — det er det eleverne bruger.
 
-**Koordinerings-regler mellem sessions:**
-- Weekend-session ejer: `weekend`-branch, `gh-pages`-branch, alt der vises på live URL.
-- Main-session ejer: `main`-branch, Supabase-projekt-setup, login-arkitektur.
-- Ingen af sessionerne ændrer den andens branch direkte. Cherry-pick efter mandag.
-- Migration-kompatibilitet (se `lib/progress-io.ts`): JSON-format og DisciplinId-strenge er stabile på tværs af sessions — main-session må ikke ændre dem så elever kan importere deres weekend-eksporter.
+### Hvad er bygget
 
-**Live deployet:** https://jbmnapps.github.io/mat/  
-**Snapshot til deling:** https://jbmnapps.github.io/mat/share/ (frosset, opdateres kun manuelt)
+**Indhold (uændret):** 13 discipliner × 12 opgaver = 156 opgaver. Alle 156 svar er manuelt verificeret korrekte (jf. opgaver-audit). Tal & algebra (7 disciplines), Geometri (3), Statistik (3). Mangler stadig: vinkler, ligedannethed, overslagsregning, regneudtryk, decimaltal-opgaver.
 
-**Færdige bølger:** 1, 2, 3, 4, 5 (indhold + design + deploy + cache-fix + mobile-tap + farver + status-indikator)
+**Bonus-indhold:** Gangetabel-træner under `app/gangetabeller/` (separat side, ikke i opgavebank). Bygges aktivt af parallel session.
 
-**13 discipliner med træning** (12 opgaver hver = 156 opgaver):
-- Tal & algebra: addition, subtraktion, multiplikation, division, procent, ligninger, hverdagsregning
-- Geometri: enhedsomregning, rumfang, koordinatsystem
-- Statistik: tabeller, diagrammer, sandsynlighed
+**Iteration på /share/ siden 2026-05-02:**
+- **Round 1+2:** forside-cleanup, addition-tips simpler, layout-shift fix på elever-opgaven, typo i import, status synlig på mobil, smooth feedback-animation
+- **Round 3a:** titel-ombrydning på mobil, hover-effekter "klistrer" ikke længere på iOS, tap-highlight væk
+- **Round 3b:** Lektion responsivt grid (clamp), eksplicit "Tjek"-knap til iOS numeric keypad, disciplin-side mode-cards centreret vertikalt, prøveklar-kort greyet ud, ny prøveklar-tekst
+- **Round 3c:** Frem/tilbage-navigation i træning (← knap + ←/→ tastatur), PWA fullscreen via appleWebApp metadata
+- **Round 3d:** Keyboard-scroll fix (`h-[100dvh] overflow-hidden`)
 
-**Mangler:** vinkler, ligedannethed, overslagsregning, regneudtryk (mindre kritiske).
+**System-fasen:**
+- `SMAG.md` — levende dokument over brugerens smag/sprog/regler. Vokser med hver iteration.
+- 4 custom subagents under `.claude/agents/`: visual-reviewer, forklaringer-reviewer, opgaver-reviewer, ux-reviewer. Bruges proaktivt før push.
+- `CLAUDE.md` har hardcoded regel: ingen UI/indhold-ændringer uden at have læst SMAG.md først.
 
-**Mobile-fixes deployet:**
-- Addition lektion: hint er nu en touch-knap der avancerer (samt Enter på desktop). Label skifter mellem "Tryk Enter for at gå videre" (sm+) og "Tryk her for at gå videre" (mobil).
-- Quiz: "Tryk Enter for at svare"-hint skjules under sm-breakpoint. Svar-knappen er allerede tappable.
-- Bruger tester selv på telefon — afventer feedback.
+### Audit kørt (2026-05-03)
 
-**Onboarding-setup for fremtidige sessions:**
-- claude.md banner peger på dette dokument.
-- Auto-memory: `proeveprep_weekend.md`, `feedback_collaboration_style.md`, `feedback_footguns.md`, `reference_repo_deploy.md`.
-- Code-map og common operations findes længere nede i dette dokument.
+3 parallelle agent-audits dækkede forklaringer, opgaver, og visual+UX. Resultater synteseret i **[AUDIT.md](AUDIT.md)** med prioriteret fix-liste. **Læs AUDIT.md før næste arbejdssession.**
 
-**Næste op (denne session):**
-- Brugerens telefon-test feedback
-- Kollegaens review-feedback fra share-URL
-- Indhold: vinkler, ligedannethed, overslagsregning, regneudtryk hvis tid
-- Eventuelt: prøveklar-mode (bølge 7)
+**TL;DR fra audit:**
+- 🔥 1 kritisk regression: state-bug i Quiz hvor forrige feedback hænger ved på næste opgave (introduceret af min frem/tilbage-implementering — fix er beskrevet i AUDIT.md sektion 1.1)
+- 🔥 SMAG-overtrædelser: sub-03/sub-05 bruger forbudt jargon ("tier-søjle"), mul-05 har faktuelt forkert tip
+- ⚠️ 16 forklaringer afslører eller næsten-afslører svaret (især `sandsynlighed.ts` — 7 af 10)
+- ⚠️ Mangler dækning af kendte Ismail-svagheder (lig: x på begge sider, koo: negativ koordinat)
+- ✅ 156 svar matematisk korrekte, design-niveau er på "Pro"
 
-**Næste op (main-session, Supabase):**
-- Supabase-projekt setup (manuel: konto + project + tabeller)
-- Klient-integration: install `@supabase/supabase-js`, env vars
-- Login-flow: brugernavn + 4-cifret kode, ingen rigtige passwords
-- Store-sync: erstat localStorage med Supabase når logget ind
-- Import-flow udvidet: når elev importerer JSON, push også til Supabase
+### Næste session — handoff-instruktioner
 
-**Kendte begrænsninger:**
+Læs i denne rækkefølge:
+1. Denne fil (PROEVE-PREP.md) — projektoverblik
+2. **[AUDIT.md](AUDIT.md)** — den prioriterede fix-liste fra audit
+3. [SMAG.md](SMAG.md) — brugerens smag og regler (HARD krav før UI/indhold-ændringer)
+4. [CLAUDE.md](CLAUDE.md) — projekt-instruktioner
+5. [BACKEND-TJEK.md](BACKEND-TJEK.md) — kun ved Supabase-arbejde
+
+**Anbefalet rækkefølge for fix:**
+1. Prioritet 1 fra AUDIT.md (kritisk state-bug + SMAG-violations) — ~30-45 min
+2. Verifér via visual-reviewer-agenten
+3. Prioritet 2 forklaringer (sandsynlighed-omskrivning + 8 specifikke) — ~45-60 min
+4. Verifér via forklaringer-reviewer-agenten
+5. Tilføj manglende Ismail-dækning til lig + koo — ~20 min
+6. Visuel polish — ~20-30 min
+7. Tilføj 5 nye principper til SMAG.md
+8. Build + deploy til /share/
+
+**Total estimat: 2-3 timer.**
+
+### Branch-strategi efter denne session
+
+- `weekend-share` → mergeret til `weekend` (denne sessions arbejde)
+- `weekend-supabase` → Supabase-session merger ind i `weekend` når deres tests er grønne
+- `gh-pages` → manuel deploy til `/share/` ved hver share-iteration; auto-deploy til `/mat/` ved push til weekend
+- Cleanup af stale `claude/`-worktrees: ikke gjort i denne session — gemt til efter prøven
+
+### Kendte begrænsninger
+
 - Kun lektion bygget for addition (premium-stil). Andre discipliner viser "Lektion kommer snart".
 - Prøveklar-mode endnu ikke bygget (træning bruger samme metode `registrérPrøveklarForsoeg` for at status vises på dashboard — splittes når prøveklar kommer).
 - Koordinatsystem-opgaver er rent tekstuelle. Visualiseringer kræver eget format.
-- Login og remote control virker ikke i den nuværende Claude-session (auth-restriktion).
 
 **Vigtigste arbejds-løkke:**
-1. Lav ændring → push til `weekend` → GitHub Actions bygger og deployer → ~2 min så live
-2. Brug Claude in Chrome til visuelt selvstjek FØR push på UI-ændringer
-3. Brug review-agent (general-purpose) til opgave-QC efter en bølge
+1. Lav ændring → kald relevant subagent (visual / forklaringer / opgaver / ux) → fix evt. ❌
+2. Push til `weekend-share` (eller relevant branch) → manuel build + deploy til `/share/` for share-side
+3. Eller: merge til `weekend` → GitHub Actions auto-deployer til `/mat/`
 
 ---
 
