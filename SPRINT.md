@@ -1,9 +1,11 @@
-# Sprint-koordination — parallelle sessions
+# Sprint-koordination — parallelle sessions [AFSLUTTET]
 
-> To Claude-sessions arbejder samtidigt på `weekend`-grunden i hver sin worktree.
-> Læs ved start. Opdater status ved start og slut, ikke konstant.
+> ✅ **Afsluttet 2026-05-03 søndag morgen.** Begge sessions er merget til `weekend`.
+> Dette dokument bevares som historik over hvordan vi koordinerede. Nye sessions skal læse [PROEVE-PREP.md](PROEVE-PREP.md) i stedet — den har den aktuelle status.
 
-**Tidshorisont:** Lørdag aften 2026-05-02, ~1 time aktiv parallel-arbejde.
+> To Claude-sessions arbejdede samtidigt på `weekend`-grunden i hver sin worktree.
+
+**Tidshorisont (oprindelig):** Lørdag aften 2026-05-02, ~1 time aktiv parallel-arbejde — udvidet til at strække sig ind i søndag morgen 2026-05-03.
 
 ## Aktive sessions
 
@@ -57,6 +59,12 @@ Hvis konflikter: bruger og sessioner aftaler i chat hvordan de løses.
 > Format: `[YYYY-MM-DD HH:MM] [Session] besked`
 
 - [2026-05-02 23:30] [Supabase] Login + sync + lærer-side bygget. Build + types OK. Brugeren skal køre `supabase-schema.sql` og tilføje GitHub Secrets — se [SUPABASE-SETUP.md](SUPABASE-SETUP.md). Ikke merget til weekend endnu — afventer tests.
+- [2026-05-03 00:30] [Supabase] SQL kørt af brugeren, Confirm email FRA, GitHub Secrets tilføjet. End-to-end testet med TestElev. Security advisor renset (5→1 warning, kun Pro-only). Pushet til weekend, deployet live.
+- [2026-05-03 01:00] [Supabase] Login-gate på elev-routes + premium overlay-design + cached auth (snappy navigation).
+- [2026-05-03 01:30] [Supabase] Træningssekvens (TRÆNINGS_TRIN baseret på FP9-prøveanalyse), live-aktivitet på lærer-side, reset progress, link til Supabase for kode-reset.
+- [2026-05-03 02:00] [Supabase] Aktivitetstid-tracker (kun synlig for læreren).
+- [2026-05-03 03:00] [Supabase] PWA-installation: manifest, ikoner, appleWebApp meta. Brugerdesignet ikon (smiley med × ÷).
+- [2026-05-03 04:30] [Supabase] Merge af `weekend-share` ind. Begge sessions samlet i `weekend`. Sprintet er afsluttet.
 
 ## Brugerens ansvar
 

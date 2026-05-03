@@ -1,8 +1,16 @@
 # Supabase-setup — tjekliste til Jonas
 
-> Det her er trinene du skal igennem ÉN GANG før login virker. Tag dem i rækkefølge. Estimat: 15 minutter inkl. test.
+> ✅ **Setup gennemført 2026-05-03.** Login virker live på https://jbmnapps.github.io/mat/.
 >
-> Når du er færdig, så gå til [BACKEND-TJEK.md](BACKEND-TJEK.md) og besvar de 6 spørgsmål før du deler linket med eleverne.
+> Dokumentet bevares som reference hvis Supabase-projektet skulle nulstilles eller migreres senere.
+>
+> Status pr. 2026-05-03 (alle trin gennemført):
+> - ✅ SQL-script kørt (inkl. senere fixes: drop af `is_teacher()`, RLS-delete-policy for lærer, `add_active_seconds`-funktion)
+> - ✅ "Confirm email" slået fra
+> - ✅ GitHub Secrets tilføjet (alle 3)
+> - ✅ Lokal + live test gennemført
+> - ✅ Security advisor renset (1 resterende warning er Pro-only)
+> - ⚠️ Husk: tøm test-elever fra Supabase lige før linket sendes til klassen (`delete from auth.users where email like '%@elev.fp9.local';`)
 
 ---
 
