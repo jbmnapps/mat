@@ -43,6 +43,15 @@
 - **Test i flere viewports.** Mindst iPhone (375px), iPad (768px),
   desktop (1280px). Lange ord som "Hverdagsregning", "Overslagsregning",
   "Koordinatsystem" SKAL fitte/ombryde — ikke klippes.
+- **Hover-effekter må ALDRIG fyre på touch-devices.** På iOS udløser tap
+  både `:hover`, `:active` og `:focus` — uden modforanstaltning bliver
+  hover-styles "klistret" efter tap (skygger, translates, farveændringer).
+  Vi har `hoverOnlyWhenSupported: true` i `tailwind.config.ts`, så `hover:`
+  -utilities kun loader under `(hover: hover)` media query.
+- **Ingen iOS tap-highlight-overlay.** `-webkit-tap-highlight-color: transparent`
+  er sat på alle interaktive elementer i `globals.css`. Vi stoler på vores
+  egne `:active`/`:focus`-styles til at signalere tryk — aldrig browserens
+  default mørkegrå rektangel der "blinker".
 
 ## UX-flow
 

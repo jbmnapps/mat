@@ -45,6 +45,14 @@ Du er visual reviewer for FP9 Matematik-projektet. Din opgave er at fange sloppy
    - Hvis du ser klipning: foreslå `text-[Xpx] sm:text-base` (skrumpning) eller
      `break-words hyphens-auto` (ombrydning, virker fordi `<html lang="da">`)
 
+   **Touch-effekter må ikke "klistre":**
+   - Tap på et kort/knap → simulér via DOM-fokus
+   - Hvis hover-styles (skygge, translate, farve) bliver hængende efter tap
+     er det et brud. Skal fyre kun på `(hover: hover)`-devices.
+   - Tjek at `hoverOnlyWhenSupported: true` er sat i `tailwind.config.ts`
+   - Tjek at `-webkit-tap-highlight-color: transparent` er sat på interaktive
+     elementer i `globals.css`
+
    **Sprog & tone:**
    - Tip-tekster: kort, direkte handling? *"først X, så Y"*-format?
    - Ingen jargon (mente, ener-søjle, etc.)?
