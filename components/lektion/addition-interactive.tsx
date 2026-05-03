@@ -439,53 +439,68 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </AnimatePresence>
       </div>
 
-      {/* OVERSKRIFT — y animeres baseret på math's "visible content top".
-          Værdierne er beregnet så overskriftens nederste kant lander
-          ca. 50px (desktop) / 36px (mobil) over math's øverste synlige
-          element. Math container er altid 272/244px, men kun bestemte
-          rækker er synlige pr. mode. */}
+      {/* OVERSKRIFT — bottom-anchored. Element's nederste kant lander
+          en konstant gap over math's øverste synlige række. Når
+          overskriften har flere linjer, vokser den OPAD (væk fra
+          math), ikke nedad over math.
+
+          Offset-værdier udregnet ud fra math grid layout (272px desktop,
+          ~244px kompakt) og hvor synligt indhold starter pr. mode:
+          - horisontal: row 3 top er ~24px over math-center
+          - vertikal uden mente: row 2 top er ~100px over math-center
+          - vertikal med mente: row 1 top er ~136px over math-center
+          Plus en gap på 50px (desktop) / 36px (mobil). */}
       <motion.div
         className="absolute top-1/2 left-1/2 px-6 max-w-2xl w-full text-center pointer-events-none z-[5]"
         initial={false}
         animate={{
-          x: '-50%',
-          y: erIntro
-            ? '-50%'
-            : keyboardViewport.keyboardOpen
-              ? layout === 'horisontal'
-                ? -90
-                : visMente
-                  ? -160
-                  : -130
-              : layout === 'horisontal'
-                ? -110
-                : visMente
-                  ? -210
-                  : -170,
           fontSize: erIntro
             ? 'clamp(28px, 7.5vw, 44px)'
             : 'clamp(20px, 4.5vw, 28px)',
         }}
-        transition={{ duration: 0.55, ease: [0.4, 0.0, 0.2, 1] }}
+        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+        style={{
+          transform: (() => {
+            if (erIntro) return 'translate(-50%, -50%)';
+            const kompakt = keyboardViewport.keyboardOpen;
+            const offset = kompakt
+              ? layout === 'horisontal'
+                ? 58
+                : visMente
+                  ? 158
+                  : 126
+              : layout === 'horisontal'
+                ? 74
+                : visMente
+                  ? 186
+                  : 150;
+            return `translate(-50%, calc(-100% - ${offset}px))`;
+          })(),
+          transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
       >
-        <motion.h2
-          className="font-display font-bold tracking-tight text-slate-900 leading-snug"
-        >
-          {/* Subtle krydsfade — ingen y, ingen scale. mode="wait" så ingen
-              overlap; korte 150ms transitions så blank-perioden er minimal. */}
+        <h2 className="font-display font-bold tracking-tight text-slate-900 leading-snug">
+          {/* Subtle krydsfade — opacity-only, mode="wait" så ingen overlap.
+              Enter har delay 0.25s så ny besked dukker op EFTER overskrift
+              har flyttet sig — naturligt sekventielt flow. */}
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
               key={beskedTekst}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: 'easeOut' }}
+              animate={{
+                opacity: 1,
+                transition: { delay: 0.25, duration: 0.18, ease: 'easeOut' },
+              }}
+              exit={{
+                opacity: 0,
+                transition: { duration: 0.12, ease: 'easeIn' },
+              }}
               className="block"
             >
               {beskedTekst}
             </motion.span>
           </AnimatePresence>
-        </motion.h2>
+        </h2>
       </motion.div>
 
       {/* CTA — original diskret stil, ikke generisk knap */}
@@ -634,7 +649,10 @@ function FormulaScene(props: FormulaSceneProps) {
         );
       })}
 
-      {/* Mente — over tier-søjlen i vertikal (col 3) */}
+      {/* Mente — over tier-søjlen i vertikal (col 3). Delay 0.45s så
+          mente-tallet lander EFTER overskriften er flyttet og den nye
+          besked er fadet ind. Sekventielt flow: overskrift rykker op →
+          ny besked vises → mente '1' lander. */}
       <AnimatePresence>
         {visMente && (
           <motion.span
@@ -646,6 +664,7 @@ function FormulaScene(props: FormulaSceneProps) {
               type: 'spring',
               stiffness: 200,
               damping: 18,
+              delay: 0.45,
             }}
             style={{ gridColumn: 3, gridRow: 1 }}
             className="font-display text-3xl font-bold tabular-nums text-emerald-600"
@@ -715,13 +734,17 @@ function FormulaScene(props: FormulaSceneProps) {
             }
           />
 
-          {/* Enere (col 4) */}
+          {/* Enere (col 4). springDelay 0.45 når '5' kommer fra mente-
+              undervisning så tallet lander EFTER overskriften er flyttet
+              og mente '1' har landet. Når eleven svarer rigtigt
+              (enereGodkendt), ingen delay — feedback skal være snappy. */}
           <ResultCell
             col={4}
             row={5}
             value={enereGodkendt ? String(ex.resultat[ex.resultat.length - 1]) : visEnereResultatCiffer}
             variant={aktivKolonne === 'enere' ? 'input' : 'static'}
             isFinal={enereGodkendt || visEnereResultatCiffer !== null}
+            springDelay={!enereGodkendt && visEnereResultatCiffer ? 0.45 : 0}
             inputProps={
               aktivKolonne === 'enere'
                 ? {
@@ -752,6 +775,10 @@ interface ResultCellProps {
   value: string | null;
   variant: 'input' | 'static';
   isFinal?: boolean;
+  /** Delay før spring-animation starter (sek). Bruges når cellen
+   *  skal vente på en anden animation først (fx mente '1' der lander
+   *  efter overskriften er flyttet i mente-undervisning fase). */
+  springDelay?: number;
   inputProps?: {
     value: string;
     onChange: (s: string) => void;
@@ -761,7 +788,7 @@ interface ResultCellProps {
   };
 }
 
-function ResultCell({ col, row, value, variant, isFinal, inputProps }: ResultCellProps) {
+function ResultCell({ col, row, value, variant, isFinal, springDelay = 0, inputProps }: ResultCellProps) {
   return (
     <div
       style={{ gridColumn: col, gridRow: row }}
@@ -775,7 +802,7 @@ function ResultCell({ col, row, value, variant, isFinal, inputProps }: ResultCel
         <motion.span
           initial={{ scale: 0.4, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 220, damping: 18 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 18, delay: springDelay }}
           className={cn(
             'font-display text-4xl sm:text-6xl lg:text-7xl font-bold tabular-nums leading-none mb-1',
             isFinal ? 'text-emerald-600' : 'text-slate-900',
