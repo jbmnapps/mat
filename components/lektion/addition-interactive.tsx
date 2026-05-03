@@ -406,43 +406,63 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </button>
       </header>
 
-      {/* MATH — centreret på viewport. Math har dynamisk højde pr mode
-          så math's top ER på en kendt position vi kan anchore til. */}
+      {/* MATH — fader ind med delay 300ms så overskriften kan flytte sig
+          op FØRST. Tidligere dukkede stykket op instant og overlappede
+          "Her er et plusstykke" mens overskriften prøvede at flytte sig. */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[3]">
-        {visFormula && (
-          <FormulaScene
-            ex={ex}
-            layout={layout}
-            fase={fase}
-            enereInput={enereInput}
-            setEnereInput={setEnereInput}
-            tierInput={tierInput}
-            setTierInput={setTierInput}
-            enereGodkendt={enereGodkendt}
-            tierGodkendt={tierGodkendt}
-            submitEnere={submitEnere}
-            submitTier={submitTier}
-            inputRef={inputRef}
-            erEksempel2={erEksempel2}
-            kompakt={keyboardViewport.keyboardOpen}
-            shake={shake}
-          />
-        )}
+        <AnimatePresence>
+          {visFormula && (
+            <motion.div
+              key="formula-wrapper"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, x: shake ? [-6, 6, -6, 6, 0] : 0 }}
+              exit={{ opacity: 0 }}
+              transition={
+                shake
+                  ? { duration: 0.4 }
+                  : { duration: 0.35, delay: 0.3 }
+              }
+            >
+              <FormulaScene
+                ex={ex}
+                layout={layout}
+                fase={fase}
+                enereInput={enereInput}
+                setEnereInput={setEnereInput}
+                tierInput={tierInput}
+                setTierInput={setTierInput}
+                enereGodkendt={enereGodkendt}
+                tierGodkendt={tierGodkendt}
+                submitEnere={submitEnere}
+                submitTier={submitTier}
+                inputRef={inputRef}
+                erEksempel2={erEksempel2}
+                kompakt={keyboardViewport.keyboardOpen}
+                shake={shake}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* OVERSKRIFT — ÉT motion-element der animerer mellem to positioner:
-          - Intro: centreret på viewport (y = -50%)
-          - Aktiv: bottom-anchored 24px over math's top (y = calc(-100% - mathHalfHeight - 24px))
-          Y-værdien for aktiv mode er computed fra math's faktiske halvhøjde,
-          som varierer pr mode (horisontal/vertikal/mente). Smooth y-overgang
-          giver "teksten rykker sig"-effekt — ingen unmount/remount. */}
+      {/* OVERSKRIFT — CSS transition på transform giver browser-interpoleret
+          smooth overgang mellem '-50%' (intro: centeret) og
+          'calc(-100% - Xpx)' (aktiv: bottom-anchored over math's top).
+          Motion kan ikke smoothly interpolere mellem procent og calc-strings
+          — det giver "hak"-effekt. Browseren CAN. fontSize animerer via
+          motion separat. */}
       <motion.div
         className="absolute top-1/2 left-1/2 px-6 max-w-2xl w-full text-center pointer-events-none z-[5]"
         initial={false}
         animate={{
-          x: '-50%',
-          y: (() => {
-            if (erIntro) return '-50%';
+          fontSize: erIntro
+            ? 'clamp(28px, 7.5vw, 44px)'
+            : 'clamp(20px, 4.5vw, 28px)',
+        }}
+        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+        style={{
+          transform: (() => {
+            if (erIntro) return 'translate(-50%, -50%)';
             const kompakt = keyboardViewport.keyboardOpen;
             const halfMath =
               layout === 'horisontal'
@@ -451,17 +471,12 @@ export function AdditionInteractive({ disciplinId }: Props) {
                   ? (kompakt ? 120 : 136)
                   : (kompakt ? 106 : 118);
             const gap = 24;
-            return `calc(-100% - ${halfMath + gap}px)`;
+            return `translate(-50%, calc(-100% - ${halfMath + gap}px))`;
           })(),
-          fontSize: erIntro
-            ? 'clamp(28px, 7.5vw, 44px)'
-            : 'clamp(20px, 4.5vw, 28px)',
+          transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
-        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
       >
         <h2 className="font-display font-bold tracking-tight text-slate-900 leading-snug">
-          {/* Subtle crossfade når besked-teksten ændrer sig (men positionen
-              forbliver — det er ÉT element der bare skifter indhold). */}
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
               key={beskedTekst}
