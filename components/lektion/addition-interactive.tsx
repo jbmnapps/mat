@@ -389,7 +389,11 @@ export function AdditionInteractive({ disciplinId }: Props) {
           transition={{ layout: { duration: 0.55, ease: [0.4, 0.0, 0.2, 1] } }}
           className="flex flex-col items-center gap-10 sm:gap-12 lg:gap-16 max-w-2xl w-full"
         >
-          {/* Overskrift */}
+          {/* Overskrift. Tekst-skift er instant unmount + remount via
+              key-change (gammel besked forsvinder med det samme, ny
+              fader ind). Tidligere AnimatePresence "popLayout" overlappede
+              gammel og ny besked på samme position — anti-pro rod.
+              Ingen AnimatePresence her, så ingen overlap. */}
           <motion.div
             layout
             initial={false}
@@ -401,18 +405,14 @@ export function AdditionInteractive({ disciplinId }: Props) {
             transition={{ duration: 0.55, ease: [0.4, 0.0, 0.2, 1] }}
             className="font-display font-bold tracking-tight text-slate-900 leading-snug text-center"
           >
-            {/* Krydsfade mellem fase-beskeder så eleven aldrig ser blank besked. */}
-            <AnimatePresence mode="popLayout" initial={false}>
-              <motion.div
-                key={beskedTekst}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.18, ease: 'easeOut' }}
-              >
-                {beskedTekst}
-              </motion.div>
-            </AnimatePresence>
+            <motion.div
+              key={beskedTekst}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+            >
+              {beskedTekst}
+            </motion.div>
           </motion.div>
 
           {/* Formula — træder ind når vi forlader intro. layout-prop sikrer
