@@ -406,12 +406,8 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </button>
       </header>
 
-      {/* MATH + overskrift — math er centreret på viewport. Overskrift
-          er positioneret INDE i math-containeren med bottom-anchor, så
-          den automatisk følger math's faktiske top. Når math vokser
-          (mente træder ind, horisontal → vertikal), math's top skubbes
-          opad og overskrift følger med — uden hardcoded pixel-værdier.
-          Multi-linjers tekst vokser opad fra bottom-anchor. */}
+      {/* MATH — centreret på viewport. Math har dynamisk højde pr mode
+          så math's top ER på en kendt position vi kan anchore til. */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[3]">
         {visFormula && (
           <FormulaScene
@@ -432,65 +428,59 @@ export function AdditionInteractive({ disciplinId }: Props) {
             shake={shake}
           />
         )}
-
-        {/* Aktiv overskrift — bottom-anchored til math container's top
-            med 24px gap. Wrappet i AnimatePresence så ind-/ud-fade
-            virker når vi forlader/genindtrer aktiv tilstand (fx hvis
-            man går tilbage til intro). */}
-        <AnimatePresence>
-          {!erIntro && (
-            <motion.h2
-              key="active-overskrift"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="absolute left-1/2 -translate-x-1/2 px-6 w-max max-w-[80vw] text-center font-display font-bold tracking-tight text-slate-900 leading-snug pointer-events-none z-[5]"
-              style={{
-                bottom: 'calc(100% + 24px)',
-                fontSize: 'clamp(20px, 4.5vw, 28px)',
-              }}
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.span
-                  key={beskedTekst}
-                  initial={{ opacity: 0 }}
-                  animate={{
-                    opacity: 1,
-                    transition: { duration: 0.2, ease: 'easeOut' },
-                  }}
-                  exit={{
-                    opacity: 0,
-                    transition: { duration: 0.12, ease: 'easeIn' },
-                  }}
-                  className="block"
-                >
-                  {beskedTekst}
-                </motion.span>
-              </AnimatePresence>
-            </motion.h2>
-          )}
-        </AnimatePresence>
       </div>
 
-      {/* INTRO-overskrift — separat slot, kun synlig i intro-fasen.
-          AnimatePresence sikrer at exit-fade virker når vi går videre
-          til aktiv. Begge fades sker samtidigt = krydsfade. */}
-      <AnimatePresence>
-        {erIntro && (
-          <motion.h2
-            key="intro-overskrift"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-6 w-max max-w-[80vw] text-center font-display font-bold tracking-tight text-slate-900 leading-tight pointer-events-none z-[5]"
-            style={{ fontSize: 'clamp(28px, 7.5vw, 44px)' }}
-          >
-            {beskedTekst}
-          </motion.h2>
-        )}
-      </AnimatePresence>
+      {/* OVERSKRIFT — ÉT motion-element der animerer mellem to positioner:
+          - Intro: centreret på viewport (y = -50%)
+          - Aktiv: bottom-anchored 24px over math's top (y = calc(-100% - mathHalfHeight - 24px))
+          Y-værdien for aktiv mode er computed fra math's faktiske halvhøjde,
+          som varierer pr mode (horisontal/vertikal/mente). Smooth y-overgang
+          giver "teksten rykker sig"-effekt — ingen unmount/remount. */}
+      <motion.div
+        className="absolute top-1/2 left-1/2 px-6 max-w-2xl w-full text-center pointer-events-none z-[5]"
+        initial={false}
+        animate={{
+          x: '-50%',
+          y: (() => {
+            if (erIntro) return '-50%';
+            const kompakt = keyboardViewport.keyboardOpen;
+            const halfMath =
+              layout === 'horisontal'
+                ? (kompakt ? 34 : 38)
+                : visMente
+                  ? (kompakt ? 120 : 136)
+                  : (kompakt ? 106 : 118);
+            const gap = 24;
+            return `calc(-100% - ${halfMath + gap}px)`;
+          })(),
+          fontSize: erIntro
+            ? 'clamp(28px, 7.5vw, 44px)'
+            : 'clamp(20px, 4.5vw, 28px)',
+        }}
+        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+      >
+        <h2 className="font-display font-bold tracking-tight text-slate-900 leading-snug">
+          {/* Subtle crossfade når besked-teksten ændrer sig (men positionen
+              forbliver — det er ÉT element der bare skifter indhold). */}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={beskedTekst}
+              initial={{ opacity: 0 }}
+              animate={{
+                opacity: 1,
+                transition: { duration: 0.18, ease: 'easeOut' },
+              }}
+              exit={{
+                opacity: 0,
+                transition: { duration: 0.12, ease: 'easeIn' },
+              }}
+              className="block"
+            >
+              {beskedTekst}
+            </motion.span>
+          </AnimatePresence>
+        </h2>
+      </motion.div>
 
       {/* CTA — original diskret stil, ikke generisk knap */}
       <div className="absolute bottom-[14vh] left-1/2 -translate-x-1/2 px-6 text-center pointer-events-auto z-[5]">
