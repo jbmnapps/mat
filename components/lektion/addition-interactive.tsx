@@ -63,6 +63,24 @@ const VERTIKAL_FASER: Fase[] = [
   'færdig',
 ];
 
+// Kanonisk rækkefølge — bruges af tilbage-navigation.
+const ALLE_FASER: Fase[] = [
+  'intro-1',
+  'vis-horisontal-1',
+  'spørg-hvordan-1',
+  'forklarer-omarranger-1',
+  'spørg-enere-1',
+  'spørg-tier-1',
+  'fejr-1',
+  'broen',
+  'broen-morph',
+  'spørg-enere-2',
+  'mente-undervisning',
+  'spørg-tier-2',
+  'fejr-2',
+  'færdig',
+];
+
 interface Eksempel {
   id: string;
   top: [number, number];
@@ -222,7 +240,18 @@ export function AdditionInteractive({ disciplinId }: Props) {
     }
   }, [fase]);
 
-  // Enter-handler for ikke-input faser
+  // Tilbage-navigation (regel: eleven skal kunne navigere frem og tilbage).
+  // Går én fase tilbage. State (input, godkendt-status) bevares — eleven
+  // kan se hvor hun var. Frem håndteres via klik/Enter (advance).
+  const forrigeFase = useCallback(() => {
+    const idx = ALLE_FASER.indexOf(fase);
+    if (idx > 0) setFase(ALLE_FASER[idx - 1]);
+  }, [fase]);
+
+  const erFørsteFase = ALLE_FASER.indexOf(fase) === 0;
+
+  // Tastatur — Enter avancerer i ikke-input-faser, ArrowLeft går tilbage
+  // (men ikke når fokus er på et input-felt; der skal pilene flytte cursor).
   useEffect(() => {
     const inputFaser: Fase[] = [
       'spørg-enere-1',
@@ -230,17 +259,29 @@ export function AdditionInteractive({ disciplinId }: Props) {
       'spørg-enere-2',
       'spørg-tier-2',
     ];
-    if (inputFaser.includes(fase)) return;
-    if (fase === 'broen-morph') return;
+    const erIInputFase = inputFaser.includes(fase) || fase === 'broen-morph';
 
     const handler = (e: KeyboardEvent) => {
-      if (e.key !== 'Enter') return;
-      e.preventDefault();
-      advance();
+      const erIInputFelt = e.target instanceof HTMLInputElement;
+
+      // Tilbage virker altid (undtagen når cursor er i input — der skal pilen
+      // flytte cursor i tal-feltet).
+      if (e.key === 'ArrowLeft' && !erIInputFelt) {
+        e.preventDefault();
+        forrigeFase();
+        return;
+      }
+
+      // Enter avancerer kun i ikke-input-faser. I input-faser submitter
+      // input-formen Enter selv.
+      if (e.key === 'Enter' && !erIInputFase) {
+        e.preventDefault();
+        advance();
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [fase, advance]);
+  }, [fase, advance, forrigeFase]);
 
   const fail = useCallback(() => {
     setShake(true);
@@ -284,15 +325,27 @@ export function AdditionInteractive({ disciplinId }: Props) {
 
   const beskedTekst = beskedFor(fase, enereSvar2);
 
+  // Klik-overalt-avancerer (regel: klik avancerer overalt — Tjek-knap kun
+  // ved flere mulige handlinger). I input-faser returnerer advance() false,
+  // så klik gør intet — eleven kan trygt klikke i input-feltet uden at
+  // springe videre. Klik på input/knap/link/form ignoreres så native
+  // adfærd virker (cursor-placering, navigation, submit).
+  const handleScreenClick = (e: React.MouseEvent<HTMLElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('input, button, a, form, label')) return;
+    advance();
+  };
+
   return (
     <main
-      className="h-[100dvh] relative bg-slate-50/40 overflow-hidden"
+      className="h-[100dvh] relative bg-slate-50/40 overflow-hidden cursor-pointer"
       style={keyboardViewport.height ? { height: `${keyboardViewport.height}px` } : undefined}
+      onClick={handleScreenClick}
     >
       {/* Header */}
       <header
         className={cn(
-          'absolute top-0 left-0 right-0 px-6 lg:px-12 z-10',
+          'absolute top-0 left-0 right-0 px-6 lg:px-12 z-10 flex items-center justify-between gap-4',
           keyboardViewport.keyboardOpen ? 'safe-top pb-2' : 'safe-top-roomy pb-5 lg:pb-7',
         )}
       >
@@ -303,6 +356,22 @@ export function AdditionInteractive({ disciplinId }: Props) {
           <ArrowLeft className="h-4 w-4" aria-hidden />
           Afslut lektion
         </Link>
+
+        {/* Tilbage-knap til forrige fase — vises altid undtagen i første fase */}
+        <button
+          type="button"
+          onClick={forrigeFase}
+          disabled={erFørsteFase}
+          aria-label="Tilbage til forrige trin"
+          className={cn(
+            'inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500',
+            'transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700',
+            'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-slate-200 disabled:hover:bg-white disabled:hover:text-slate-500',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2',
+          )}
+        >
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+        </button>
       </header>
 
       {/* MESSAGE SLOT */}
@@ -316,19 +385,22 @@ export function AdditionInteractive({ disciplinId }: Props) {
             initial={false}
             animate={{
               fontSize: erIntro
-                ? 'clamp(28px, 8vw, 48px)'
+                ? 'clamp(26px, 7vw, 40px)'
                 : 'clamp(18px, 5vw, 26px)',
             }}
             transition={{ duration: 0.6, ease: [0.4, 0.0, 0.2, 1] }}
             className="font-display font-bold tracking-tight text-slate-900 leading-snug"
           >
-            <AnimatePresence mode="wait">
+            {/* mode="popLayout" lader gammel exit'e samtidigt med at ny
+                initial fade'er ind — krydsfade. Tidligere "wait" gav en
+                blank periode mellem beskeder hvor eleven sad uden kontekst. */}
+            <AnimatePresence mode="popLayout" initial={false}>
               <motion.div
                 key={beskedTekst}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
               >
                 {beskedTekst}
               </motion.div>
@@ -551,13 +623,18 @@ function FormulaScene(props: FormulaSceneProps) {
       {/* Resultat-række */}
       {erVertikal && (
         <>
-          {/* Hundrede (col 2 — kun ex2 efter tier-svar) */}
-          <ResultCell
-            col={2}
-            row={5}
-            value={harHundrede && (fase === 'fejr-2' || fase === 'færdig') ? '1' : null}
-            variant="static"
-          />
+          {/* Hundrede (col 2 — kun ex2 efter tier-svar). Render ALDRIG ved
+              !harHundrede — ellers viser den en placeholder-streg på en
+              kolonne der ikke skal udfyldes (regel: layout må aldrig
+              hint at noget skal udfyldes der ikke skal). */}
+          {harHundrede && (
+            <ResultCell
+              col={2}
+              row={5}
+              value={(fase === 'fejr-2' || fase === 'færdig') ? '1' : null}
+              variant="static"
+            />
+          )}
 
           {/* Tier (col 3) */}
           <ResultCell
@@ -631,9 +708,9 @@ function ResultCell({ col, row, value, variant, isFinal, inputProps }: ResultCel
       style={{ gridColumn: col, gridRow: row }}
       className="flex items-end justify-center w-full h-full"
     >
-      {variant === 'static' && !value && (
-        <div className="w-10 sm:w-12 border-b-[3px] border-slate-300 rounded-full mb-1" />
-      )}
+      {/* Tom placeholder-streg fjernet bevidst (regel: layout må aldrig hint
+          udfyldning). Tomme statiske celler er bare tomme. Input-celler har
+          deres egen border via input-feltet. */}
 
       {variant === 'static' && value && (
         <motion.span

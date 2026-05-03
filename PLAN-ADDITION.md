@@ -21,15 +21,15 @@ Mål: lektionen skal *føles pro*. Ingen koncept-redesign — kun fix af det der
 
 ### Tasks
 
-- [ ] **Fjern fantom-kolonne 3-streg** (regel: layout må aldrig hint udfyldning). Grid skal kun vise søjler der faktisk skal bruges. POS-grid'et i `addition-interactive.tsx` ~line 401 skal opdateres til at være variable-bredde, ikke fixed 5-søjlet.
-- [ ] **"14" må ikke crammes på 1 plads** (din desktop-10). Når svar er 2-cifret over en 1-cifret position, skal det enten fordele sig over to pladser eller udvide grid'et.
-- [ ] **Klik-overalt-for-at-avancere** (regel: klik avancerer overalt). Tilføj baggrunds-klik-flade i avance-faser (alle ikke-input-faser). Behold Enter-handler.
-- [ ] **"Tryk her" hint forsvinder efter brug** (din mobil-2). Hint skal være subtil, men ikke vedvarende klistret nederst når eleven klikker.
-- [ ] **Beskeder ude af sync med scenen** (mit fund 2). `beskedFor()` returnerer ny tekst med det samme, men AnimatePresence's exit-animation (200-300ms) gør at gammel besked stadig vises. Mulige fix: kortere exit, eller cross-fade i stedet for fade-out-fade-in.
-- [ ] **Tilbage-knap i animationen** (regel: navigation frem/tilbage). Pile-knap i header. Bagud bevarer fase-state. Frem genoptager.
-- [ ] **Lille streg under 67+78 i første sekund** (din mobil-8). Sandsynligvis en grid-overgangsfejl. Find og fix.
-- [ ] **Beskeder for lyse / faded** (mit fund 5). Tjek om `text-slate-900` faktisk renderes som det. Hvis opacity-animation ikke når 100%, fix.
-- [ ] **Tekst-størrelse på "Her er et plusstykke" på mobil** (din mobil-1). Reducer max clamp fra 48px til ~36-40px.
+- [x] **Fjern fantom-kolonne 3-streg** — `harHundrede &&`-wrap om hundrede-ResultCell + fjern static-mode placeholder-streg helt. Tomme statiske celler er nu tomme.
+- [x] **Klik-overalt-for-at-avancere** — `onClick={handleScreenClick}` på `<main>`. Klik på input/knap/link/form ignoreres for at bevare native adfærd.
+- [x] **Beskeder ude af sync med scenen** — `mode="popLayout"` i stedet for `"wait"`, kortere transition (180ms), opacity-only (uden y-translate). Krydsfade i stedet for blank periode.
+- [x] **Tilbage-knap i animationen** — pile-knap i header (← ArrowLeft i højre side, ved siden af "Afslut lektion"). Tastatur-shortcut `←`. Bevarer state ved bagud.
+- [x] **Lille streg under 67+78 i første sekund** — fixet som bivirkning af fjernet placeholder-streg. Tomme celler under morph er nu rent tomme.
+- [x] **Tekst-størrelse på "Her er et plusstykke" på mobil** — clamp ændret fra `clamp(28px, 8vw, 48px)` til `clamp(26px, 7vw, 40px)`.
+- [ ] **"14" må ikke crammes på 1 plads** (din desktop-10). PARKERET — input-feltet har pt. `w-[60px] sm:w-[80px]` og `maxLength=2`, så 2 cifre fitter, men kan stadig se crammed ud. Konceptuelt fix er fase 3 (split 14 → 1 hundrede + 4 tier mens eleven taster), så vi venter.
+- [ ] **"Tryk her" hint forsvinder efter brug** (din mobil-2). PARKERET — hint forsvinder allerede når fase ændres, men kan polishes (animér ud, flyt højere op på mobil). Tager det med i fase 3.
+- [ ] **Beskeder for lyse / faded** (mit fund 5). PARKERET — efter sync-fix er det måske ikke længere et problem. Verificér i live-test først.
 
 ### Verifikation
 
