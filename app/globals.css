@@ -20,6 +20,13 @@ html, body {
   overscroll-behavior: none;
 }
 
+/* Fjern iOS Safari's default tap-highlight-overlay (mørkegrå rektangel
+   der pluds blinker når man tapper en knap eller link). Med dette
+   stoler vi på vores egne :active/:focus-styles til at signalere tryk. */
+a, button, [role="button"], [tabindex] {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Respect reduced motion preferences (princip 9) */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

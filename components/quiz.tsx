@@ -25,7 +25,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, ArrowRight, Check, X, RotateCcw, SkipForward } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -72,6 +72,20 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
   const sidsteResultat = feedbackVist ? resultater[resultater.length - 1] : null;
   const erSidste = aktivIndex === opgaver.length - 1;
 
+  // Review-mode: eleven er gået tilbage til en allerede besvaret opgave
+  // for at se sit svar + feedback igen. Display-state hentes fra resultater
+  // i stedet for fra det levende input/valgtMC/feedbackVist.
+  const erReview = aktivIndex < resultater.length;
+  const reviewResultat = erReview ? resultater[aktivIndex] : null;
+  const visFeedback = erReview || feedbackVist;
+  const visResultat = erReview ? reviewResultat : sidsteResultat;
+  const visInputValue =
+    erReview && aktivOpgave?.type === 'numeric' ? String(reviewResultat!.elevSvar) : input;
+  const visMCIndex =
+    erReview && aktivOpgave?.type === 'multiple-choice' && reviewResultat
+      ? aktivOpgave.muligheder.findIndex((m) => m === reviewResultat.elevSvar)
+      : valgtMC;
+
   // Aktiver lærer-mode via ?l=1 query param eller eksisterende localStorage flag
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -83,22 +97,23 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
     }
   }, []);
 
-  // Fokus på input ved ny opgave
+  // Fokus på input ved ny opgave (kun når der ER en input at fokusere på —
+  // ikke i review-mode, hvor input er disabled)
   useEffect(() => {
-    if (erFærdig || feedbackVist) return;
+    if (erFærdig || feedbackVist || erReview) return;
     if (aktivOpgave?.type === 'numeric') {
       const t = setTimeout(() => inputRef.current?.focus(), 150);
       return () => clearTimeout(t);
     }
-  }, [aktivIndex, feedbackVist, erFærdig, aktivOpgave]);
+  }, [aktivIndex, feedbackVist, erReview, erFærdig, aktivOpgave]);
 
-  // Fokus på næste-knap når feedback vises
+  // Fokus på næste-knap når feedback vises (gælder også review-mode)
   useEffect(() => {
-    if (feedbackVist && !erFærdig) {
+    if (visFeedback && !erFærdig) {
       const t = setTimeout(() => næsteKnapRef.current?.focus(), 150);
       return () => clearTimeout(t);
     }
-  }, [feedbackVist, erFærdig]);
+  }, [visFeedback, erFærdig]);
 
   // Gem score når quiz er færdig
   useEffect(() => {
@@ -143,6 +158,22 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
     setAktivIndex((i) => i + 1);
   }, []);
 
+  // Navigation til allerede-besvarede opgaver. Adskiller sig fra gåVidere
+  // ved IKKE at rydde input/feedbackVist — dem hentes display-state via
+  // erReview-deriveringen i stedet.
+  const navigerTilbage = useCallback(() => {
+    setAktivIndex((i) => Math.max(0, i - 1));
+  }, []);
+
+  const navigerFrem = useCallback(() => {
+    // Kun frem inden for allerede-besvarede opgaver. Når man rammer current
+    // (just-answered), bruger man gåVidere for at avancere.
+    setAktivIndex((i) => i + 1);
+  }, []);
+
+  // Vælges af "Næste opgave"-knappen baseret på om vi er i review eller ej.
+  const næsteHandler = erReview ? navigerFrem : gåVidere;
+
   const springOver = useCallback(() => {
     // Lærer-skip: avancér uden at registrere som svar
     setFeedbackVist(false);
@@ -159,7 +190,8 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
     setFeedbackVist(false);
   }, []);
 
-  // Tastatur: Enter går videre når feedback vises, tal-tast vælger MC, Cmd/Ctrl+→ skip (lærer)
+  // Tastatur: Enter går videre når feedback vises, tal-tast vælger MC,
+  // Cmd/Ctrl+→ skip (lærer), ←/→ navigerer mellem allerede-besvarede opgaver.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (erFærdig) return;
@@ -171,13 +203,30 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
         return;
       }
 
-      if (feedbackVist && e.key === 'Enter') {
+      // Pile-navigation kun når vi IKKE er i et input-felt (ellers skal
+      // pilene flytte cursoren som normalt)
+      const erIInput =
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement;
+
+      if (!erIInput && e.key === 'ArrowLeft' && aktivIndex > 0) {
         e.preventDefault();
-        gåVidere();
+        navigerTilbage();
+        return;
+      }
+      if (!erIInput && e.key === 'ArrowRight' && erReview) {
+        e.preventDefault();
+        navigerFrem();
         return;
       }
 
-      if (!feedbackVist && aktivOpgave?.type === 'multiple-choice') {
+      if (visFeedback && e.key === 'Enter') {
+        e.preventDefault();
+        næsteHandler();
+        return;
+      }
+
+      if (!visFeedback && aktivOpgave?.type === 'multiple-choice') {
         const num = parseInt(e.key, 10);
         if (!isNaN(num) && num >= 1 && num <= aktivOpgave.muligheder.length) {
           e.preventDefault();
@@ -187,7 +236,18 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [feedbackVist, aktivOpgave, erFærdig, erLærer, gåVidere, springOver]);
+  }, [
+    visFeedback,
+    aktivOpgave,
+    erFærdig,
+    erLærer,
+    aktivIndex,
+    erReview,
+    næsteHandler,
+    navigerTilbage,
+    navigerFrem,
+    springOver,
+  ]);
 
   // ─────── Score-skærm ───────
   if (erFærdig) {
@@ -203,7 +263,7 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
           </Link>
         </header>
 
-        <div className="flex-1 flex flex-col items-center justify-center px-6 -mt-12">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 pt-8 lg:-mt-12">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -291,7 +351,12 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
   if (!aktivOpgave) return null;
 
   return (
-    <main className="min-h-[100dvh] bg-slate-50/40 flex flex-col">
+    // h-[100dvh] + overflow-hidden: når iOS-keyboard popper op, krymper
+    // viewport. Med min-h-[100dvh] overflower indholdet under keyboardet
+    // og siden bliver scrollable. Med fixed h + overflow-hidden låses
+    // højden til faktisk synlig plads — keyboard skubber ikke content,
+    // og side er ikke længere scrollable.
+    <main className="h-[100dvh] overflow-hidden bg-slate-50/40 flex flex-col">
       {/* Header */}
       <header className="px-6 py-6 lg:px-12 lg:py-8 flex items-center justify-between gap-4">
         <Link
@@ -301,8 +366,27 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
           <ArrowLeft className="h-4 w-4" aria-hidden />
           Afslut {mode === 'traening' ? 'træning' : 'prøveklar'}
         </Link>
-        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 tabular-nums">
-          Opgave {aktivIndex + 1} / {opgaver.length}
+
+        {/* Progress + tilbage-knap. Tilbage-knap vises kun når der ER en
+            tidligere opgave at gå til. Eleven kan så bladre i sine svar. */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={navigerTilbage}
+            disabled={aktivIndex === 0}
+            aria-label="Tilbage til forrige opgave"
+            className={cn(
+              'inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500',
+              'transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700',
+              'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-slate-200 disabled:hover:bg-white disabled:hover:text-slate-500',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2',
+            )}
+          >
+            <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+          </button>
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 tabular-nums">
+            Opgave {aktivIndex + 1} / {opgaver.length}
+          </div>
         </div>
       </header>
 
@@ -323,52 +407,58 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
           mellem input og næste-knap; intet shifter ovenfor.
           På mobil holder vi spørgsmål højere oppe (pt-[8vh]) så det
           ikke gemmer sig bag tastaturet når input får fokus. */}
-      <div className="flex-1 flex flex-col items-center px-6 pt-[8vh] sm:pt-[18vh] lg:pt-[20vh]">
+      <div className="flex-1 flex flex-col items-center px-6 pt-[12vh] sm:pt-[18vh] lg:pt-[20vh]">
         <div className="w-full max-w-xl">
           {/* Spørgsmål */}
-          <h2 className="font-display text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 text-center mb-10 leading-snug">
+          <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 text-center mb-6 sm:mb-10 leading-snug">
             {aktivOpgave.spørgsmål}
           </h2>
 
           {/* Numeric input */}
           {aktivOpgave.type === 'numeric' && (
             <form onSubmit={submitNumeric} className="flex flex-col items-center gap-6">
+              {/* Input-wrapper er fixed-width og centreret. Enhed er absolut
+                  positioneret til højre, så input ALTID forbliver centreret
+                  uanset om enhed vises eller ej. Tidligere flex-row centrerede
+                  HELE rækken, hvilket skubbede input til venstre når enhed
+                  fyldte plads — det fik feedback/næste-knap til at virke
+                  forskudt på opgaver som "elever"-opgaven. */}
               <motion.div
                 animate={{ x: shake ? [-6, 6, -6, 6, 0] : 0 }}
                 transition={{ duration: 0.4 }}
-                className="flex items-baseline gap-2"
+                className="relative mx-auto w-48"
               >
                 <input
                   ref={inputRef}
                   type="text"
                   inputMode="decimal"
-                  value={input}
+                  value={visInputValue}
                   onChange={(e) =>
                     setInput(e.target.value.replace(/[^0-9,.\-\s]/g, ''))
                   }
-                  disabled={feedbackVist}
+                  disabled={visFeedback}
                   autoComplete="off"
                   aria-label="Dit svar"
                   className={cn(
-                    'w-48 text-center font-display text-5xl lg:text-6xl font-bold tabular-nums bg-transparent border-b-[3px] focus:outline-none caret-emerald-600 py-2 transition-colors',
-                    !feedbackVist && 'border-slate-300 focus:border-emerald-600 text-slate-900',
-                    feedbackVist && sidsteResultat?.rigtigt && 'border-emerald-500 text-emerald-700',
-                    feedbackVist && !sidsteResultat?.rigtigt && 'border-rose-500 text-rose-700',
+                    'w-full text-center font-display text-4xl sm:text-5xl lg:text-6xl font-bold tabular-nums bg-transparent border-b-[3px] focus:outline-none caret-emerald-600 py-2 transition-colors',
+                    !visFeedback && 'border-slate-300 focus:border-emerald-600 text-slate-900',
+                    visFeedback && visResultat?.rigtigt && 'border-emerald-500 text-emerald-700',
+                    visFeedback && !visResultat?.rigtigt && 'border-rose-500 text-rose-700',
                   )}
                 />
                 {aktivOpgave.enhed && (
-                  <span className="font-display text-3xl font-bold text-slate-500">
+                  <span className="pointer-events-none absolute left-full top-1/2 ml-2 -translate-y-1/2 font-display text-3xl font-bold text-slate-500 whitespace-nowrap">
                     {aktivOpgave.enhed}
                   </span>
                 )}
               </motion.div>
 
               <FeedbackOgKnap
-                feedbackVist={feedbackVist}
-                rigtigt={sidsteResultat?.rigtigt ?? false}
+                feedbackVist={visFeedback}
+                rigtigt={visResultat?.rigtigt ?? false}
                 forklaring={aktivOpgave.forklaring}
                 næsteKnapRef={næsteKnapRef}
-                gåVidere={gåVidere}
+                gåVidere={næsteHandler}
                 erSidste={erSidste}
                 kanSubmitte={input.trim() !== ''}
               />
@@ -386,21 +476,21 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
             >
               <div className="grid gap-2 w-full">
                 {aktivOpgave.muligheder.map((m, i) => {
-                  const erValgt = valgtMC === i;
-                  const visGrøn = feedbackVist && erValgt && sidsteResultat?.rigtigt;
-                  const visRød = feedbackVist && erValgt && !sidsteResultat?.rigtigt;
+                  const erValgt = visMCIndex === i;
+                  const visGrøn = visFeedback && erValgt && visResultat?.rigtigt;
+                  const visRød = visFeedback && erValgt && !visResultat?.rigtigt;
                   return (
                     <button
                       key={i}
                       type="button"
-                      onClick={() => !feedbackVist && setValgtMC(i)}
-                      disabled={feedbackVist}
+                      onClick={() => !visFeedback && setValgtMC(i)}
+                      disabled={visFeedback}
                       className={cn(
                         'flex items-center gap-3 rounded-xl border-2 px-5 py-3 text-left transition-all',
-                        !feedbackVist && 'hover:border-slate-300 hover:bg-white cursor-pointer',
-                        !feedbackVist && erValgt && 'border-slate-900 bg-white shadow-sm',
-                        !feedbackVist && !erValgt && 'border-slate-200 bg-white/60',
-                        feedbackVist && !erValgt && 'border-slate-200 bg-white/40 opacity-60',
+                        !visFeedback && 'hover:border-slate-300 hover:bg-white cursor-pointer',
+                        !visFeedback && erValgt && 'border-slate-900 bg-white shadow-sm',
+                        !visFeedback && !erValgt && 'border-slate-200 bg-white/60',
+                        visFeedback && !erValgt && 'border-slate-200 bg-white/40 opacity-60',
                         visGrøn && 'border-emerald-500 bg-emerald-50',
                         visRød && 'border-rose-500 bg-rose-50',
                       )}
@@ -408,11 +498,11 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
                       <span
                         className={cn(
                           'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums',
-                          !feedbackVist && erValgt && 'bg-slate-900 text-white',
-                          !feedbackVist && !erValgt && 'bg-slate-100 text-slate-500',
+                          !visFeedback && erValgt && 'bg-slate-900 text-white',
+                          !visFeedback && !erValgt && 'bg-slate-100 text-slate-500',
                           visGrøn && 'bg-emerald-500 text-white',
                           visRød && 'bg-rose-500 text-white',
-                          feedbackVist && !erValgt && 'bg-slate-100 text-slate-400',
+                          visFeedback && !erValgt && 'bg-slate-100 text-slate-400',
                         )}
                         aria-hidden
                       >
@@ -432,11 +522,11 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
               </div>
 
               <FeedbackOgKnap
-                feedbackVist={feedbackVist}
-                rigtigt={sidsteResultat?.rigtigt ?? false}
+                feedbackVist={visFeedback}
+                rigtigt={visResultat?.rigtigt ?? false}
                 forklaring={aktivOpgave.forklaring}
                 næsteKnapRef={næsteKnapRef}
-                gåVidere={gåVidere}
+                gåVidere={næsteHandler}
                 erSidste={erSidste}
                 kanSubmitte={valgtMC !== null}
               />
@@ -447,7 +537,7 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
 
       {/* Bund: hint + (lærer) skip */}
       <div className="px-6 pb-8 flex items-center justify-between gap-4">
-        {!feedbackVist ? (
+        {!visFeedback ? (
           <span className="hidden sm:inline-flex text-xs uppercase tracking-[0.2em] font-semibold text-slate-400">
             Tryk{' '}
             <kbd className="inline-flex items-center justify-center min-w-[28px] h-6 px-1.5 mx-1 rounded border border-slate-300 bg-white text-[11px] font-mono">
@@ -502,64 +592,71 @@ function FeedbackOgKnap({
 }: FeedbackProps) {
   return (
     <>
-      {/* Feedback — kun når der er svaret. Top-anchored layout sørger for
-          at spørgsmål + input ikke shifter, så vi behøver ingen reserveret højde. */}
-      {feedbackVist && (
-        <motion.div
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="flex flex-col items-center gap-3"
-        >
-          <div
-            className={cn(
-              'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold',
-              rigtigt ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700',
-            )}
+      {/* Feedback animeres ind/ud fra højde 0 → auto, så knappen nedenfor
+          glider på plads i stedet for at hoppe. AnimatePresence + height-auto
+          + overflow:hidden er det rene mønster. */}
+      <AnimatePresence initial={false}>
+        {feedbackVist && (
+          <motion.div
+            key="feedback"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            style={{ overflow: 'hidden', width: '100%' }}
           >
-            {rigtigt ? (
-              <>
-                <Check className="h-4 w-4" aria-hidden />
-                Rigtigt
-              </>
-            ) : (
-              <>
-                <X className="h-4 w-4" aria-hidden />
-                Forkert
-              </>
-            )}
-          </div>
+            <div className="flex flex-col items-center gap-3 pt-2">
+              <div
+                className={cn(
+                  'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold',
+                  rigtigt ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700',
+                )}
+              >
+                {rigtigt ? (
+                  <>
+                    <Check className="h-4 w-4" aria-hidden />
+                    Rigtigt
+                  </>
+                ) : (
+                  <>
+                    <X className="h-4 w-4" aria-hidden />
+                    Forkert
+                  </>
+                )}
+              </div>
 
-          {!rigtigt && forklaring && (
-            <p className="text-center text-sm text-slate-600 italic font-serif max-w-md">
-              {forklaring}
-            </p>
-          )}
-        </motion.div>
-      )}
+              {!rigtigt && forklaring && (
+                <p className="text-center text-sm text-slate-600 italic font-serif max-w-md">
+                  {forklaring}
+                </p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Svar-knap (før submit) eller Næste-knap (efter) — samme position altid */}
-      {!feedbackVist && (
-        <button
-          type="submit"
-          disabled={!kanSubmitte}
-          className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-md disabled:bg-slate-300 disabled:cursor-not-allowed"
-        >
-          Svar
-        </button>
-      )}
-
-      {feedbackVist && (
-        <button
-          ref={næsteKnapRef}
-          type="button"
-          onClick={gåVidere}
-          className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-md"
-        >
-          {erSidste ? 'Se resultat' : 'Næste opgave'}
-          <ArrowRight className="h-4 w-4" aria-hidden />
-        </button>
-      )}
+      {/* Én knap der skifter rolle (submit ↔ næste) i stedet for to der
+          mountes/unmountes. Forbliver i DOM så layout er stabil og focus
+          ikke hopper rundt. */}
+      <button
+        ref={næsteKnapRef}
+        type={feedbackVist ? 'button' : 'submit'}
+        onClick={feedbackVist ? gåVidere : undefined}
+        disabled={!feedbackVist && !kanSubmitte}
+        className={cn(
+          'inline-flex items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-md',
+          'disabled:bg-slate-300 disabled:cursor-not-allowed',
+        )}
+      >
+        {feedbackVist ? (
+          <>
+            {erSidste ? 'Se resultat' : 'Næste opgave'}
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </>
+        ) : (
+          'Svar'
+        )}
+      </button>
     </>
   );
 }

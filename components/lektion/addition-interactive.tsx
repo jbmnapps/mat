@@ -283,7 +283,7 @@ export function AdditionInteractive({ disciplinId }: Props) {
   const beskedTekst = beskedFor(fase, enereSvar2);
 
   return (
-    <main className="min-h-[100dvh] relative bg-slate-50/40 overflow-hidden">
+    <main className="h-[100dvh] relative bg-slate-50/40 overflow-hidden">
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 px-6 py-6 lg:px-12 lg:py-8 z-10">
         <Link
@@ -304,7 +304,11 @@ export function AdditionInteractive({ disciplinId }: Props) {
         >
           <motion.div
             initial={false}
-            animate={{ fontSize: erIntro ? 48 : 26 }}
+            animate={{
+              fontSize: erIntro
+                ? 'clamp(28px, 8vw, 48px)'
+                : 'clamp(18px, 5vw, 26px)',
+            }}
             transition={{ duration: 0.6, ease: [0.4, 0.0, 0.2, 1] }}
             className="font-display font-bold tracking-tight text-slate-900 leading-snug"
           >
@@ -462,8 +466,11 @@ function FormulaScene(props: FormulaSceneProps) {
     <div
       className="grid"
       style={{
-        gridTemplateColumns: 'repeat(5, 60px)',
-        gridTemplateRows: '36px 76px 76px 8px 76px',
+        // Responsiv kolonne-bredde: 44px på smalle skærme, op til 60px desktop
+        gridTemplateColumns: 'repeat(5, clamp(44px, 13vw, 60px))',
+        // Responsive rækker — første og sidste skalerer med viewport
+        gridTemplateRows:
+          'clamp(28px, 5vw, 36px) clamp(56px, 14vw, 76px) clamp(56px, 14vw, 76px) 8px clamp(56px, 14vw, 76px)',
         placeItems: 'center',
       }}
     >
@@ -479,7 +486,7 @@ function FormulaScene(props: FormulaSceneProps) {
             transition={{ layout: { duration: 0.7, ease: [0.4, 0.0, 0.2, 1] } }}
             style={{ gridColumn: pos.col, gridRow: pos.row }}
             className={cn(
-              'font-display text-6xl lg:text-7xl font-bold tabular-nums select-none transition-colors duration-300',
+              'font-display text-4xl sm:text-6xl lg:text-7xl font-bold tabular-nums select-none transition-colors duration-300',
               erOperator ? 'text-emerald-600' : aktiv ? 'text-emerald-600' : 'text-slate-900',
             )}
           >
@@ -602,10 +609,10 @@ function ResultCell({ col, row, value, variant, isFinal, inputProps }: ResultCel
   return (
     <div
       style={{ gridColumn: col, gridRow: row }}
-      className="w-[60px] h-[76px] flex items-end justify-center"
+      className="flex items-end justify-center w-full h-full"
     >
       {variant === 'static' && !value && (
-        <div className="w-12 border-b-[3px] border-slate-300 rounded-full mb-1" />
+        <div className="w-10 sm:w-12 border-b-[3px] border-slate-300 rounded-full mb-1" />
       )}
 
       {variant === 'static' && value && (
@@ -614,7 +621,7 @@ function ResultCell({ col, row, value, variant, isFinal, inputProps }: ResultCel
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 220, damping: 18 }}
           className={cn(
-            'font-display text-6xl lg:text-7xl font-bold tabular-nums leading-none mb-1',
+            'font-display text-4xl sm:text-6xl lg:text-7xl font-bold tabular-nums leading-none mb-1',
             isFinal ? 'text-emerald-600' : 'text-slate-900',
           )}
         >
@@ -623,7 +630,7 @@ function ResultCell({ col, row, value, variant, isFinal, inputProps }: ResultCel
       )}
 
       {variant === 'input' && inputProps && (
-        <form onSubmit={inputProps.onSubmit} className="leading-none mb-1">
+        <form onSubmit={inputProps.onSubmit} className="leading-none mb-1 relative">
           <input
             ref={inputProps.ref}
             type="text"
@@ -635,10 +642,10 @@ function ResultCell({ col, row, value, variant, isFinal, inputProps }: ResultCel
             aria-label="Indtast resultat"
             className={cn(
               // Bredt nok til 2 cifre — overflower lidt celle-bredden, fint
-              'w-[80px] h-[63px] box-border p-0',
+              'w-[60px] sm:w-[80px] h-[44px] sm:h-[63px] box-border p-0',
               // Tekst
-              'font-display text-6xl lg:text-7xl font-bold tabular-nums text-center',
-              'leading-[60px]',
+              'font-display text-4xl sm:text-6xl lg:text-7xl font-bold tabular-nums text-center',
+              'leading-[40px] sm:leading-[60px]',
               'text-slate-900 bg-transparent',
               // Streg
               'border-b-[3px] border-slate-900',
@@ -647,6 +654,23 @@ function ResultCell({ col, row, value, variant, isFinal, inputProps }: ResultCel
               'caret-emerald-600',
             )}
           />
+
+          {/* Eksplicit submit-knap. iOS numeric keypad har ingen "Go"-tast,
+              så uden denne knap kan eleven ikke godkende sit svar.
+              Skjult på desktop hvor Enter virker. */}
+          <button
+            type="submit"
+            disabled={inputProps.value.trim() === ''}
+            aria-label="Tjek svar"
+            className={cn(
+              'sm:hidden absolute left-1/2 -translate-x-1/2 -bottom-12',
+              'inline-flex items-center justify-center whitespace-nowrap',
+              'rounded-full bg-slate-900 text-white px-4 py-1.5 text-xs font-semibold',
+              'disabled:bg-slate-300 disabled:cursor-not-allowed',
+            )}
+          >
+            Tjek
+          </button>
         </form>
       )}
     </div>

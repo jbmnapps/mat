@@ -19,8 +19,10 @@ const quicksand = Quicksand({
 export const metadata: Metadata = {
   title: "FP9 Matematik",
   description: "Træn til FP9 Matematik uden hjælpemidler",
-  // PWA: meta-tags for iOS hjemskærm-installation. Android læser primært
-  // app/manifest.ts. apple-touch-icon kommer fra public/apple-icon.png.
+  // PWA: tillad iOS at åbne appen i fullscreen når eleven har tilføjet den
+  // til hjemmeskærmen ("Add to Home Screen" → ikon åbner uden Safari-chrome).
+  // Android Chrome læser primært app/manifest.ts; apple-touch-icon kommer fra
+  // public/apple-icon.png.
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

@@ -7,7 +7,8 @@
  *  ┌──────────────────────────────────────────────────┐
  *  │  EYEBROW (FP9 Matematik · Træn til prøven)       │
  *  │  Hej, [navn]                  [importér][eksportér]│
- *  │  italic subtitle                                  │
+ *  ├──────────────────────────────────────────────────┤
+ *  │  NÆSTE OP-card (anbefalet sekvens fra FP9-vægter)│
  *  ├──────────────────────────────────────────────────┤
  *  │  TAL OG ALGEBRA                                   │
  *  │  [+] [−] [·] [:] [,] [%] [=] [?] [≈] [kr]        │
@@ -61,7 +62,7 @@ function DashboardIndhold() {
   const hydreret = useHydrated();
   const progress = useStore((s) => s.progress);
 
-  // Grupper diciplinerne efter kategori
+  // Grupper disciplinerne efter kategori
   const grupperet = useMemo(() => {
     const grupper: Record<Kategori, typeof DISCIPLINER> = {
       'tal-og-algebra': [],
@@ -73,31 +74,6 @@ function DashboardIndhold() {
     }
     return grupper;
   }, []);
-
-  // Aggregér samlet status til en lille sammenfatning øverst
-  const oversigt = useMemo(() => {
-    if (!hydreret) return null;
-    let gron = 0;
-    let gul = 0;
-    let rod = 0;
-    let utouchet = 0;
-    for (const id of Object.keys(progress) as DisciplinId[]) {
-      switch (progress[id].status) {
-        case 'gron':
-          gron++;
-          break;
-        case 'gul':
-          gul++;
-          break;
-        case 'rod':
-          rod++;
-          break;
-        default:
-          utouchet++;
-      }
-    }
-    return { gron, gul, rod, utouchet };
-  }, [progress, hydreret]);
 
   return (
     <main className="min-h-screen bg-slate-50/40">
@@ -122,42 +98,6 @@ function DashboardIndhold() {
 
           {/* Næste op-card — anbefalet sekvens baseret på FP9-vægtning */}
           {hydreret && <NæsteOpCard progress={progress} />}
-
-          {/* Oversigts-pille — vises kun når hydreret og noget er prøvet */}
-          {hydreret && oversigt && (oversigt.gron + oversigt.gul + oversigt.rod) > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              className="mt-8 inline-flex flex-wrap items-center gap-4 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm shadow-sm"
-            >
-              <span className="font-semibold text-slate-700">Din status:</span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-status-gron" aria-hidden />
-                <span className="text-slate-700">
-                  <strong>{oversigt.gron}</strong> grøn
-                </span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-status-gul" aria-hidden />
-                <span className="text-slate-700">
-                  <strong>{oversigt.gul}</strong> gul
-                </span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-status-rod" aria-hidden />
-                <span className="text-slate-700">
-                  <strong>{oversigt.rod}</strong> rød
-                </span>
-              </span>
-              <span className="flex items-center gap-1.5 text-slate-400">
-                <span className="h-2 w-2 rounded-full bg-slate-300" aria-hidden />
-                <span>
-                  <strong>{oversigt.utouchet}</strong> ikke startet
-                </span>
-              </span>
-            </motion.div>
-          )}
         </header>
 
         {/* DISCIPLIN-GRUPPER */}
@@ -183,7 +123,15 @@ function DashboardIndhold() {
 
         {/* FOOTER */}
         <footer className="mt-20 border-t border-slate-200 pt-8 text-center text-xs text-slate-400">
-          FP9 Matematik · Træn til prøven uden hjælpemidler
+          <p>FP9 Matematik · Træn til prøven uden hjælpemidler</p>
+          <p className="mt-2">
+            <Link
+              href="/gangetabeller"
+              className="font-semibold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:text-slate-900"
+            >
+              Tabel-træner →
+            </Link>
+          </p>
         </footer>
       </div>
     </main>

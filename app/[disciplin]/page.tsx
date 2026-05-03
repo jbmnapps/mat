@@ -31,12 +31,12 @@ export default function DisciplinPage() {
   const progress = useStore((s) => s.progress[id]);
 
   return (
-    <main className="min-h-[100dvh] bg-slate-50/40">
-      <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-10 lg:px-12 lg:py-14">
+    <main className="min-h-[100dvh] flex flex-col bg-slate-50/40">
+      <div className="mx-auto w-full max-w-4xl flex-1 flex flex-col px-4 py-4 sm:px-6 sm:py-10 lg:px-12 lg:py-14">
         {/* Tilbage-link */}
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors mb-4 sm:mb-10"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors mb-4 sm:mb-8"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
           Tilbage til oversigten
@@ -47,7 +47,6 @@ export default function DisciplinPage() {
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="mb-6 sm:mb-12"
         >
           <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-4">
             Disciplin
@@ -74,28 +73,32 @@ export default function DisciplinPage() {
           </div>
         </motion.header>
 
-        {/* Mode-kort */}
-        <div className="flex flex-col gap-3 sm:grid sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <ModeCard
-            mode="lektion"
-            disciplinId={id}
-            kommerSnart={!harIndhold(id, 'lektion')}
-            index={0}
-          />
-          <ModeCard
-            mode="traening"
-            disciplinId={id}
-            kommerSnart={!harIndhold(id, 'traening')}
-            index={1}
-          />
-          <ModeCard
-            mode="proeveklar"
-            disciplinId={id}
-            bedsteScore={hydreret ? progress.bedsteScore : 0}
-            status={hydreret ? progress.status : 'untouched'}
-            kommerSnart={!harIndhold(id, 'proeveklar')}
-            index={2}
-          />
+        {/* Mode-kort — centreret vertikalt i den ledige plads. På korte
+            viewports (mobil med kort indhold) sidder kortene midt på
+            skærmen i stedet for at klumpe sig under headeren. */}
+        <div className="flex-1 flex flex-col justify-center py-8 sm:py-12">
+          <div className="flex flex-col gap-3 sm:grid sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ModeCard
+              mode="lektion"
+              disciplinId={id}
+              kommerSnart={!harIndhold(id, 'lektion')}
+              index={0}
+            />
+            <ModeCard
+              mode="traening"
+              disciplinId={id}
+              kommerSnart={!harIndhold(id, 'traening')}
+              index={1}
+            />
+            <ModeCard
+              mode="proeveklar"
+              disciplinId={id}
+              bedsteScore={hydreret ? progress.bedsteScore : 0}
+              status={hydreret ? progress.status : 'untouched'}
+              kommerSnart={!harIndhold(id, 'proeveklar')}
+              index={2}
+            />
+          </div>
         </div>
 
         {/* Progress-snapshot hvis prøvet */}
@@ -104,7 +107,7 @@ export default function DisciplinPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="mt-10 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm text-slate-600"
+            className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm text-slate-600"
           >
             Du har taget prøveklar <strong className="text-slate-900">{progress.antalForsoeg}</strong>{' '}
             {progress.antalForsoeg === 1 ? 'gang' : 'gange'}. Bedste resultat:{' '}

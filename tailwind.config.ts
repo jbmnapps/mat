@@ -6,6 +6,14 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./lib/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  // Hover-effekter må ikke fyre på touch-devices.
+  // På iOS udløser tap både :hover, :active og :focus — uden denne flag
+  // fortsætter hover-styles efter tap, hvilket giver "skygger" og andre
+  // ikke-design-intenderede effekter. Med flaget loadede `hover:`-utilities
+  // kun under `(hover: hover)` media query.
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   theme: {
     extend: {
       fontFamily: {

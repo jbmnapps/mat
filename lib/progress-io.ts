@@ -157,7 +157,7 @@ export async function importerProgress(file: File): Promise<ImportResultat> {
 
   return {
     success: true,
-    besked: `Status indlæst (${antal} diciplinerne).`,
+    besked: `Status indlæst (${antal} ${antal === 1 ? 'disciplin' : 'discipliner'}).`,
     antalIndlaest: antal,
   };
 }
