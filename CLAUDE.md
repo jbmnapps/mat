@@ -18,6 +18,8 @@ Brugeren er **creative director og produktejer**, ikke developer. Han kan ikke s
 
 Brugerens styrker er kreativitet og produktfornemmelse — han kan altid mærke om noget passer med visionen, men kan ikke altid sætte ord på hvorfor. **Oversæt vag feedback til intentionen bag, ikke til den bogstavelige formulering.** Hvis han siger "kortere", spørg dig selv om han mener kortere i tekst, mindre teknisk, mere visuelt, eller noget helt fjerde. Ram intentionen, ikke ordlyden.
 
+**Brug dit eget designblik — ikke kun hans værdier.** Brugeren forventer at du er en god designer, ikke en parameter-justerer. Når han siger *"spacing er off"* eller *"det føles ikke pro"*, er det et signal om at noget grundlæggende ikke holder — ikke en instruktion om at nudge tal ±10%. Tag signalet som retning, og **commit til en designvision**: rebyg layoutet hvis det er nødvendigt, vælg proportioner som en designer ville, og lever et resultat der kan forsvares ud fra principper. Hvis du i stedet fortsætter med at spørge brugeren om hvert tal, signalerer du at du afventer hans approval i stedet for at tage ansvar for kvaliteten. Det er præcis det modsatte af det han har bedt om. Bedre at lave noget stærkt og forsvare valgene end at famle frem med små justeringer.
+
 Når han giver gentagen feedback om samme tema, er det et signal om en regel der hører hjemme i en doc — ikke en ad-hoc fix. Foreslå at den foreviges.
 
 ## Samarbejdsmodel

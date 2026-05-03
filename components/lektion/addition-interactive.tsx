@@ -374,30 +374,34 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </button>
       </header>
 
-      {/* MESSAGE SLOT — "overskriften". I intro centeret på skærmen,
-          ellers lige over opstillingen. Tidligere y=-220 + krymp til 26px
-          gjorde at overskriften flyttede sig dramatisk væk fra stykket;
-          nu er flytningen mindre (-130) og krympet er mildere så
-          overskrift og stykke føles forbundne. */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-6 text-center w-full max-w-2xl pointer-events-none z-[5]">
+      {/* SCENE — én flexbox column der holder overskrift + formula sammen
+          som ÉN komposition. Tidligere lå overskrift og formula i hver
+          deres absolutte slot, hvilket gjorde deres indbyrdes afstand
+          fragil og førte til overlap eller for stort tomrum. Nu er de
+          stacket vertikalt med konsistent gap; motion's `layout`-prop
+          animerer smooth når formula træder ind/ud. Helheden er
+          placeret en anelse over viewport-midten (pt-[8vh]) så
+          kompositionen føles "anchored ovenfra" — som en lektion-side,
+          ikke en centreret widget. */}
+      <div className="absolute inset-0 flex items-center justify-center px-6 pb-[12vh] pointer-events-none z-[3]">
         <motion.div
-          initial={false}
-          animate={{ y: erIntro ? 0 : keyboardViewport.keyboardOpen ? -110 : -130 }}
-          transition={{ duration: 0.6, ease: [0.4, 0.0, 0.2, 1] }}
+          layout
+          transition={{ layout: { duration: 0.55, ease: [0.4, 0.0, 0.2, 1] } }}
+          className="flex flex-col items-center gap-10 sm:gap-12 lg:gap-16 max-w-2xl w-full"
         >
+          {/* Overskrift */}
           <motion.div
+            layout
             initial={false}
             animate={{
               fontSize: erIntro
-                ? 'clamp(26px, 7vw, 40px)'
-                : 'clamp(20px, 5.5vw, 30px)',
+                ? 'clamp(28px, 7.5vw, 44px)'
+                : 'clamp(20px, 4.5vw, 28px)',
             }}
-            transition={{ duration: 0.6, ease: [0.4, 0.0, 0.2, 1] }}
-            className="font-display font-bold tracking-tight text-slate-900 leading-snug"
+            transition={{ duration: 0.55, ease: [0.4, 0.0, 0.2, 1] }}
+            className="font-display font-bold tracking-tight text-slate-900 leading-snug text-center"
           >
-            {/* mode="popLayout" lader gammel exit'e samtidigt med at ny
-                initial fade'er ind — krydsfade. Tidligere "wait" gav en
-                blank periode mellem beskeder hvor eleven sad uden kontekst. */}
+            {/* Krydsfade mellem fase-beskeder så eleven aldrig ser blank besked. */}
             <AnimatePresence mode="popLayout" initial={false}>
               <motion.div
                 key={beskedTekst}
@@ -410,46 +414,47 @@ export function AdditionInteractive({ disciplinId }: Props) {
               </motion.div>
             </AnimatePresence>
           </motion.div>
+
+          {/* Formula — træder ind når vi forlader intro. layout-prop sikrer
+              at overskriften glider smooth opad mens formula falder på plads. */}
+          <AnimatePresence>
+            {visFormula && (
+              <motion.div
+                layout
+                key="formula-wrapper"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, x: shake ? [-6, 6, -6, 6, 0] : 0 }}
+                exit={{ opacity: 0 }}
+                transition={shake ? { duration: 0.4 } : { duration: 0.4, delay: 0.3 }}
+              >
+                <FormulaScene
+                  ex={ex}
+                  layout={layout}
+                  fase={fase}
+                  enereInput={enereInput}
+                  setEnereInput={setEnereInput}
+                  tierInput={tierInput}
+                  setTierInput={setTierInput}
+                  enereGodkendt={enereGodkendt}
+                  tierGodkendt={tierGodkendt}
+                  submitEnere={submitEnere}
+                  submitTier={submitTier}
+                  inputRef={inputRef}
+                  erEksempel2={erEksempel2}
+                  kompakt={keyboardViewport.keyboardOpen}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
 
-      {/* FORMULA SLOT */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[3]">
-        <AnimatePresence>
-          {visFormula && (
-            <motion.div
-              key="formula-wrapper"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1, x: shake ? [-6, 6, -6, 6, 0] : 0 }}
-              exit={{ opacity: 0 }}
-              transition={shake ? { duration: 0.4 } : { duration: 0.4, delay: 0.4 }}
-            >
-              <FormulaScene
-                ex={ex}
-                layout={layout}
-                fase={fase}
-                enereInput={enereInput}
-                setEnereInput={setEnereInput}
-                tierInput={tierInput}
-                setTierInput={setTierInput}
-                enereGodkendt={enereGodkendt}
-                tierGodkendt={tierGodkendt}
-                submitEnere={submitEnere}
-                submitTier={submitTier}
-                inputRef={inputRef}
-                erEksempel2={erEksempel2}
-                kompakt={keyboardViewport.keyboardOpen}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* HINT SLOT — placeret midt mellem stykket og viewport-bunden så
-          den ikke klistrer for langt nede. Var bottom-[12vh] (ca. 87px),
-          nu bottom-[22vh] (ca. 160px) — visuel balance mellem stykke,
-          hint og bund-edge. */}
-      <div className="absolute bottom-[22vh] left-1/2 -translate-x-1/2 px-6 text-center pointer-events-auto z-[5]">
+      {/* HINT SLOT — sidder ca. midt mellem komposition-bund og viewport-
+          bund. Med pb-[12vh] på scene-containeren slutter kompositionen
+          omkring 67% af viewporten, og hint på bottom-[16vh] lander
+          omkring 84% — balanceret rum hverken nede ved kanten eller
+          klistret op mod stykket. */}
+      <div className="absolute bottom-[16vh] left-1/2 -translate-x-1/2 px-6 text-center pointer-events-auto z-[5]">
         <Hint fase={fase} disciplinId={disciplinId} advance={advance} />
       </div>
     </main>
@@ -558,10 +563,13 @@ function FormulaScene(props: FormulaSceneProps) {
     <div
       className="grid"
       style={{
-        // Responsiv kolonne-bredde: 44px på smalle skærme, op til 60px desktop
+        // Tighter kolonner end før — cifrene skal læse som ÉT regnestykke,
+        // ikke som spredte cifre. Tidligere clamp(44, 13vw, 60) gav for
+        // meget luft mellem 2 og 4 i fx "24". Nu strammere men stadig
+        // læsbart på små skærme.
         gridTemplateColumns: kompakt
-          ? 'repeat(5, clamp(38px, 11vw, 54px))'
-          : 'repeat(5, clamp(44px, 13vw, 60px))',
+          ? 'repeat(5, clamp(34px, 9vw, 46px))'
+          : 'repeat(5, clamp(40px, 10vw, 52px))',
         // Responsive rækker — første og sidste skalerer med viewport
         gridTemplateRows: kompakt
           ? 'clamp(24px, 4vw, 32px) clamp(48px, 12vw, 68px) clamp(48px, 12vw, 68px) 8px clamp(48px, 12vw, 68px)'
