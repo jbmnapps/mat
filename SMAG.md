@@ -52,6 +52,27 @@
   er sat på alle interaktive elementer i `globals.css`. Vi stoler på vores
   egne `:active`/`:focus`-styles til at signalere tryk — aldrig browserens
   default mørkegrå rektangel der "blinker".
+- **Numeric inputs på iOS kræver eksplicit submit-knap.** iOS' numeric
+  keypad har ingen Return/Go-tast. Uden visuel "Tjek"-knap kan eleven
+  ikke godkende sit svar — keyboardet sidder bare der. Tilføj altid en
+  mobile-only submit-knap (`sm:hidden`) ved siden af numeric inputs.
+- **Fixed-pixel layouts skal være `clamp()` for at virke på små viewports.**
+  `gridTemplateColumns: 'repeat(5, 60px)'` giver 300px grid — overflower
+  337px-viewport. Brug `clamp(44px, 13vw, 60px)` så det skalerer ned på
+  iPhone og op på desktop.
+- **"Kommer snart"-tilstande skal greyes ud, ikke kun mærkes.** Et lille
+  badge er nemt at overse. Brug `opacity-60 grayscale` så det er visuelt
+  tydeligt at modet/funktionen ikke er aktiv endnu.
+- **Centrér kort vertikalt på korte sider.** Når en side har lidt
+  indhold (fx en disciplin-side med 3 mode-kort), skal kortene sidde i
+  visuel midte af viewporten — ikke klumpe sig under headeren med
+  tomrum nedenfor. Brug `flex-1 flex justify-center` på container.
+- **Keyboard-aware sider bruger `h-[100dvh] overflow-hidden`.** På iOS
+  Safari krymper viewport når tastaturet popper op. Med `min-h-[100dvh]`
+  overflower indholdet under tastaturet og siden bliver scrollable —
+  irriterende. Med fixed `h-[100dvh]` + `overflow-hidden` låses højden
+  til faktisk synlig plads. Tastatur skubber ikke content, og siden
+  forbliver fast forankret. Bruges på Quiz og Lektion.
 
 ## UX-flow
 
