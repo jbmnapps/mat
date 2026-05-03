@@ -16,9 +16,77 @@ const quicksand = Quicksand({
   weight: ["500", "600", "700"],
 });
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+const liveUrl = "https://jbmnapps.github.io/mat";
+const previewImageUrl = `${liveUrl}/share-preview-v2.png`;
+const assetPath = (path: string) => `${basePath}${path}`;
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://jbmnapps.github.io"),
   title: "FP9 Matematik",
   description: "Træn til FP9 Matematik uden hjælpemidler",
+  alternates: {
+    canonical: liveUrl,
+  },
+  icons: {
+    icon: [
+      {
+        url: assetPath("/favicon.ico"),
+        sizes: "any",
+      },
+      {
+        url: assetPath("/favicon-32.png"),
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: assetPath("/favicon-16.png"),
+        sizes: "16x16",
+        type: "image/png",
+      },
+      {
+        url: assetPath("/icon-192.png"),
+        sizes: "192x192",
+        type: "image/png",
+      },
+    ],
+    shortcut: [
+      {
+        url: assetPath("/favicon-32.png"),
+        type: "image/png",
+      },
+    ],
+    apple: [
+      {
+        url: assetPath("/apple-icon.png"),
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+  },
+  openGraph: {
+    title: "FP9 Matematik",
+    description: "Træn til FP9 Matematik uden hjælpemidler",
+    url: liveUrl,
+    siteName: "FP9 Matematik",
+    locale: "da_DK",
+    type: "website",
+    images: [
+      {
+        url: previewImageUrl,
+        width: 1024,
+        height: 1024,
+        alt: "FP9 Matematik",
+        type: "image/png",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FP9 Matematik",
+    description: "Træn til FP9 Matematik uden hjælpemidler",
+    images: [previewImageUrl],
+  },
   // PWA: tillad iOS at åbne appen i fullscreen når eleven har tilføjet den
   // til hjemmeskærmen ("Add to Home Screen" → ikon åbner uden Safari-chrome).
   // Android Chrome læser primært app/manifest.ts; apple-touch-icon kommer fra
