@@ -172,6 +172,15 @@ export function AdditionInteractive({ disciplinId }: Props) {
     ? 'vertikal'
     : 'horisontal';
   const visFormula = fase !== 'intro-1';
+  // Mente vises fra mente-undervisning og frem i ex2. Bruges også til at
+  // beregne overskriftens y-offset (når mente er synlig, vokser math
+  // opad og overskrift skal følge).
+  const visMente =
+    erEksempel2 &&
+    (fase === 'mente-undervisning' ||
+      fase === 'spørg-tier-2' ||
+      fase === 'fejr-2' ||
+      fase === 'færdig');
 
   // Reset state ved start af eksempel 2
   useEffect(() => {
@@ -325,40 +334,52 @@ export function AdditionInteractive({ disciplinId }: Props) {
 
   const beskedTekst = beskedFor(fase, enereSvar2);
 
-  // Klik-overalt-avancerer (regel: klik avancerer overalt — Tjek-knap kun
-  // ved flere mulige handlinger). I input-faser returnerer advance() false,
-  // så klik gør intet — eleven kan trygt klikke i input-feltet uden at
-  // springe videre. Klik på input/knap/link/form ignoreres så native
-  // adfærd virker (cursor-placering, navigation, submit).
+  // Klik-overalt-avancerer. Klik på input/knap/link/form ignoreres så
+  // native adfærd virker. I input-faser re-fokuseres input-feltet
+  // (ellers mister eleven fokus ved klik på baggrund og kan ikke
+  // skrive videre — bug fanget af brugeren).
+  const inputFaserKonstant: Fase[] = [
+    'spørg-enere-1',
+    'spørg-tier-1',
+    'spørg-enere-2',
+    'spørg-tier-2',
+  ];
+
   const handleScreenClick = (e: React.MouseEvent<HTMLElement>) => {
     const target = e.target as HTMLElement;
     if (target.closest('input, button, a, form, label')) return;
+    if (inputFaserKonstant.includes(fase)) {
+      inputRef.current?.focus();
+      return;
+    }
     advance();
   };
 
   return (
     /*
-     * Lektion-side layout (designvision):
-     * En lektion er en SIDE, ikke en widget. Indhold flow'er fra toppen
-     * som en pædagogisk artikel:
-     *   - Header: kompakt navigation
-     *   - Overskrift: stor, bærer rummet — fungerer som lektion-titel
-     *   - Math: heroen, midt på siden
-     *   - CTA: tydelig handling i bunden
-     * Følelsen er rolig fokus, ikke quiz-puls. Centeret komposition
-     * (det vi havde før) føltes som en widget der fightede med viewport.
-     * Top-down layout respekterer typografisk hierarki.
+     * Layout-princip (efter brugerens specifikke feedback):
+     *
+     * 1. Math står STILLE. Den er forankret på viewport center og
+     *    bevæger sig ikke når overskriften har flere linjer.
+     * 2. Overskrift følger math's overkant — bottom-anchored med
+     *    konstant gap. Når math vokser opad (horisontal → vertikal,
+     *    eller mente træder ind), rykker overskriften lidt op først,
+     *    så stykket har plads.
+     * 3. Tekstskifte er subtle opacity-cross-fade (mode="wait", kort).
+     *    Ingen y-bounce, ingen scale-pop.
+     * 4. CTA er den oprindelige diskrete "Tryk Enter / Tryk her"
+     *    — ikke en generisk knap. Klik-overalt virker som genvej.
      */
     <main
-      className="h-[100dvh] flex flex-col bg-slate-50/40 overflow-hidden cursor-pointer"
+      className="h-[100dvh] relative bg-slate-50/40 overflow-hidden"
       style={keyboardViewport.height ? { height: `${keyboardViewport.height}px` } : undefined}
       onClick={handleScreenClick}
     >
-      {/* Header — kompakt navigation, ikke fremtrædende */}
+      {/* Header */}
       <header
         className={cn(
-          'flex items-center justify-between gap-4 px-6 lg:px-12 shrink-0',
-          keyboardViewport.keyboardOpen ? 'safe-top pb-2' : 'safe-top-roomy pb-3 lg:pb-5',
+          'absolute top-0 left-0 right-0 z-10 flex items-center justify-between gap-4 px-6 lg:px-12',
+          keyboardViewport.keyboardOpen ? 'safe-top pb-2' : 'safe-top-roomy pb-5 lg:pb-7',
         )}
       >
         <Link
@@ -385,79 +406,90 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </button>
       </header>
 
-      {/* Indholds-region — flow'er fra toppen. Overskrift og math er
-          stacket vertikalt med generøs breathing space. */}
-      <div className="flex-1 flex flex-col items-center px-6 pt-[6vh] sm:pt-[10vh] overflow-hidden pointer-events-none">
-        <motion.div
-          layout
-          transition={{ layout: { duration: 0.5, ease: [0.4, 0.0, 0.2, 1] } }}
-          className="flex flex-col items-center gap-12 sm:gap-16 lg:gap-20 max-w-3xl w-full"
+      {/* MATH — forankret på viewport center, står STILLE uanset hvad
+          overskriften gør. */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[3]">
+        <AnimatePresence>
+          {visFormula && (
+            <motion.div
+              key="formula-wrapper"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, x: shake ? [-6, 6, -6, 6, 0] : 0 }}
+              exit={{ opacity: 0 }}
+              transition={shake ? { duration: 0.4 } : { duration: 0.4, delay: 0.3 }}
+            >
+              <FormulaScene
+                ex={ex}
+                layout={layout}
+                fase={fase}
+                enereInput={enereInput}
+                setEnereInput={setEnereInput}
+                tierInput={tierInput}
+                setTierInput={setTierInput}
+                enereGodkendt={enereGodkendt}
+                tierGodkendt={tierGodkendt}
+                submitEnere={submitEnere}
+                submitTier={submitTier}
+                inputRef={inputRef}
+                erEksempel2={erEksempel2}
+                kompakt={keyboardViewport.keyboardOpen}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* OVERSKRIFT — y animeres baseret på math's "visible content top".
+          Værdierne er beregnet så overskriftens nederste kant lander
+          ca. 50px (desktop) / 36px (mobil) over math's øverste synlige
+          element. Math container er altid 272/244px, men kun bestemte
+          rækker er synlige pr. mode. */}
+      <motion.div
+        className="absolute top-1/2 left-1/2 px-6 max-w-2xl w-full text-center pointer-events-none z-[5]"
+        initial={false}
+        animate={{
+          x: '-50%',
+          y: erIntro
+            ? '-50%'
+            : keyboardViewport.keyboardOpen
+              ? layout === 'horisontal'
+                ? -90
+                : visMente
+                  ? -160
+                  : -130
+              : layout === 'horisontal'
+                ? -110
+                : visMente
+                  ? -210
+                  : -170,
+          fontSize: erIntro
+            ? 'clamp(28px, 7.5vw, 44px)'
+            : 'clamp(20px, 4.5vw, 28px)',
+        }}
+        transition={{ duration: 0.55, ease: [0.4, 0.0, 0.2, 1] }}
+      >
+        <motion.h2
+          className="font-display font-bold tracking-tight text-slate-900 leading-snug"
         >
-          {/* Overskrift — bærer rummet som lektion-titel. Stor på desktop,
-              skalerer ned på mobil. Tekst-skift er instant unmount +
-              fade-in (key-change), så ingen overlap mellem fase-beskeder. */}
-          <motion.h2
-            layout
-            initial={false}
-            animate={{
-              fontSize: erIntro
-                ? 'clamp(36px, 8vw, 56px)'
-                : 'clamp(24px, 5.5vw, 40px)',
-            }}
-            transition={{ duration: 0.5, ease: [0.4, 0.0, 0.2, 1] }}
-            className="font-display font-bold tracking-tight text-slate-900 leading-tight text-center"
-          >
+          {/* Subtle krydsfade — ingen y, ingen scale. mode="wait" så ingen
+              overlap; korte 150ms transitions så blank-perioden er minimal. */}
+          <AnimatePresence mode="wait" initial={false}>
             <motion.span
               key={beskedTekst}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
               className="block"
             >
               {beskedTekst}
             </motion.span>
-          </motion.h2>
-
-          {/* Math-scene — heroen */}
-          <AnimatePresence>
-            {visFormula && (
-              <motion.div
-                layout
-                key="formula-wrapper"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1, x: shake ? [-6, 6, -6, 6, 0] : 0 }}
-                exit={{ opacity: 0 }}
-                transition={shake ? { duration: 0.4 } : { duration: 0.4, delay: 0.3 }}
-              >
-                <FormulaScene
-                  ex={ex}
-                  layout={layout}
-                  fase={fase}
-                  enereInput={enereInput}
-                  setEnereInput={setEnereInput}
-                  tierInput={tierInput}
-                  setTierInput={setTierInput}
-                  enereGodkendt={enereGodkendt}
-                  tierGodkendt={tierGodkendt}
-                  submitEnere={submitEnere}
-                  submitTier={submitTier}
-                  inputRef={inputRef}
-                  erEksempel2={erEksempel2}
-                  kompakt={keyboardViewport.keyboardOpen}
-                />
-              </motion.div>
-            )}
           </AnimatePresence>
-        </motion.div>
-      </div>
+        </motion.h2>
+      </motion.div>
 
-      {/* CTA-region — tydelig handling i bunden, ikke passiv hint */}
-      <div
-        className={cn(
-          'shrink-0 px-6 flex justify-center pointer-events-auto safe-bottom',
-          keyboardViewport.keyboardOpen ? 'pb-3' : 'pb-8 sm:pb-10 lg:pb-12',
-        )}
-      >
+      {/* CTA — original diskret stil, ikke generisk knap */}
+      <div className="absolute bottom-[14vh] left-1/2 -translate-x-1/2 px-6 text-center pointer-events-auto z-[5]">
         <Hint fase={fase} disciplinId={disciplinId} advance={advance} />
       </div>
     </main>
@@ -623,12 +655,10 @@ function FormulaScene(props: FormulaSceneProps) {
         )}
       </AnimatePresence>
 
-      {/* Streg — entry har delay 0.5s så den lander efter cifrene har
-          morfet på plads. Exit har INGEN delay og kort duration, så
-          stregen forsvinder med det samme når vi forlader vertikal-mode
-          (fx fejr-1 → broen). Tidligere brugte exit den samme delay,
-          hvilket fik stregen til at "spawne" i et sekund efter fasen
-          var skiftet — det er den lille streg under 67+78 brugeren så. */}
+      {/* Streg — h-[2px] matcher input-feltets border-bottom, så addition-
+          stregen og result-input-stregen visuelt er samme tykkelse.
+          Tidligere h-[3px] var tykkere end input-stregen og virkede
+          uforholdsmæssigt bred. */}
       <AnimatePresence>
         {erVertikal && (
           <motion.div
@@ -644,7 +674,7 @@ function FormulaScene(props: FormulaSceneProps) {
               transition: { duration: 0.2 },
             }}
             style={{ gridColumn: '3 / span 2', gridRow: 4 }}
-            className="bg-slate-900 h-[3px] w-full origin-left rounded-full"
+            className="bg-slate-900 h-[2px] w-full origin-left rounded-full"
           />
         )}
       </AnimatePresence>
@@ -840,20 +870,22 @@ function Hint({
   if (enterFaser.includes(fase)) {
     return (
       <motion.button
-        key="next-cta"
+        key="enter-hint"
         type="button"
         onClick={advance}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.3, ease: 'easeOut' }}
-        className={cn(
-          'inline-flex items-center gap-2 rounded-full bg-slate-900 px-7 py-3.5 text-base font-semibold text-white',
-          'shadow-sm hover:bg-slate-800 hover:shadow-md transition-all',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2',
-        )}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="text-xs uppercase tracking-[0.2em] font-semibold text-slate-400 hover:text-slate-700 transition-colors px-4 py-3 -mx-4 -my-3"
       >
-        Næste
-        <ArrowRight className="h-4 w-4" aria-hidden />
+        <span className="hidden sm:inline">
+          Tryk{' '}
+          <kbd className="inline-flex items-center justify-center min-w-[28px] h-6 px-1.5 mx-1 rounded border border-slate-300 bg-white text-[11px] font-mono">
+            Enter
+          </kbd>{' '}
+          for at gå videre
+        </span>
+        <span className="sm:hidden">Tryk her for at gå videre</span>
       </motion.button>
     );
   }
