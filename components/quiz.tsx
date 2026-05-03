@@ -57,6 +57,13 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
   const [input, setInput] = useState('');
   const [valgtMC, setValgtMC] = useState<number | null>(null);
   const [feedbackVist, setFeedbackVist] = useState(false);
+  // True KUN i tidsrummet mellem submit på current opgave og næste-klik.
+  // Adskiller "just-submitted" fra "review af tidligere opgave" — vigtigt fordi
+  // `aktivIndex < resultater.length` er sand i begge tilfælde (resultater bliver
+  // appended ved submit). Uden dette flag vil "Næste opgave"-knappen kalde
+  // navigerFrem (bevarer state) i stedet for gåVidere (rydder state), så forrige
+  // svar+feedback hænger ved på næste opgave. Se AUDIT.md sektion 1.1.
+  const [justSubmitted, setJustSubmitted] = useState(false);
   const [shake, setShake] = useState(false);
   const [erLærer, setErLærer] = useState(false);
 
@@ -75,7 +82,9 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
   // Review-mode: eleven er gået tilbage til en allerede besvaret opgave
   // for at se sit svar + feedback igen. Display-state hentes fra resultater
   // i stedet for fra det levende input/valgtMC/feedbackVist.
-  const erReview = aktivIndex < resultater.length;
+  // !justSubmitted ekskluderer det øjeblikkelige "lige svaret current"-state,
+  // hvor aktivIndex < resultater.length er sand men det IKKE er review.
+  const erReview = aktivIndex < resultater.length && !justSubmitted;
   const reviewResultat = erReview ? resultater[aktivIndex] : null;
   const visFeedback = erReview || feedbackVist;
   const visResultat = erReview ? reviewResultat : sidsteResultat;
@@ -136,6 +145,7 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
       const rigtigt = svarErRigtigt(aktivOpgave, parsed);
       setResultater((prev) => [...prev, { opgave: aktivOpgave, elevSvar: input, rigtigt }]);
       setFeedbackVist(true);
+      setJustSubmitted(true);
     },
     [aktivOpgave, input, feedbackVist],
   );
@@ -149,10 +159,12 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
       { opgave: aktivOpgave, elevSvar: aktivOpgave.muligheder[valgtMC], rigtigt },
     ]);
     setFeedbackVist(true);
+    setJustSubmitted(true);
   }, [aktivOpgave, valgtMC, feedbackVist]);
 
   const gåVidere = useCallback(() => {
     setFeedbackVist(false);
+    setJustSubmitted(false);
     setInput('');
     setValgtMC(null);
     setAktivIndex((i) => i + 1);
@@ -160,23 +172,28 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
 
   // Navigation til allerede-besvarede opgaver. Adskiller sig fra gåVidere
   // ved IKKE at rydde input/feedbackVist — dem hentes display-state via
-  // erReview-deriveringen i stedet.
+  // erReview-deriveringen i stedet. justSubmitted nulstilles dog så
+  // næsteHandler skifter fra gåVidere til navigerFrem.
   const navigerTilbage = useCallback(() => {
+    setJustSubmitted(false);
     setAktivIndex((i) => Math.max(0, i - 1));
   }, []);
 
   const navigerFrem = useCallback(() => {
     // Kun frem inden for allerede-besvarede opgaver. Når man rammer current
     // (just-answered), bruger man gåVidere for at avancere.
+    setJustSubmitted(false);
     setAktivIndex((i) => i + 1);
   }, []);
 
-  // Vælges af "Næste opgave"-knappen baseret på om vi er i review eller ej.
-  const næsteHandler = erReview ? navigerFrem : gåVidere;
+  // Vælges af "Næste opgave"-knappen. Lige efter submit på current →
+  // gåVidere (rydder state). I review-mode → navigerFrem (bevarer state).
+  const næsteHandler = justSubmitted ? gåVidere : navigerFrem;
 
   const springOver = useCallback(() => {
     // Lærer-skip: avancér uden at registrere som svar
     setFeedbackVist(false);
+    setJustSubmitted(false);
     setInput('');
     setValgtMC(null);
     setAktivIndex((i) => i + 1);
@@ -188,6 +205,7 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
     setInput('');
     setValgtMC(null);
     setFeedbackVist(false);
+    setJustSubmitted(false);
   }, []);
 
   // Tastatur: Enter går videre når feedback vises, tal-tast vælger MC,
