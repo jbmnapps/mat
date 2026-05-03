@@ -28,3 +28,7 @@ const INDHOLD: Partial<Record<DisciplinId, Mode[]>> = {
 export function harIndhold(disciplin: DisciplinId, mode: Mode): boolean {
   return INDHOLD[disciplin]?.includes(mode) ?? false;
 }
+
+export function harDisciplinIndhold(disciplin: DisciplinId): boolean {
+  return (INDHOLD[disciplin]?.length ?? 0) > 0;
+}

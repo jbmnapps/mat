@@ -27,6 +27,8 @@ import type { DisciplinProgress } from '@/lib/store';
 interface Props {
   disciplin: Disciplin;
   progress: DisciplinProgress;
+  /** Disciplinen er synlig i oversigten, men har endnu ikke elev-indhold. */
+  kommerSnart?: boolean;
   /** Index brugt til stagger-animation ved første load */
   index?: number;
 }
@@ -54,94 +56,121 @@ const statusFarver: Record<Status, { dot: string; tekst: string; ring: string }>
   },
 };
 
-export function DisciplineCard({ disciplin, progress, index = 0 }: Props) {
+export function DisciplineCard({ disciplin, progress, kommerSnart = false, index = 0 }: Props) {
   const status = statusFarver[progress.status];
   const farve = DISCIPLIN_FARVE[disciplin.id];
   const harForsoegt = progress.antalForsoeg > 0;
+  const ariaLabel = kommerSnart
+    ? `${disciplin.navn} — kommer snart`
+    : `${disciplin.navn} — ${
+        progress.status === 'untouched'
+          ? 'ikke startet'
+          : `bedste resultat ${progress.bedsteScore}%`
+      }`;
+
+  const content = (
+    <>
+      {/* Score øverst til højre — kun hvis prøvet, farvet efter status */}
+      {harForsoegt && !kommerSnart && (
+        <span
+          className={cn(
+            'absolute right-2 top-2 sm:right-3 sm:top-3 text-[10px] sm:text-xs font-bold tabular-nums',
+            status.tekst,
+          )}
+        >
+          {progress.bedsteScore}%
+        </span>
+      )}
+
+      {/* Stort symbol */}
+      <div className="flex justify-center pt-1 pb-2 sm:pt-3 sm:pb-4">
+        <span
+          className={cn(
+            'flex h-10 w-10 sm:h-16 sm:w-16 items-center justify-center rounded-xl sm:rounded-2xl text-2xl sm:text-4xl font-bold transition-transform duration-200 ease-out',
+            'font-display tracking-tight',
+            !kommerSnart && 'group-hover:scale-105',
+            farve.bg,
+            farve.tekst,
+          )}
+          aria-hidden
+        >
+          {disciplin.symbol}
+        </span>
+      </div>
+
+      {/* Navn + progress-bar */}
+      <div className="text-center">
+        <h3 className="font-display text-[11px] sm:text-base font-bold text-slate-900 leading-tight break-words hyphens-auto">
+          {disciplin.navn}
+        </h3>
+        {kommerSnart && (
+          <span className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-slate-500 sm:text-[10px]">
+            Kommer snart
+          </span>
+        )}
+        {/* Progress-bar — visuelt match med %-pillen i toppen.
+            Vises på alle skærme når eleven har forsøgt — slankere på mobil
+            hvor kortene er små. */}
+        {harForsoegt && !kommerSnart && (
+          <div className="mx-auto mt-1.5 sm:mt-2 h-1 sm:h-1.5 w-10 sm:w-16 overflow-hidden rounded-full bg-slate-100">
+            <div
+              className={cn('h-full rounded-full transition-all', status.dot)}
+              style={{ width: `${progress.bedsteScore}%` }}
+              aria-hidden
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Bund-rækken på desktop — bevarer arrow + ikke-startet-tekst */}
+      {!harForsoegt && !kommerSnart && (
+        <div className="hidden sm:flex mt-4 items-center justify-between border-t border-slate-100 pt-3 text-xs">
+          <span className="text-slate-400 italic font-serif">Ikke startet</span>
+          <ArrowRight
+            className="h-3.5 w-3.5 text-slate-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-500"
+            aria-hidden
+          />
+        </div>
+      )}
+      {harForsoegt && !kommerSnart && (
+        <div className="hidden sm:flex mt-4 items-center justify-end border-t border-slate-100 pt-3 text-xs">
+          <ArrowRight
+            className="h-3.5 w-3.5 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-700"
+            aria-hidden
+          />
+        </div>
+      )}
+      {kommerSnart && (
+        <div className="hidden sm:flex mt-4 items-center justify-center border-t border-slate-100 pt-3 text-xs">
+          <span className="text-slate-400 italic font-serif">Ikke klar endnu</span>
+        </div>
+      )}
+    </>
+  );
+
+  const cardClassName = cn(
+    'group relative block h-full overflow-hidden rounded-xl sm:rounded-2xl border bg-white p-3 sm:p-5',
+    'transition-all duration-200 ease-out',
+    kommerSnart
+      ? 'cursor-default border-slate-200 bg-slate-50/80 opacity-60 grayscale'
+      : 'border-slate-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2',
+  );
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.03, ease: 'easeOut' }}
+      transition={{ duration: 0.25, delay: index * 0.02, ease: 'easeOut' }}
     >
-      <Link
-        href={`/${disciplin.id}/`}
-        className={cn(
-          'group relative block h-full overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200 bg-white p-3 sm:p-5',
-          'transition-all duration-200 ease-out',
-          'hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md',
-          'active:scale-[0.99]',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2',
-        )}
-        aria-label={`${disciplin.navn} — ${progress.status === 'untouched' ? 'ikke startet' : `bedste resultat ${progress.bedsteScore}%`}`}
-      >
-        {/* Score øverst til højre — kun hvis prøvet, farvet efter status */}
-        {harForsoegt && (
-          <span
-            className={cn(
-              'absolute right-2 top-2 sm:right-3 sm:top-3 text-[10px] sm:text-xs font-bold tabular-nums',
-              status.tekst,
-            )}
-          >
-            {progress.bedsteScore}%
-          </span>
-        )}
-
-        {/* Stort symbol */}
-        <div className="flex justify-center pt-1 pb-2 sm:pt-3 sm:pb-4">
-          <span
-            className={cn(
-              'flex h-10 w-10 sm:h-16 sm:w-16 items-center justify-center rounded-xl sm:rounded-2xl text-2xl sm:text-4xl font-bold transition-transform duration-200 ease-out',
-              'font-display tracking-tight',
-              'group-hover:scale-105',
-              farve.bg,
-              farve.tekst,
-            )}
-            aria-hidden
-          >
-            {disciplin.symbol}
-          </span>
+      {kommerSnart ? (
+        <div className={cardClassName} aria-disabled="true" aria-label={ariaLabel}>
+          {content}
         </div>
-
-        {/* Navn + progress-bar */}
-        <div className="text-center">
-          <h3 className="font-display text-[11px] sm:text-base font-bold text-slate-900 leading-tight break-words hyphens-auto">
-            {disciplin.navn}
-          </h3>
-          {/* Progress-bar — visuelt match med %-pillen i toppen.
-              Vises på alle skærme når eleven har forsøgt — slankere på mobil
-              hvor kortene er små. */}
-          {harForsoegt && (
-            <div className="mx-auto mt-1.5 sm:mt-2 h-1 sm:h-1.5 w-10 sm:w-16 overflow-hidden rounded-full bg-slate-100">
-              <div
-                className={cn('h-full rounded-full transition-all', status.dot)}
-                style={{ width: `${progress.bedsteScore}%` }}
-                aria-hidden
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Bund-rækken på desktop — bevarer arrow + ikke-startet-tekst */}
-        {!harForsoegt && (
-          <div className="hidden sm:flex mt-4 items-center justify-between border-t border-slate-100 pt-3 text-xs">
-            <span className="text-slate-400 italic font-serif">Ikke startet</span>
-            <ArrowRight
-              className="h-3.5 w-3.5 text-slate-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-500"
-              aria-hidden
-            />
-          </div>
-        )}
-        {harForsoegt && (
-          <div className="hidden sm:flex mt-4 items-center justify-end border-t border-slate-100 pt-3 text-xs">
-            <ArrowRight
-              className="h-3.5 w-3.5 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-700"
-              aria-hidden
-            />
-          </div>
-        )}
-      </Link>
+      ) : (
+        <Link href={`/${disciplin.id}/`} className={cardClassName} aria-label={ariaLabel}>
+          {content}
+        </Link>
+      )}
     </motion.div>
   );
 }
