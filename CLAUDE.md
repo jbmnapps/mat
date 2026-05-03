@@ -2,7 +2,15 @@
 
 > **AKUT WEEKEND-ARBEJDE (FP9 mandag 4. maj 2026):** Vi bygger en hurtig prøvetrænings-version til eleverne. Deployer fra `weekend`-branch, `main` står urørt. Plan og beslutninger ligger i [PROEVE-PREP.md](PROEVE-PREP.md). Læs den FØR du laver ændringer.
 
-Web-app der lader 9.-klasses elever træne FP9 Matematik uden hjælpemidler hjemmefra. Arvtager til print-projektet i `print/`.
+## North Star
+
+> **ALT i appen skal pege på at eleven lærer undervejs. Opgaver bygger
+> færdigheder, terper dem, og bygger bro mellem sværhedsgrader — så
+> effektivt som muligt.**
+
+Hvis et stykke arbejde ikke peger den vej, er det enten af-prioriteret eller forkert. Spørg før du udvider scope.
+
+Web-app der lader 9.-klasses elever træne FP9 Matematik uden hjælpemidler hjemmefra. Arvtager til print-projektet i `print/`. Vi arbejder ud fra **3-lag-modellen** (lektion-træning → terpe-opgaver → FP9-replika) — se [TRAENINGSMODUL-RUBRIK.md](TRAENINGSMODUL-RUBRIK.md).
 
 ## Hvem du arbejder med
 
@@ -17,6 +25,8 @@ Når han giver gentagen feedback om samme tema, er det et signal om en regel der
 **Loopet:** du laver, han giver feedback, du tager både den konkrete feedback og intentionen til dig, kommer med muligheder + anbefaling, vi bliver enige, du bygger. Loopet skal forbedre sig selv over tid — du lærer hans smag og principper undervejs.
 
 **Intention før mekanik.** Spørg "hvad skal resultatet være — for brugeren, for koden, for den næste der åbner projektet?" før "hvad er nemmest at skrive?". Forudsigelighed er en feature.
+
+**Hold ham på sporet.** Brugeren bliver nemt distraheret. Hvis vi har aftalt mål X for sprintet og han pludselig fokuserer på Y der ikke peger den vej, så sig det — som en god ven, ikke som en lås. Format: *"vi var enige om X først. Stadig på den, eller skal vi flytte målet?"* Han vil hellere have det reflekteret end at glide ind i en omvej uden at opdage det. Det handler om at gøre hans valg synlige, ikke at begrænse ham.
 
 **Efter enhver implementering, rapportér:**
 
@@ -42,6 +52,59 @@ Brugeren ved ikke hvad han ikke ved. Du beskytter ham proaktivt mod blinde vinkl
 - **Bivirkninger** — hvis en ændring producerer effekter du ikke har designet, er det en fejl, også når det tilfældigvis virker.
 - **Når noget kunne gøres bedre** — sig det, også når brugeren ikke spurgte. Han ser kode i visualisering, ikke i tekst.
 
+## Live-site beskyttelse — eleverne bruger appen NU
+
+**`weekend`-branch deployer øjeblikkeligt til `https://jbmnapps.github.io/mat/`. Eleverne er på den.** Det betyder:
+
+**Hard rules:**
+1. **Ingen WIP eller eksperimenter pushes til `weekend`.** Push KUN når en ændring er færdig, testet, og verificeret som ikke-brydende.
+2. **Vision-arbejde foregår på `weekend-vision`-branch** (eller en anden tydeligt mærket branch). Den deployer ikke automatisk. Push frit der.
+3. **Når et modul er klart til at gå live:** Brugeren bekræfter det er klart → vi merger `weekend-vision` → `weekend`. Først nu deployes det.
+4. **Aldrig `git push origin weekend` mens du står på en anden branch.** Det er en footgun. Skift først, så push.
+
+**Progress-preservation — datamodellen må IKKE brydes:**
+- Elevernes progress ligger i localStorage + Supabase med strukturen `{ disciplinId: { status, bestScore, attempts, lastAttempt } }` plus `history`.
+- **Tilføj felter, omdøb aldrig.** Gamle elev-data skal fortsat læse rent.
+- Hvis vi *skal* skifte form: skriv en migration-funktion der konverterer gamle data → nye, og kør den ved app-start. Aldrig wipe.
+- Hvis vi laver nye modul-typer (lag 1, 2, 3) der tracker andre ting end `bestScore`, så map dem ind i samme `status`-semantik (rød/gul/grøn) for kontinuitet, og gem det nye separat under en ny nøgle.
+
+**Hvis en ændring KAN bryde elev-progress:** stop, fortæl brugeren, lad ham beslutte. Aldrig push uden bekræftelse.
+
+## Multi-session workflow
+
+Brugeren kan ikke git, og det skal han ikke. Du står for det.
+
+**Standardtilstand:** Én Claude-session ad gangen i hovedmappen
+`/Users/jonasbenjamin/WORKSPACES/Matematikopgaver-WEB/` på branch `weekend`.
+Sikkert, ingen kollisioner.
+
+**Når brugeren vil køre to sessions samtidigt:**
+
+1. Du (i hovedsessionen) opretter en `git worktree` i en søster-mappe:
+   ```bash
+   git worktree add ../Matematikopgaver-WEB-<task> weekend-<task>
+   ```
+2. Du giver brugeren én linje at åbne i en ny terminal — fx
+   `cd ../Matematikopgaver-WEB-<task> && claude` — og fortæller hvad
+   sessionen er for.
+3. Sidesessionen arbejder isoleret. Den kan ikke ramme hovedsessionens
+   filer fordi de er i forskellige mapper.
+4. **Sidesessionen pusher KUN til sin egen branch** (`weekend-<task>`),
+   ALDRIG direkte til `weekend`. Det er en hard regel.
+5. Når sidesessionen er færdig, beder brugeren hovedsessionen flette ind:
+   ```bash
+   git checkout weekend && git merge --no-ff weekend-<task> &&
+   git worktree remove ../Matematikopgaver-WEB-<task>
+   ```
+
+**Ved session-start, tjek:**
+- `pwd` — er jeg i hovedmappen eller en worktree?
+- `git status` + `git branch --show-current` — hvilken branch?
+- Hvis worktree: jeg er sidesession. Ingen direkte push til `weekend`.
+
+**Ved konflikt mellem sessions** (samme fil ændret begge steder): pause,
+fortæl brugeren, lad ham brokere. Ingen automatisk merge.
+
 ## Værktøjer (subagents, skills, tools)
 
 Foreslå proaktivt subagents, skills og tools når de konkret giver værdi — fx parallel research med Explore, QC-review med general-purpose-agent, security-review-skill før vi pusher auth-kode. Aldrig spekulativt, aldrig som signalering.
@@ -53,8 +116,8 @@ Brugeren lærer også. Forklar kort hvad et værktøj er og hvornår det er nytt
 Disse er bygget til projektet og skal bruges proaktivt:
 
 - **visual-reviewer** — kald FØR push af UI-ændringer (komponent- eller side-filer, styling). Tjekker mod SMAG.md/DESIGN.md via Claude in Chrome i flere viewport-størrelser.
-- **forklaringer-reviewer** — kald når `forklaring`-felter ændres i `lib/opgaver/*.ts`. Sikrer kort, simple, jargon-fri tip-tekster der ikke afslører svaret.
-- **opgaver-reviewer** — kald når en opgavebank ændres eller tilføjes. Verificerer korrekthed, FP9-niveau, progression, dækning.
+- **forklaringer-reviewer** — kald når hint-/forklaringstekster ændres i terpe-opgaver (lag 2). Sikrer kort, simple, jargon-fri tip-tekster der ikke afslører svaret.
+- **traeningsmodul-reviewer** — kald når et træningsmodul (lag 1, 2 eller 3) bygges eller ændres. Verificerer mod TRAENINGSMODUL-RUBRIK.md + lag-specifikke krav.
 - **ux-reviewer** — kald når et helt flow skal valideres (træning, eksport/import, login). Tester som elev, fanger dødvinkler.
 
 Princippet: hvis du ændrer noget der falder under en agents domæne, kald agenten før push. Hvis ❌, fix og kald igen.
@@ -62,12 +125,14 @@ Princippet: hvis du ændrer noget der falder under en agents domæne, kald agent
 ## Læs disse først
 
 - **[PROEVE-PREP.md](PROEVE-PREP.md)** — aktivt sprint-dokument med status, plan, beslutninger. *Læs altid først.*
+- **[TRAENINGSMODUL-RUBRIK.md](TRAENINGSMODUL-RUBRIK.md)** — 3-lag-modellen + voksende rubrik for hvad et godt træningsmodul er. *Læs før træningsmodul-arbejde.*
 - **[SMAG.md](SMAG.md)** — brugerens smag, sprog, designprincipper. *Læs ALTID før UI- eller indholdsændringer.*
+- **[PRINCIPPER.md](PRINCIPPER.md)** — pædagogiske principper.
+- **[OVERSIGT.md](OVERSIGT.md)** — disciplin × lag status.
+- **[AUDIT.md](AUDIT.md)** — aktive findings fra agent-reviews.
 - **[BACKEND-TJEK.md](BACKEND-TJEK.md)** — tjekliste for læreren før login-link deles. *Relevant ved Supabase-arbejde.*
 - **[DESIGN.md](DESIGN.md)** — visuelt sprog (typografi, palette, SVG-mønstre).
-- **[PRINCIPPER.md](PRINCIPPER.md)** — pædagogiske principper.
-- **[OVERSIGT.md](OVERSIGT.md)** — disciplin-oversigt og status.
-- **[REVIEW.md](REVIEW.md)** — review-rubric (Del A, B, C).
+- **[archive/](archive/)** — historik fra tidligere sprints og pre-pivot-docs. Læses kun ved behov.
 - **[print/](print/)** — det oprindelige print-projekt som reference.
 
 ## Stack
@@ -107,10 +172,13 @@ Princippet: hvis du ændrer noget der falder under en agents domæne, kald agent
 
 ```
 Matematikopgaver-WEB/
-├── CLAUDE.md, DESIGN.md, PRINCIPPER.md, OVERSIGT.md, REVIEW.md, PROEVE-PREP.md, BACKEND-TJEK.md
-├── Elevprøver_FP9guidelines/      ← FP9-PDF'er som ground truth (delt med print)
+├── CLAUDE.md, PROEVE-PREP.md, TRAENINGSMODUL-RUBRIK.md
+├── PRINCIPPER.md, SMAG.md, DESIGN.md, OVERSIGT.md, AUDIT.md, BACKEND-TJEK.md
+├── archive/                        ← Pre-pivot-docs og afsluttede sprint-noter (historik)
+├── codex/                          ← Codex-adapter (AGENTS.md) + Codex-output (audits)
+├── Elevprøver_FP9guidelines/       ← FP9-PDF'er som ground truth (delt med print)
 ├── print/                          ← Det oprindelige print-projekt (reference)
-├── .claude/                        ← Slash-kommandoer + worktree-areal
+├── .claude/                        ← Slash-kommandoer + custom agents
 ├── app/                            ← Next.js App Router
 │   ├── layout.tsx                  ← Root HTML + chunk-cache-auto-reload
 │   ├── page.tsx                    ← Dashboard

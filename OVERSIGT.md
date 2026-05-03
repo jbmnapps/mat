@@ -1,82 +1,100 @@
-# Oversigt — FP9 Øvelsesark
+# Oversigt — FP9 Matematik (web-projekt)
 
-Status pr. 2026-04-29 (en uge til prøven). Hvert emne har sin egen mappe, og inden for mappen kan der være flere ark i tre kategorier.
+> Status pr. 2026-05-03 søndag eftermiddag, efter pivot til 3-lag-modellen.
+> *(Print-projektets gamle oversigt er flyttet til [print/OVERSIGT.md](print/OVERSIGT.md).)*
 
-## 3 kategorier af ark
+## 3-lag-modellen pr. disciplin
 
-| Kategori | Filnavn-præfiks | Indhold | Facit | Default-model |
-|---|---|---|---|---|
-| **Tutorial** | `tutorial-NN.html` | Kun metode/how-to. Flere worked examples. | Nej | — |
-| **Arbejdsark** | `arbejdsark-NN.html` | Metode + opgaver + facit. Standard-model. | Ja | `ark/addition/arbejdsark-01.html` |
-| **Cheatsheet** | `cheatsheet-NN.html` | Tabeller, konverteringsskemaer, formler. Én side. | Nej | — |
+Hver disciplin har op til tre lag. Definition og krav i
+[TRAENINGSMODUL-RUBRIK.md](TRAENINGSMODUL-RUBRIK.md).
 
-Underformer af arbejdsark (fx "kun prøveklar", "kun varm op + på papir") defineres ikke på forhånd — vi tilpasser indholdet pr. forespørgsel.
-
-## Mappestruktur
-
-```
-ark/
-├── addition/
-│   └── arbejdsark-01.html   ← kanonisk eksempel (5 sektioner)
-├── subtraktion/             ← kommer
-├── multiplikation/          ← kommer
-├── division/                ← kommer
-├── decimaltal/              ← kommer
-├── procent/                 ← kommer
-├── ligninger/               ← kommer
-├── enhedsomregning/         ← kommer
-├── vinkler/                 ← kommer
-└── ... osv.
-```
-
-Inden for hver mappe kan der ligge så mange ark man har lyst til — fx `arbejdsark-01`, `arbejdsark-02`, `tutorial-01`, `cheatsheet-01`. Mapper oprettes når der er behov.
-
-## Status
+| Symbol | Betydning |
+|---|---|
+| ✅ | Bygget i ny stil og klar til elev |
+| 🟡 | Bygget i gammel stil (overlever som terpe-baseline indtil pivot) |
+| ⬜ | Ikke startet |
+| 🚫 | Ikke planlagt for prøven |
 
 ### Tal og algebra
-| Emne | Eksisterende ark | Mangler |
-|---|---|---|
-| Addition | ✅ [arbejdsark-01](ark/addition/arbejdsark-01.html) · ✅ [tutorial-01](ark/addition/tutorial-01.html) | — |
-| Subtraktion | — | ⬜ |
-| Multiplikation | — | ⬜ |
-| Division | — | ⬜ |
-| Decimaltal | — | ⬜ |
-| Procent og brøk | — | ⬜ |
-| Ligninger | — | ⬜ |
-| Regneudtryk / indsæt tal | — | ⬜ |
-| Overslagsregning | — | ⬜ |
-| Hverdagsregning | — | ⬜ |
+
+| Disciplin | Lag 1 · Lektion | Lag 2 · Terpe | Lag 3 · FP9-replika |
+|---|---|---|---|
+| Addition | 🟡 prototype (skal færdiggøres) | 🟡 12 quiz-opgaver | ⬜ |
+| Subtraktion | ⬜ | 🟡 12 quiz-opgaver | ⬜ |
+| Multiplikation | ⬜ | 🟡 12 quiz-opgaver | ⬜ |
+| Division | ⬜ | 🟡 12 quiz-opgaver | ⬜ |
+| Decimaltal | ⬜ | ⬜ | ⬜ |
+| Procent og brøk | ⬜ | 🟡 12 quiz-opgaver | ⬜ |
+| Ligninger | ⬜ | 🟡 12 quiz-opgaver | ⬜ |
+| Regneudtryk | ⬜ | ⬜ | ⬜ |
+| Overslagsregning | ⬜ | ⬜ | ⬜ |
+| Hverdagsregning | ⬜ | 🟡 12 quiz-opgaver | ⬜ |
 
 ### Geometri og måling
-| Emne | Eksisterende ark | Mangler |
-|---|---|---|
-| Enhedsomregning | — | ⬜ |
-| Vinkler | — | ⬜ |
-| Koordinatsystem | — | ⬜ |
-| Rumfang og areal | — | ⬜ |
-| Ligedannethed | — | ⬜ |
+
+| Disciplin | Lag 1 · Lektion | Lag 2 · Terpe | Lag 3 · FP9-replika |
+|---|---|---|---|
+| Enhedsomregning | ⬜ | 🟡 12 quiz-opgaver | ⬜ |
+| Vinkler | ⬜ | ⬜ | ⬜ |
+| Koordinatsystem | ⬜ | 🟡 12 quiz-opgaver | ⬜ |
+| Rumfang og areal | ⬜ | 🟡 12 quiz-opgaver | ⬜ |
+| Ligedannethed | ⬜ | ⬜ | ⬜ |
 
 ### Statistik og sandsynlighed
-| Emne | Eksisterende ark | Mangler |
-|---|---|---|
-| Diagramaflæsning | — | ⬜ |
-| Tabeller og gennemsnit | — | ⬜ |
-| Sandsynlighed | — | ⬜ |
 
-## Sådan bruges projektet
+| Disciplin | Lag 1 · Lektion | Lag 2 · Terpe | Lag 3 · FP9-replika |
+|---|---|---|---|
+| Diagrammer | ⬜ | 🟡 12 quiz-opgaver | ⬜ |
+| Tabeller og gennemsnit | ⬜ | 🟡 12 quiz-opgaver | ⬜ |
+| Sandsynlighed | ⬜ | 🟡 12 quiz-opgaver | ⬜ |
 
-1. **Bestil et ark:** Sig fx "byg et arbejdsark om subtraktion" eller "lav et cheatsheet om enhedsomregning". Claude bygger ét ark ad gangen.
-2. **Iteration:** Åbn HTML-filen i browseren. Fortæl Claude hvad der skal rettes. Læringen havner i [DESIGN.md](DESIGN.md) og/eller [PRINCIPPER.md](PRINCIPPER.md).
-3. **Print:** Browser → Cmd+P → "Gem som PDF" eller print direkte. Sidste side er altid facit (på arbejdsark).
+---
 
-## Filer
+## Hvad eleverne ser lige nu
+
+- **Live på <https://jbmnapps.github.io/mat/>** efter login
+- 13 disciplinerne med "Træning"-knap aktiv (giver 12 quiz-opgaver)
+- 1 disciplin (addition) med "Lektion"-knap aktiv (interaktiv prototype)
+- "Prøveklar"-knap er greyed-out på alle disciplinerne
+- 5 disciplinerne (decimaltal, regneudtryk, overslagsregning, vinkler, ligedannethed) har ingen indhold endnu — vises som greyed-out på dashboard
+
+---
+
+## Prioritering ved pivoten
+
+### Først (i dag/i nat)
+- Færdiggør lag 1 for **én** disciplin som proof-of-concept for skalerbar model
+- Kandidater: addition (færdiggør prototype) eller procent (vægter tungest på FP9)
+
+### Næste (efter prøven, hvis tid)
+- Replikér lag 1 til de andre tunge FP9-discipliner (procent, regnearter, ligninger)
+- Lag 2: opdel eksisterende quiz-opgaver i varianter pr. disciplin
+- Lag 3: FP9-replika baseret på `Elevprøver_FP9guidelines/`
+
+---
+
+## Hvor ting ligger
 
 ```
-CLAUDE.md          → orienteringskort (læses af Claude i hver session)
-DESIGN.md          → visuelt sprog + genbrugelige SVG-mønstre
-PRINCIPPER.md      → pædagogiske læringer
-OVERSIGT.md        → denne fil
-KONCEPT.md         → original projektbeskrivelse (historisk, ikke aktiv)
-shared/ark.css     → minimal print + math-helpers (resten via Tailwind CDN)
-ark/<emne>/<type>-NN.html   → arkene
+app/                              ← Next.js routes
+  [disciplin]/                    ← Per-disciplin
+    lektion/page.tsx              ← Lag 1 ind-gang
+    traening/page.tsx             ← Lag 2 ind-gang (i dag: quiz)
+    proeveklar/page.tsx           ← Lag 3 ind-gang (greyed pt.)
+components/
+  lektion/                        ← Lag 1-moduler
+    addition-interactive.tsx      ← Eneste der findes pt. — mønster
+  quiz.tsx                        ← Lag 2-engine (kan genbruges)
+lib/
+  disciplines.ts                  ← Master-liste
+  opgaver/<disciplin>.ts          ← Lag 2-opgavebanker (gamle quiz-format)
+  content-registry.ts             ← Hvad er bygget pr. lag (pt. unøjagtigt)
+print/                            ← Det oprindelige print-projekt (reference)
+archive/                          ← Pre-pivot-docs (historik)
 ```
+
+---
+
+## Status pr. dato
+
+- *2026-05-03 v1:* Pivot til 3-lag-model. OVERSIGT.md skrevet om fra bunden. Alt eksisterende træning markeret 🟡 indtil det erstattes af lag 2-versioner.

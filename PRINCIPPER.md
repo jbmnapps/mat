@@ -31,6 +31,17 @@ Hvert ark er bygget op:
 2. **Standard** — FP9-niveau, blandet kontekst
 3. **FP9-replikering** — de sidste opgaver skal **ligne rigtige FP9-opgaver** i ordlyd, format og indpakning, så eleverne genkender dem på prøvedagen og ved hvilken teknik de skal bruge
 
+### 4a. Byg bro — ikke bare hop op
+Stigende sværhedsgrad er ikke nok. **Hver opgave skal bygge bro fra den forrige** — føje ÉN ny ting til, ikke flere på én gang. Eleven skal kunne mærke at hun stadig bruger det hun lige lærte, plus en lille ny ting.
+
+**Dårligt:** opgave 1 *"Hvad er 50% af 120?"* → opgave 2 *"Hvad er 30% af 250?"*
+*(skifter både procenten OG totalen — eleven har ikke trænet hverken det ene eller det andet trin)*
+
+**Godt:** opgave 1 *"Hvad er 50% af 120?"* → opgave 2 *"Hvad er 50% af 250?"*
+*(samme procent — eleven konsoliderer "halvér"-handlingen)* → opgave 3 *"Hvad er 25% af 120?"* *(samme tal, ny procent — eleven kobler "del med 4")*.
+
+Når man laver opgave N+1, spørg: *"hvad er den ene ting der er ny her, og er alt det andet noget eleven lige har gjort?"* Hvis svaret er "to ting er nye", er trinene for stejle — indsæt en bro-opgave imellem.
+
 ### 5. FP9-ordlyd er træning i sig selv
 Vi bruger samme imperative korte ordlyd som FP9: "Udregn", "Løs ligningerne", "Indsæt tal, så udtrykkene bliver sande", "Sæt et X", "Skitsen viser…", "Hvor mange / Hvor stor en procentdel". Eleven skal genkende formuleringerne — så de ved *hvilken type opgave det er* fra første sætning.
 
