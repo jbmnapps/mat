@@ -58,6 +58,8 @@ export interface AppState {
   signedInId: string | null;
   /** Visningsnavn for indlogget elev. */
   signedInNavn: string | null;
+  /** Total aktiv tid (sekunder) — tæller op via lib/activity-tracker, sync'es til Supabase. */
+  totalActiveSeconds: number;
 
   // Actions
   registrérPrøveklarForsoeg: (disciplin: DisciplinId, score: number) => void;
@@ -73,6 +75,10 @@ export interface AppState {
   nulstilAlt: () => void;
   /** Sæt eller ryd login-status (kaldes fra lib/auth.ts). */
   setSignedIn: (id: string | null, navn: string | null) => void;
+  /** Sæt totalAktiv (kaldes ved login når vi henter fra Supabase). */
+  setTotalActiveSeconds: (sek: number) => void;
+  /** Læg sekunder oveni totalAktiv (lokal counter mellem syncs). */
+  inkrémentérAktiv: (sek: number) => void;
 }
 
 /** Default-progress for én disciplin (eleven har ikke rørt den endnu). */
@@ -100,6 +106,7 @@ export const useStore = create<AppState>()(
       progress: initialProgress(),
       signedInId: null,
       signedInNavn: null,
+      totalActiveSeconds: 0,
 
       registrérPrøveklarForsoeg: (disciplinId, score) => {
         const tidspunkt = new Date().toISOString();
@@ -142,6 +149,14 @@ export const useStore = create<AppState>()(
         }),
 
       setSignedIn: (id, navn) => set({ signedInId: id, signedInNavn: navn }),
+
+      setTotalActiveSeconds: (sek) =>
+        set({ totalActiveSeconds: Math.max(0, Math.floor(sek)) }),
+
+      inkrémentérAktiv: (sek) =>
+        set((state) => ({
+          totalActiveSeconds: state.totalActiveSeconds + Math.max(0, Math.floor(sek)),
+        })),
     }),
     {
       name: STORAGE_KEY,
@@ -161,6 +176,7 @@ export const useStore = create<AppState>()(
         progress: state.progress,
         signedInId: state.signedInId,
         signedInNavn: state.signedInNavn,
+        totalActiveSeconds: state.totalActiveSeconds,
       }),
 
       // Sørg for at nye diciplinerne (tilføjet senere) får default-progress

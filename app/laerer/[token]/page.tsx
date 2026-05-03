@@ -266,7 +266,10 @@ export default function LaererPage() {
                         {elev.navnSlug}
                       </span>
                     </div>
-                    <SidstAktivLinje sidstAktiv={elev.sidstAktiv} />
+                    <SidstAktivLinje
+                      sidstAktiv={elev.sidstAktiv}
+                      totalAktivSek={elev.totalAktivSek}
+                    />
                   </div>
 
                   <div className="hidden sm:flex items-center gap-3 text-xs">
@@ -409,25 +412,51 @@ function tidsForskel(iso: string): string {
 /**
  * Viser "Aktiv nu" med pulserende grøn prik hvis eleven har sat
  * progress for under AKTIV_LIVE_SEK siden, ellers normal "for X min siden".
+ * Plus total aktiv tid hvis > 0.
  */
-function SidstAktivLinje({ sidstAktiv }: { sidstAktiv: string }) {
+function SidstAktivLinje({
+  sidstAktiv,
+  totalAktivSek,
+}: {
+  sidstAktiv: string;
+  totalAktivSek: number;
+}) {
   const sek = Math.floor((Date.now() - new Date(sidstAktiv).getTime()) / 1000);
   const erAktiv = sek < AKTIV_LIVE_SEK;
+  const harAktivTid = totalAktivSek > 30;
 
-  if (erAktiv) {
-    return (
-      <p className="mt-0.5 inline-flex items-center gap-1.5 text-xs">
-        <span className="relative flex h-2 w-2" aria-hidden>
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-gron opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-status-gron" />
-        </span>
-        <span className="font-semibold text-status-gron">Aktiv nu</span>
-      </p>
-    );
-  }
   return (
-    <p className="text-xs text-slate-500 mt-0.5">
-      Sidst aktiv {tidsForskel(sidstAktiv)}
+    <p className="mt-0.5 inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
+      {erAktiv ? (
+        <span className="inline-flex items-center gap-1.5">
+          <span className="relative flex h-2 w-2" aria-hidden>
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-gron opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-status-gron" />
+          </span>
+          <span className="font-semibold text-status-gron">Aktiv nu</span>
+        </span>
+      ) : (
+        <span className="text-slate-500">Sidst aktiv {tidsForskel(sidstAktiv)}</span>
+      )}
+      {harAktivTid && (
+        <span className="text-slate-400">
+          · trænet {formatVarighed(totalAktivSek)} i alt
+        </span>
+      )}
     </p>
   );
+}
+
+/**
+ * Format en varighed i sekunder som "Xt Ymin" eller "X min" eller "X sek".
+ * Til menneske-læsning på dashboards.
+ */
+function formatVarighed(sek: number): string {
+  if (sek < 60) return `${sek} sek`;
+  const min = Math.floor(sek / 60);
+  if (min < 60) return `${min} min`;
+  const t = Math.floor(min / 60);
+  const restMin = min % 60;
+  if (restMin === 0) return `${t}t`;
+  return `${t}t ${restMin}min`;
 }

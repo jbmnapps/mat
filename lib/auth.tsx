@@ -365,6 +365,17 @@ async function syncEfterLogIn(
 
   // Push den flettede state op
   await pushAlleDiscipliner(brugerId, flettet);
+
+  // Hent total_active_seconds fra serveren — vi cacher lokalt for at vise
+  // "Du har trænet X" på dashboardet uden roundtrip
+  const { data: studentRow } = await supabase
+    .from('students')
+    .select('total_active_seconds')
+    .eq('id', brugerId)
+    .single();
+  if (studentRow) {
+    useStore.getState().setTotalActiveSeconds(studentRow.total_active_seconds ?? 0);
+  }
 }
 
 /** Sammenflet to DisciplinProgress-værdier: max best_score wins. */
@@ -461,6 +472,7 @@ export interface ElevOversigt {
   navnSlug: string;
   oprettet: string;
   sidstAktiv: string;
+  totalAktivSek: number;
   progress: Record<DisciplinId, DisciplinProgress>;
 }
 
@@ -545,6 +557,7 @@ export async function hentAlleEleverForLaerer(): Promise<ElevOversigt[]> {
       navnSlug: s.name_slug,
       oprettet: s.created_at,
       sidstAktiv: s.last_active,
+      totalAktivSek: s.total_active_seconds ?? 0,
       progress: tomt,
     };
   });
@@ -572,6 +585,98 @@ function tolkAuthFejl(
   return 'Kunne ikke logge ind. Prøv igen.';
 }
 
+// ─────── Activity tracker ───────
+//
+// Tæller "aktiv tid" mens eleven bruger appen.
+//
+// Algorithm:
+//   - Lyt på klik/taste/scroll/tap → opdatér lastInteraction-timestamp
+//   - Hvert 5. sek: hvis fanen er synlig OG sidste interaktion var inden for
+//     60 sek → tæl +5 sek (lokal store + pending-sync-buffer)
+//   - Hvert 30. sek: send buffer som delta til Supabase via add_active_seconds()
+//   - Når fanen skjules: best-effort flush af buffer
+//
+// Lærer-konti tracker vi ikke — de bruger ikke dashboardet/disciplin-routes
+// hvor AuthGate (og dermed denne tracker) er mountet.
+
+const AKTIV_IDLE_TIMEOUT_MS = 60_000;
+const AKTIV_TICK_MS = 5_000;
+const AKTIV_SYNC_MS = 30_000;
+const AKTIV_MAX_PER_SYNC = 600; // matcher server-side cap
+
+function useActivityTracker() {
+  const signedInId = useStore((s) => s.signedInId);
+
+  useEffect(() => {
+    if (!signedInId) return;
+
+    let lastInteraction = Date.now();
+    let pendingSekunder = 0;
+
+    const opdaterInteraktion = () => {
+      lastInteraction = Date.now();
+    };
+
+    const events: (keyof DocumentEventMap)[] = [
+      'click',
+      'keydown',
+      'touchstart',
+      'scroll',
+      'pointerdown',
+    ];
+    events.forEach((ev) =>
+      window.addEventListener(ev, opdaterInteraktion, { passive: true }),
+    );
+
+    // Tick: tæl op hvis aktiv og synlig
+    const tickId = window.setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      if (Date.now() - lastInteraction > AKTIV_IDLE_TIMEOUT_MS) return;
+      const tilfør = Math.floor(AKTIV_TICK_MS / 1000);
+      pendingSekunder += tilfør;
+      useStore.getState().inkrémentérAktiv(tilfør);
+    }, AKTIV_TICK_MS);
+
+    // Push buffer til Supabase
+    const flushTilSupabase = async () => {
+      if (pendingSekunder <= 0) return;
+      const supabase = getSupabase();
+      if (!supabase) return;
+      const delta = Math.min(pendingSekunder, AKTIV_MAX_PER_SYNC);
+      pendingSekunder -= delta;
+      const { error } = await supabase.rpc('add_active_seconds', {
+        seconds: delta,
+      });
+      if (error) {
+        console.error('[activity] sync fejlede:', error);
+        // Læg dem tilbage i bufferen, prøv igen næste gang
+        pendingSekunder += delta;
+      }
+    };
+
+    const syncId = window.setInterval(flushTilSupabase, AKTIV_SYNC_MS);
+
+    // Best-effort: flush når fanen skjules
+    const onVisibilityChange = () => {
+      if (document.hidden && pendingSekunder > 0) {
+        flushTilSupabase();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      events.forEach((ev) =>
+        window.removeEventListener(ev, opdaterInteraktion),
+      );
+      window.clearInterval(tickId);
+      window.clearInterval(syncId);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      // Sidste flush ved unmount (logout)
+      flushTilSupabase();
+    };
+  }, [signedInId]);
+}
+
 // ─────── Auth-gate ───────
 
 /**
@@ -590,6 +695,8 @@ function tolkAuthFejl(
  */
 export function AuthGate({ children }: { children: ReactNode }) {
   const { signedIn } = useAuth();
+  // Tracker aktiv tid mens eleven er logget ind. Hooket er no-op uden signedInId.
+  useActivityTracker();
 
   if (!supabaseEnabled) return <>{children}</>;
   if (signedIn) return <>{children}</>;

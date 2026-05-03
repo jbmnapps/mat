@@ -36,6 +36,13 @@ create table if not exists public.students (
 -- AKTIVÉR RLS FØRST — før vi insertter eller laver policies.
 alter table public.students enable row level security;
 
+-- 1b. AKTIV TID på students.
+--    `total_active_seconds` stiger via funktionen `add_active_seconds()` som
+--    klienten kalder hver 30. sekund når eleven har været aktiv.
+alter table public.students
+  add column if not exists total_active_seconds bigint not null default 0
+  check (total_active_seconds >= 0);
+
 -- 2. PROGRESS
 --    Én række pr. (elev, disciplin). status afspejler bedste prøveklar-score.
 create table if not exists public.progress (
@@ -120,6 +127,30 @@ create policy "progress_delete_teacher"
   on public.progress for delete
   to authenticated
   using ((auth.jwt() ->> 'email') = 'laerer@fp9.local');
+
+-- 5b. RPC: add_active_seconds(seconds) til atomic-increment af total_active_seconds.
+--    SECURITY INVOKER (default) — bruger den eksisterende students_update_self-policy
+--    så eleven kun kan opdatere sin egen række. Cap på 600 sek pr. kald som
+--    lille anti-misbrug-mekanisme.
+create or replace function public.add_active_seconds(seconds integer)
+returns void
+language plpgsql
+set search_path = public
+as $$
+begin
+  if seconds is null or seconds < 0 or seconds > 600 then
+    raise exception 'add_active_seconds: ude af interval: %', seconds;
+  end if;
+  update public.students
+    set total_active_seconds = total_active_seconds + seconds,
+        last_active = now()
+    where id = auth.uid();
+end;
+$$;
+
+-- Skjul fra anon, tillad kun authenticated (eleven der er logget ind)
+revoke execute on function public.add_active_seconds(integer) from public;
+grant execute on function public.add_active_seconds(integer) to authenticated;
 
 -- 6. AUTO-UPDATE last_active når progress ændres
 create or replace function public.touch_last_active() returns trigger
