@@ -19,6 +19,14 @@ const quicksand = Quicksand({
 export const metadata: Metadata = {
   title: "FP9 Matematik",
   description: "Træn til FP9 Matematik uden hjælpemidler",
+  // Tillad iOS at åbne appen i fullscreen-mode når eleven har tilføjet den
+  // til Home Screen ("Add to Home Screen" → ikon åbner uden Safari-chrome).
+  // Status bar er "default" (sort tekst på lys baggrund) — passer til lys app-tema.
+  appleWebApp: {
+    capable: true,
+    title: "FP9 Matematik",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport: Viewport = {
