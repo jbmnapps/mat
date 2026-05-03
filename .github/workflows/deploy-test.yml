@@ -1,0 +1,57 @@
+name: Deploy weekend-vision til /mat/test/
+
+# Deployer weekend-vision-branch til gh-pages under /test/-undermappen.
+# Resultat: https://jbmnapps.github.io/mat/test/
+#
+# Eleverne på /mat/ påvirkes ikke (keep_files: true bevarer alt andet
+# i gh-pages-branchen). Bruges til at vise nye lektioner og prøve
+# ændringer live FØR vi merger til weekend.
+
+on:
+  push:
+    branches: [weekend-vision]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Samme concurrency-group som hovedworkflowet, så de ikke fighter om
+# at pushe til gh-pages-branchen samtidig. Køer pænt.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build med /mat/test/ basePath
+        env:
+          NEXT_PUBLIC_BASE_PATH: /mat/test
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_LAERER_TOKEN: ${{ secrets.NEXT_PUBLIC_LAERER_TOKEN }}
+        run: npm run build
+
+      - name: Tilføj .nojekyll
+        run: touch out/.nojekyll
+
+      - name: Push til gh-pages branch under /test/
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+          publish_branch: gh-pages
+          destination_dir: test
+          # Bevar /mat/-roden + andre undermapper (share/, gangetabeller/)
+          keep_files: true
+          exclude_assets: ''

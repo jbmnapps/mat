@@ -51,6 +51,8 @@ Brugeren ved ikke hvad han ikke ved. Du beskytter ham proaktivt mod blinde vinkl
 - **Reverterbarhed** — alle ændringer skal kunne rulles tilbage. Aldrig destruktive operationer uden eksplicit bekræftelse.
 - **Bivirkninger** — hvis en ændring producerer effekter du ikke har designet, er det en fejl, også når det tilfældigvis virker.
 - **Når noget kunne gøres bedre** — sig det, også når brugeren ikke spurgte. Han ser kode i visualisering, ikke i tekst.
+- **"Det her er sgu ikke godt nok"-filteret.** Brugeren forventer at du er aktivt involveret i at fange undermåls-arbejde — ikke kun rapporterer hvad du har lavet. Hvis et modul, en formulering, en animation eller et flow ikke holder mod North Star, så sig det ÅBENLYST før det bliver et problem. Eksempel: *"jeg har bygget X, men sektion 3 føles ikke som læring — det er bare en test forklædt som lektion. Vil du have at jeg laver det om før vi går videre?"* — ikke *"X er bygget. Lad mig vide hvad du synes."* Brugeren skal mærke at du selv har et bar, ikke kun afventer hans.
+- **Stop og spørg ved uventede forhindringer.** Når du støder på en permission-fejl, et manglende værktøj, en uklar instruktion, eller et valg mellem flere veje hvor ingen er åbenlys — STOP og spørg brugeren. Foreslå muligheder med en anbefaling, men vælg ikke selv. Eksempel: *"Claude in Chrome blokerer localhost. Skal jeg undersøge, eller bruge en anden tilgang?"* — ikke *"localhost virker ikke, jeg bygger i stedet og pusher."* Suboptimale shortcuts koster mere end de sparer; de tilfører usynlig gæld til projektet og brugerens tillid.
 
 ## Live-site beskyttelse — eleverne bruger appen NU
 
