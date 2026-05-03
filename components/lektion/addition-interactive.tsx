@@ -13,7 +13,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useKeyboardViewport } from '@/lib/use-keyboard-viewport';
@@ -337,16 +337,28 @@ export function AdditionInteractive({ disciplinId }: Props) {
   };
 
   return (
+    /*
+     * Lektion-side layout (designvision):
+     * En lektion er en SIDE, ikke en widget. Indhold flow'er fra toppen
+     * som en pædagogisk artikel:
+     *   - Header: kompakt navigation
+     *   - Overskrift: stor, bærer rummet — fungerer som lektion-titel
+     *   - Math: heroen, midt på siden
+     *   - CTA: tydelig handling i bunden
+     * Følelsen er rolig fokus, ikke quiz-puls. Centeret komposition
+     * (det vi havde før) føltes som en widget der fightede med viewport.
+     * Top-down layout respekterer typografisk hierarki.
+     */
     <main
-      className="h-[100dvh] relative bg-slate-50/40 overflow-hidden cursor-pointer"
+      className="h-[100dvh] flex flex-col bg-slate-50/40 overflow-hidden cursor-pointer"
       style={keyboardViewport.height ? { height: `${keyboardViewport.height}px` } : undefined}
       onClick={handleScreenClick}
     >
-      {/* Header */}
+      {/* Header — kompakt navigation, ikke fremtrædende */}
       <header
         className={cn(
-          'absolute top-0 left-0 right-0 px-6 lg:px-12 z-10 flex items-center justify-between gap-4',
-          keyboardViewport.keyboardOpen ? 'safe-top pb-2' : 'safe-top-roomy pb-5 lg:pb-7',
+          'flex items-center justify-between gap-4 px-6 lg:px-12 shrink-0',
+          keyboardViewport.keyboardOpen ? 'safe-top pb-2' : 'safe-top-roomy pb-3 lg:pb-5',
         )}
       >
         <Link
@@ -357,7 +369,6 @@ export function AdditionInteractive({ disciplinId }: Props) {
           Afslut lektion
         </Link>
 
-        {/* Tilbage-knap til forrige fase — vises altid undtagen i første fase */}
         <button
           type="button"
           onClick={forrigeFase}
@@ -374,49 +385,40 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </button>
       </header>
 
-      {/* SCENE — én flexbox column der holder overskrift + formula sammen
-          som ÉN komposition. Tidligere lå overskrift og formula i hver
-          deres absolutte slot, hvilket gjorde deres indbyrdes afstand
-          fragil og førte til overlap eller for stort tomrum. Nu er de
-          stacket vertikalt med konsistent gap; motion's `layout`-prop
-          animerer smooth når formula træder ind/ud. Helheden er
-          placeret en anelse over viewport-midten (pt-[8vh]) så
-          kompositionen føles "anchored ovenfra" — som en lektion-side,
-          ikke en centreret widget. */}
-      <div className="absolute inset-0 flex items-center justify-center px-6 pb-[12vh] pointer-events-none z-[3]">
+      {/* Indholds-region — flow'er fra toppen. Overskrift og math er
+          stacket vertikalt med generøs breathing space. */}
+      <div className="flex-1 flex flex-col items-center px-6 pt-[6vh] sm:pt-[10vh] overflow-hidden pointer-events-none">
         <motion.div
           layout
-          transition={{ layout: { duration: 0.55, ease: [0.4, 0.0, 0.2, 1] } }}
-          className="flex flex-col items-center gap-10 sm:gap-12 lg:gap-16 max-w-2xl w-full"
+          transition={{ layout: { duration: 0.5, ease: [0.4, 0.0, 0.2, 1] } }}
+          className="flex flex-col items-center gap-12 sm:gap-16 lg:gap-20 max-w-3xl w-full"
         >
-          {/* Overskrift. Tekst-skift er instant unmount + remount via
-              key-change (gammel besked forsvinder med det samme, ny
-              fader ind). Tidligere AnimatePresence "popLayout" overlappede
-              gammel og ny besked på samme position — anti-pro rod.
-              Ingen AnimatePresence her, så ingen overlap. */}
-          <motion.div
+          {/* Overskrift — bærer rummet som lektion-titel. Stor på desktop,
+              skalerer ned på mobil. Tekst-skift er instant unmount +
+              fade-in (key-change), så ingen overlap mellem fase-beskeder. */}
+          <motion.h2
             layout
             initial={false}
             animate={{
               fontSize: erIntro
-                ? 'clamp(28px, 7.5vw, 44px)'
-                : 'clamp(20px, 4.5vw, 28px)',
+                ? 'clamp(36px, 8vw, 56px)'
+                : 'clamp(24px, 5.5vw, 40px)',
             }}
-            transition={{ duration: 0.55, ease: [0.4, 0.0, 0.2, 1] }}
-            className="font-display font-bold tracking-tight text-slate-900 leading-snug text-center"
+            transition={{ duration: 0.5, ease: [0.4, 0.0, 0.2, 1] }}
+            className="font-display font-bold tracking-tight text-slate-900 leading-tight text-center"
           >
-            <motion.div
+            <motion.span
               key={beskedTekst}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="block"
             >
               {beskedTekst}
-            </motion.div>
-          </motion.div>
+            </motion.span>
+          </motion.h2>
 
-          {/* Formula — træder ind når vi forlader intro. layout-prop sikrer
-              at overskriften glider smooth opad mens formula falder på plads. */}
+          {/* Math-scene — heroen */}
           <AnimatePresence>
             {visFormula && (
               <motion.div
@@ -449,12 +451,13 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </motion.div>
       </div>
 
-      {/* HINT SLOT — sidder ca. midt mellem komposition-bund og viewport-
-          bund. Med pb-[12vh] på scene-containeren slutter kompositionen
-          omkring 67% af viewporten, og hint på bottom-[16vh] lander
-          omkring 84% — balanceret rum hverken nede ved kanten eller
-          klistret op mod stykket. */}
-      <div className="absolute bottom-[16vh] left-1/2 -translate-x-1/2 px-6 text-center pointer-events-auto z-[5]">
+      {/* CTA-region — tydelig handling i bunden, ikke passiv hint */}
+      <div
+        className={cn(
+          'shrink-0 px-6 flex justify-center pointer-events-auto safe-bottom',
+          keyboardViewport.keyboardOpen ? 'pb-3' : 'pb-8 sm:pb-10 lg:pb-12',
+        )}
+      >
         <Hint fase={fase} disciplinId={disciplinId} advance={advance} />
       </div>
     </main>
@@ -837,22 +840,20 @@ function Hint({
   if (enterFaser.includes(fase)) {
     return (
       <motion.button
-        key="enter-hint"
+        key="next-cta"
         type="button"
         onClick={advance}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="text-xs uppercase tracking-[0.2em] font-semibold text-slate-400 hover:text-slate-700 transition-colors px-4 py-3 -mx-4 -my-3"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.3, ease: 'easeOut' }}
+        className={cn(
+          'inline-flex items-center gap-2 rounded-full bg-slate-900 px-7 py-3.5 text-base font-semibold text-white',
+          'shadow-sm hover:bg-slate-800 hover:shadow-md transition-all',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2',
+        )}
       >
-        <span className="hidden sm:inline">
-          Tryk{' '}
-          <kbd className="inline-flex items-center justify-center min-w-[28px] h-6 px-1.5 mx-1 rounded border border-slate-300 bg-white text-[11px] font-mono">
-            Enter
-          </kbd>{' '}
-          for at gå videre
-        </span>
-        <span className="sm:hidden">Tryk her for at gå videre</span>
+        Næste
+        <ArrowRight className="h-4 w-4" aria-hidden />
       </motion.button>
     );
   }
