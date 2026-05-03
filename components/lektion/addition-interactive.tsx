@@ -433,53 +433,64 @@ export function AdditionInteractive({ disciplinId }: Props) {
           />
         )}
 
-        {/* Overskrift — bottom-anchored til math container's top med 24px
-            gap. Position er CSS-deklarativ; ingen pixel-tuning pr. mode.
-            Tekst-skift via key-change med subtle fade. */}
-        {!erIntro && (
-          <h2
-            className="absolute left-1/2 -translate-x-1/2 px-6 w-max max-w-[80vw] text-center font-display font-bold tracking-tight text-slate-900 leading-snug pointer-events-none z-[5]"
-            style={{
-              bottom: 'calc(100% + 24px)',
-              fontSize: 'clamp(20px, 4.5vw, 28px)',
-            }}
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                key={beskedTekst}
-                initial={{ opacity: 0 }}
-                animate={{
-                  opacity: 1,
-                  transition: { duration: 0.2, ease: 'easeOut' },
-                }}
-                exit={{
-                  opacity: 0,
-                  transition: { duration: 0.12, ease: 'easeIn' },
-                }}
-                className="block"
-              >
-                {beskedTekst}
-              </motion.span>
-            </AnimatePresence>
-          </h2>
-        )}
+        {/* Aktiv overskrift — bottom-anchored til math container's top
+            med 24px gap. Wrappet i AnimatePresence så ind-/ud-fade
+            virker når vi forlader/genindtrer aktiv tilstand (fx hvis
+            man går tilbage til intro). */}
+        <AnimatePresence>
+          {!erIntro && (
+            <motion.h2
+              key="active-overskrift"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="absolute left-1/2 -translate-x-1/2 px-6 w-max max-w-[80vw] text-center font-display font-bold tracking-tight text-slate-900 leading-snug pointer-events-none z-[5]"
+              style={{
+                bottom: 'calc(100% + 24px)',
+                fontSize: 'clamp(20px, 4.5vw, 28px)',
+              }}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={beskedTekst}
+                  initial={{ opacity: 0 }}
+                  animate={{
+                    opacity: 1,
+                    transition: { duration: 0.2, ease: 'easeOut' },
+                  }}
+                  exit={{
+                    opacity: 0,
+                    transition: { duration: 0.12, ease: 'easeIn' },
+                  }}
+                  className="block"
+                >
+                  {beskedTekst}
+                </motion.span>
+              </AnimatePresence>
+            </motion.h2>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* INTRO-overskrift — separat absolut centreret, kun synlig i
-          intro-fasen. Skift mellem intro og aktiv håndteres via
-          conditional rendering, ikke positions-animation. */}
-      {erIntro && (
-        <motion.h2
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-6 w-max max-w-[80vw] text-center font-display font-bold tracking-tight text-slate-900 leading-tight pointer-events-none z-[5]"
-          style={{ fontSize: 'clamp(28px, 7.5vw, 44px)' }}
-        >
-          {beskedTekst}
-        </motion.h2>
-      )}
+      {/* INTRO-overskrift — separat slot, kun synlig i intro-fasen.
+          AnimatePresence sikrer at exit-fade virker når vi går videre
+          til aktiv. Begge fades sker samtidigt = krydsfade. */}
+      <AnimatePresence>
+        {erIntro && (
+          <motion.h2
+            key="intro-overskrift"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-6 w-max max-w-[80vw] text-center font-display font-bold tracking-tight text-slate-900 leading-tight pointer-events-none z-[5]"
+            style={{ fontSize: 'clamp(28px, 7.5vw, 44px)' }}
+          >
+            {beskedTekst}
+          </motion.h2>
+        )}
+      </AnimatePresence>
 
       {/* CTA — original diskret stil, ikke generisk knap */}
       <div className="absolute bottom-[14vh] left-1/2 -translate-x-1/2 px-6 text-center pointer-events-auto z-[5]">
