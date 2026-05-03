@@ -42,4 +42,7 @@ tsconfig.tsbuildinfo
 # Reference materials (not committed — may have copyright)
 Elevprøver_FP9guidelines/
 
+# Impeccable live mode setup (symlink + project-local config; agent-internal)
+.agents/
+
 

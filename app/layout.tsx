@@ -19,6 +19,13 @@ const quicksand = Quicksand({
 export const metadata: Metadata = {
   title: "FP9 Matematik",
   description: "Træn til FP9 Matematik uden hjælpemidler",
+  // PWA: meta-tags for iOS hjemskærm-installation. Android læser primært
+  // app/manifest.ts. apple-touch-icon kommer fra public/apple-icon.png.
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "FP9 Matematik",
+  },
 };
 
 export const viewport: Viewport = {
@@ -29,6 +36,8 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
+  // Browser chrome-farve (Android Chrome address bar, splash screen)
+  themeColor: "#0f172a",
 };
 
 export default function RootLayout({

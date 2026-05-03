@@ -86,6 +86,13 @@
   føjer jeg det til. Når noget viser sig at være forkert, fjerner jeg det.
   Bruger må gerne selv tilføje regler direkte.
 
+## Reviews
+
+- **2026-05-03 · impeccable critique.** Two-assessment design-review
+  (anti-pattern-scan + uafhængig LLM-review) af dashboard, login og
+  disciplin-flow. Nielsen-score 25/40. Fund og prioriteret action-plan
+  ligger i [`.claude/notes/critique-2026-05-03.md`](.claude/notes/critique-2026-05-03.md).
+
 ## Konkrete eksempler (anti-mønstre der kostede tid)
 
 - **"Din status"-pille øverst på dashboardet** — for visuelt støjfuld;
