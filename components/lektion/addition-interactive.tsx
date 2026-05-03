@@ -406,104 +406,80 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </button>
       </header>
 
-      {/* MATH — forankret på viewport center, står STILLE uanset hvad
-          overskriften gør. */}
+      {/* MATH + overskrift — math er centreret på viewport. Overskrift
+          er positioneret INDE i math-containeren med bottom-anchor, så
+          den automatisk følger math's faktiske top. Når math vokser
+          (mente træder ind, horisontal → vertikal), math's top skubbes
+          opad og overskrift følger med — uden hardcoded pixel-værdier.
+          Multi-linjers tekst vokser opad fra bottom-anchor. */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[3]">
-        <AnimatePresence>
-          {visFormula && (
-            <motion.div
-              key="formula-wrapper"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1, x: shake ? [-6, 6, -6, 6, 0] : 0 }}
-              exit={{ opacity: 0 }}
-              transition={shake ? { duration: 0.4 } : { duration: 0.4, delay: 0.3 }}
-            >
-              <FormulaScene
-                ex={ex}
-                layout={layout}
-                fase={fase}
-                enereInput={enereInput}
-                setEnereInput={setEnereInput}
-                tierInput={tierInput}
-                setTierInput={setTierInput}
-                enereGodkendt={enereGodkendt}
-                tierGodkendt={tierGodkendt}
-                submitEnere={submitEnere}
-                submitTier={submitTier}
-                inputRef={inputRef}
-                erEksempel2={erEksempel2}
-                kompakt={keyboardViewport.keyboardOpen}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {visFormula && (
+          <FormulaScene
+            ex={ex}
+            layout={layout}
+            fase={fase}
+            enereInput={enereInput}
+            setEnereInput={setEnereInput}
+            tierInput={tierInput}
+            setTierInput={setTierInput}
+            enereGodkendt={enereGodkendt}
+            tierGodkendt={tierGodkendt}
+            submitEnere={submitEnere}
+            submitTier={submitTier}
+            inputRef={inputRef}
+            erEksempel2={erEksempel2}
+            kompakt={keyboardViewport.keyboardOpen}
+            shake={shake}
+          />
+        )}
+
+        {/* Overskrift — bottom-anchored til math container's top med 24px
+            gap. Position er CSS-deklarativ; ingen pixel-tuning pr. mode.
+            Tekst-skift via key-change med subtle fade. */}
+        {!erIntro && (
+          <h2
+            className="absolute left-1/2 -translate-x-1/2 px-6 w-max max-w-[80vw] text-center font-display font-bold tracking-tight text-slate-900 leading-snug pointer-events-none z-[5]"
+            style={{
+              bottom: 'calc(100% + 24px)',
+              fontSize: 'clamp(20px, 4.5vw, 28px)',
+            }}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={beskedTekst}
+                initial={{ opacity: 0 }}
+                animate={{
+                  opacity: 1,
+                  transition: { duration: 0.2, ease: 'easeOut' },
+                }}
+                exit={{
+                  opacity: 0,
+                  transition: { duration: 0.12, ease: 'easeIn' },
+                }}
+                className="block"
+              >
+                {beskedTekst}
+              </motion.span>
+            </AnimatePresence>
+          </h2>
+        )}
       </div>
 
-      {/* OVERSKRIFT — bottom-anchored. Element's nederste kant lander
-          en konstant gap over math's øverste synlige række. Når
-          overskriften har flere linjer, vokser den OPAD (væk fra
-          math), ikke nedad over math.
-
-          Offset-værdier udregnet ud fra math grid layout (272px desktop,
-          ~244px kompakt) og hvor synligt indhold starter pr. mode:
-          - horisontal: row 3 top er ~24px over math-center
-          - vertikal uden mente: row 2 top er ~100px over math-center
-          - vertikal med mente: row 1 top er ~136px over math-center
-          Plus en gap på 50px (desktop) / 36px (mobil). */}
-      <motion.div
-        className="absolute top-1/2 left-1/2 px-6 max-w-2xl w-full text-center pointer-events-none z-[5]"
-        initial={false}
-        animate={{
-          fontSize: erIntro
-            ? 'clamp(28px, 7.5vw, 44px)'
-            : 'clamp(20px, 4.5vw, 28px)',
-        }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-        style={{
-          transform: (() => {
-            if (erIntro) return 'translate(-50%, -50%)';
-            const kompakt = keyboardViewport.keyboardOpen;
-            const offset = kompakt
-              ? layout === 'horisontal'
-                ? 58
-                : visMente
-                  ? 158
-                  : 126
-              : layout === 'horisontal'
-                ? 74
-                : visMente
-                  ? 186
-                  : 150;
-            return `translate(-50%, calc(-100% - ${offset}px))`;
-          })(),
-          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        }}
-      >
-        <h2 className="font-display font-bold tracking-tight text-slate-900 leading-snug">
-          {/* Sekvens: gammel tekst exits (120ms) → ny tekst enters (200ms,
-              ingen ekstra delay; mode="wait" sikrer at den venter på exit).
-              Total tekst-skift: ~320ms. Math-elementer (mente '1', '5')
-              har deres delay sat så de først animerer EFTER teksten er
-              landet. */}
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={beskedTekst}
-              initial={{ opacity: 0 }}
-              animate={{
-                opacity: 1,
-                transition: { duration: 0.2, ease: 'easeOut' },
-              }}
-              exit={{
-                opacity: 0,
-                transition: { duration: 0.12, ease: 'easeIn' },
-              }}
-              className="block"
-            >
-              {beskedTekst}
-            </motion.span>
-          </AnimatePresence>
-        </h2>
-      </motion.div>
+      {/* INTRO-overskrift — separat absolut centreret, kun synlig i
+          intro-fasen. Skift mellem intro og aktiv håndteres via
+          conditional rendering, ikke positions-animation. */}
+      {erIntro && (
+        <motion.h2
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-6 w-max max-w-[80vw] text-center font-display font-bold tracking-tight text-slate-900 leading-tight pointer-events-none z-[5]"
+          style={{ fontSize: 'clamp(28px, 7.5vw, 44px)' }}
+        >
+          {beskedTekst}
+        </motion.h2>
+      )}
 
       {/* CTA — original diskret stil, ikke generisk knap */}
       <div className="absolute bottom-[14vh] left-1/2 -translate-x-1/2 px-6 text-center pointer-events-auto z-[5]">
@@ -532,6 +508,8 @@ interface FormulaSceneProps {
   inputRef: React.RefObject<HTMLInputElement | null>;
   erEksempel2: boolean;
   kompakt: boolean;
+  /** Shake-animation ved forkert svar — flyttes inde i scene. */
+  shake?: boolean;
 }
 
 const POS: Record<'horisontal' | 'vertikal', Record<string, { col: number; row: number }>> = {
@@ -567,6 +545,7 @@ function FormulaScene(props: FormulaSceneProps) {
     inputRef,
     erEksempel2,
     kompakt,
+    shake,
   } = props;
 
   const erVertikal = layout === 'vertikal';
@@ -611,21 +590,35 @@ function FormulaScene(props: FormulaSceneProps) {
     { id: 'b1', value: String(ex.bund[1]) },
   ];
 
+  // Dynamisk grid-højde pr. mode. Unused rows = 0px så math-containerens
+  // faktiske højde matcher synligt indhold. Resultat: når math vokser
+  // (horisontal → vertikal, eller mente træder ind), math-toppen skubbes
+  // op — og enhver UI der er anchored til math's top følger automatisk.
+  // POS-map er uændret; rows der ikke har content er bare 0 høje.
+  const rowMente = kompakt ? 'clamp(24px, 4vw, 32px)' : 'clamp(28px, 5vw, 36px)';
+  const rowDigit = kompakt ? 'clamp(48px, 12vw, 68px)' : 'clamp(56px, 14vw, 76px)';
+  const rowLine = '8px';
+
+  const gridRows =
+    layout === 'horisontal'
+      ? `0px 0px ${rowDigit} 0px 0px`
+      : visMente
+        ? `${rowMente} ${rowDigit} ${rowDigit} ${rowLine} ${rowDigit}`
+        : `0px ${rowDigit} ${rowDigit} ${rowLine} ${rowDigit}`;
+
   return (
-    <div
+    <motion.div
       className="grid"
+      animate={{ x: shake ? [-6, 6, -6, 6, 0] : 0 }}
+      transition={{ duration: 0.4 }}
       style={{
-        // Tighter kolonner end før — cifrene skal læse som ÉT regnestykke,
-        // ikke som spredte cifre. Tidligere clamp(44, 13vw, 60) gav for
-        // meget luft mellem 2 og 4 i fx "24". Nu strammere men stadig
-        // læsbart på små skærme.
         gridTemplateColumns: kompakt
           ? 'repeat(5, clamp(34px, 9vw, 46px))'
           : 'repeat(5, clamp(40px, 10vw, 52px))',
-        // Responsive rækker — første og sidste skalerer med viewport
-        gridTemplateRows: kompakt
-          ? 'clamp(24px, 4vw, 32px) clamp(48px, 12vw, 68px) clamp(48px, 12vw, 68px) 8px clamp(48px, 12vw, 68px)'
-          : 'clamp(28px, 5vw, 36px) clamp(56px, 14vw, 76px) clamp(56px, 14vw, 76px) 8px clamp(56px, 14vw, 76px)',
+        gridTemplateRows: gridRows,
+        // CSS-transition på grid-template-rows så math-højden glider
+        // smooth når den skifter mode — overskrift følger automatisk.
+        transition: 'grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         placeItems: 'center',
       }}
     >
@@ -762,7 +755,7 @@ function FormulaScene(props: FormulaSceneProps) {
           />
         </>
       )}
-    </div>
+    </motion.div>
   );
 }
 
