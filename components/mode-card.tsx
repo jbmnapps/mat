@@ -41,7 +41,7 @@ const MODES: Record<Mode, ModeMeta> = {
   },
   proeveklar: {
     titel: 'Prøveklar',
-    undertitel: 'Test din viden — afgør status',
+    undertitel: 'Samme slags spørgsmål som du får i prøven',
     ikon: Target,
     iconBg: 'bg-emerald-600',
     iconText: 'text-white',
@@ -88,6 +88,7 @@ export function ModeCard({
     >
       <Link
         href={`/${disciplinId}/${mode}/`}
+        aria-disabled={kommerSnart || undefined}
         className={cn(
           'group relative flex rounded-2xl border bg-white',
           // Mobil: kompakt liste-stil (ikon venstre, tekst til højre, arrow til højre)
@@ -98,6 +99,10 @@ export function ModeCard({
           'hover:-translate-y-0.5 hover:shadow-lg',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2',
           'border-slate-200 hover:border-slate-300',
+          // Greyet ud når mode ikke er bygget endnu — visuelt tydeligt
+          // signal om "ikke aktiv". Kortet er stadig klikbart for at vise
+          // placeholder-side, men ser tydeligt inaktiv ud på dashboardet.
+          kommerSnart && 'opacity-60 grayscale',
         )}
       >
         {/* Ikon */}
