@@ -8,13 +8,23 @@
 
 import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Download, Upload, CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  Download,
+  Upload,
+  CheckCircle2,
+  AlertCircle,
+  LogOut,
+  Loader2,
+} from 'lucide-react';
 import { useStore } from '@/lib/store';
+import { logUd, useAuth } from '@/lib/auth';
 import { eksporterProgress, importerProgress } from '@/lib/progress-io';
 import { cn } from '@/lib/utils';
 
 export function SaveActions() {
+  const { signedIn } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [loggerUd, setLoggerUd] = useState(false);
   const [feedback, setFeedback] = useState<{
     type: 'success' | 'error';
     besked: string;
@@ -40,6 +50,15 @@ export function SaveActions() {
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleLogUd = async () => {
+    setLoggerUd(true);
+    try {
+      await logUd();
+    } finally {
+      setLoggerUd(false);
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,7 +87,7 @@ export function SaveActions() {
           title="Importér status fra fil"
           aria-label="Importér status"
           className={cn(
-            'inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white',
+            'inline-flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-slate-200 bg-white',
             'text-slate-500',
             'transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2',
@@ -82,7 +101,7 @@ export function SaveActions() {
           title="Eksportér status til fil"
           aria-label="Eksportér status"
           className={cn(
-            'inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white',
+            'inline-flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-slate-200 bg-white',
             'text-slate-500',
             'transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2',
@@ -99,6 +118,28 @@ export function SaveActions() {
           aria-label="Vælg status-fil at importere"
         />
       </div>
+
+      {signedIn && (
+        <button
+          type="button"
+          onClick={handleLogUd}
+          disabled={loggerUd}
+          className={cn(
+            'inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-white px-3',
+            'text-xs font-semibold text-slate-500',
+            'transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2',
+            'disabled:cursor-not-allowed disabled:opacity-60',
+          )}
+        >
+          {loggerUd ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+          ) : (
+            <LogOut className="h-3.5 w-3.5" aria-hidden />
+          )}
+          Log ud
+        </button>
+      )}
 
       <AnimatePresence>
         {feedback && (

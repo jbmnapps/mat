@@ -17,8 +17,8 @@
  *    tillader læs af alle elev-rækker via is_teacher().
  */
 
-import { useEffect, useState, useMemo, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useEffect, useState, useMemo } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import {
@@ -51,6 +51,7 @@ const SUPABASE_PROJECT = 'jkfxirpqhdettipixunl';
 
 export default function LaererPage() {
   const params = useParams<{ token: string }>();
+  const router = useRouter();
   const token = params.token;
   const [tilstand, setTilstand] = useState<
     'tjekker' | 'forkert-link' | 'logger-ind' | 'fejl' | 'klar'
@@ -138,7 +139,7 @@ export default function LaererPage() {
 
   async function håndterLogUd() {
     await logUd();
-    window.location.href = '/';
+    router.replace('/laerer/');
   }
 
   function toggleUdvidet(id: string) {
@@ -168,11 +169,11 @@ export default function LaererPage() {
       <main className="min-h-[100dvh] bg-slate-50/40 flex flex-col">
         <header className="px-6 py-6">
           <Link
-            href="/"
+            href="/laerer/"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden />
-            Til forsiden
+            Til lærer-login
           </Link>
         </header>
         <div className="flex-1 flex items-center justify-center px-6 -mt-12">

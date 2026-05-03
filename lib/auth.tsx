@@ -26,6 +26,7 @@
 'use client';
 
 import { useEffect, useState, useRef, type ReactNode } from 'react';
+import Link from 'next/link';
 import { motion } from 'motion/react';
 import { Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 import {
@@ -51,7 +52,7 @@ export type LogInResultat =
   | { ok: false; fejl: string };
 
 export type LaererResultat =
-  | { ok: true }
+  | { ok: true; token: string }
   | { ok: false; fejl: string };
 
 // ─────── Login-flow (elev) ───────
@@ -152,11 +153,13 @@ export async function logIndEllerOpret(
 }
 
 /**
- * Lærer-login: udled password fra token og signin.
+ * Lærer-login: accepter enten token-linkets token eller en separat
+ * NEXT_PUBLIC_LAERER_PASSWORD. Selve Supabase-kontoens password udledes stadig
+ * fra tokenet, så den sekundære adgangskode kun er en pænere dør ind.
  * Hvis kontoen ikke findes endnu, opret den. (Kun den der har det rigtige
- * token kan nogensinde komme frem hertil.)
+ * token eller adgangskode kan nogensinde komme frem hertil.)
  */
-export async function logIndSomLaerer(token: string): Promise<LaererResultat> {
+export async function logIndSomLaerer(input: string): Promise<LaererResultat> {
   if (!supabaseEnabled) {
     return { ok: false, fejl: 'Login er ikke sat op endnu.' };
   }
@@ -165,8 +168,8 @@ export async function logIndSomLaerer(token: string): Promise<LaererResultat> {
     return { ok: false, fejl: 'Login virker kun i browseren.' };
   }
 
-  const forventet = process.env.NEXT_PUBLIC_LAERER_TOKEN;
-  if (!forventet || token !== forventet) {
+  const token = resolveLaererToken(input);
+  if (!token) {
     return { ok: false, fejl: 'Forkert link.' };
   }
 
@@ -194,7 +197,7 @@ export async function logIndSomLaerer(token: string): Promise<LaererResultat> {
     }
   }
 
-  return { ok: true };
+  return { ok: true, token };
 }
 
 export async function logUd(): Promise<void> {
@@ -585,6 +588,19 @@ function tolkAuthFejl(
   return 'Kunne ikke logge ind. Prøv igen.';
 }
 
+function resolveLaererToken(input: string): string | null {
+  const token = process.env.NEXT_PUBLIC_LAERER_TOKEN?.trim();
+  if (!token) return null;
+
+  const værdi = input.trim();
+  if (værdi === token) return token;
+
+  const sekundærKode = process.env.NEXT_PUBLIC_LAERER_PASSWORD?.trim();
+  if (sekundærKode && værdi === sekundærKode) return token;
+
+  return null;
+}
+
 // ─────── Activity tracker ───────
 //
 // Tæller "aktiv tid" mens eleven bruger appen.
@@ -886,6 +902,15 @@ function LoginCard() {
 
       <p className="mt-7 text-center text-[11px] text-slate-400">
         Glemt din kode? Spørg din lærer.
+      </p>
+      <p className="mt-3 text-center text-xs text-slate-500">
+        Er du lærer?{' '}
+        <Link
+          href="/laerer/"
+          className="font-semibold text-emerald-700 underline decoration-emerald-200 underline-offset-4 hover:text-emerald-900"
+        >
+          Log ind her
+        </Link>
       </p>
     </MotionDivWrapper>
   );
