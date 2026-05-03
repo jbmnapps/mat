@@ -134,8 +134,8 @@ function beskedFor(fase: Fase, enereSvar2: 5 | 15 | null): string {
       return 'Hvad er 7 + 8?';
     case 'mente-undervisning':
       return enereSvar2 === 5
-        ? 'Du vidste det. 5 går her, og 1 flytter over til næste søjle.'
-        : '15 har to cifre. Det er én tier og 5 enere — tieren flytter over.';
+        ? 'Du vidste det. 1 skal rykkes.'
+        : '15 har 2 cifre. 1 skal rykkes.';
     case 'spørg-tier-2':
       return 'Hvad er 6 + 7 + 1?';
     case 'fejr-2':
@@ -458,7 +458,7 @@ export function AdditionInteractive({ disciplinId }: Props) {
             ? 'clamp(28px, 7.5vw, 44px)'
             : 'clamp(20px, 4.5vw, 28px)',
         }}
-        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         style={{
           transform: (() => {
             if (erIntro) return 'translate(-50%, -50%)';
@@ -476,20 +476,22 @@ export function AdditionInteractive({ disciplinId }: Props) {
                   : 150;
             return `translate(-50%, calc(-100% - ${offset}px))`;
           })(),
-          transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         <h2 className="font-display font-bold tracking-tight text-slate-900 leading-snug">
-          {/* Subtle krydsfade — opacity-only, mode="wait" så ingen overlap.
-              Enter har delay 0.25s så ny besked dukker op EFTER overskrift
-              har flyttet sig — naturligt sekventielt flow. */}
+          {/* Sekvens: gammel tekst exits (120ms) → ny tekst enters (200ms,
+              ingen ekstra delay; mode="wait" sikrer at den venter på exit).
+              Total tekst-skift: ~320ms. Math-elementer (mente '1', '5')
+              har deres delay sat så de først animerer EFTER teksten er
+              landet. */}
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
               key={beskedTekst}
               initial={{ opacity: 0 }}
               animate={{
                 opacity: 1,
-                transition: { delay: 0.25, duration: 0.18, ease: 'easeOut' },
+                transition: { duration: 0.2, ease: 'easeOut' },
               }}
               exit={{
                 opacity: 0,
@@ -649,10 +651,10 @@ function FormulaScene(props: FormulaSceneProps) {
         );
       })}
 
-      {/* Mente — over tier-søjlen i vertikal (col 3). Delay 0.45s så
-          mente-tallet lander EFTER overskriften er flyttet og den nye
-          besked er fadet ind. Sekventielt flow: overskrift rykker op →
-          ny besked vises → mente '1' lander. */}
+      {/* Mente — over tier-søjlen (col 3). Delay 0.55s relativt til
+          fase-skift (= ~250ms efter den nye tekst er fadet ind), så
+          eleven har set teksten "15 har 2 cifre. 1 skal rykkes" først
+          og DEREFTER ser '1'-tallet animere ind. Sekventielt flow. */}
       <AnimatePresence>
         {visMente && (
           <motion.span
@@ -664,7 +666,7 @@ function FormulaScene(props: FormulaSceneProps) {
               type: 'spring',
               stiffness: 200,
               damping: 18,
-              delay: 0.45,
+              delay: 0.55,
             }}
             style={{ gridColumn: 3, gridRow: 1 }}
             className="font-display text-3xl font-bold tabular-nums text-emerald-600"
@@ -734,17 +736,18 @@ function FormulaScene(props: FormulaSceneProps) {
             }
           />
 
-          {/* Enere (col 4). springDelay 0.45 når '5' kommer fra mente-
-              undervisning så tallet lander EFTER overskriften er flyttet
-              og mente '1' har landet. Når eleven svarer rigtigt
-              (enereGodkendt), ingen delay — feedback skal være snappy. */}
+          {/* Enere (col 4). springDelay 0.7 når '5' kommer fra mente-
+              undervisning, så '5' lander EFTER mente '1' (som har delay
+              0.55). Sekvens: tekst → mente '1' → '5'. Når eleven svarer
+              rigtigt (enereGodkendt), ingen delay — feedback skal være
+              snappy. */}
           <ResultCell
             col={4}
             row={5}
             value={enereGodkendt ? String(ex.resultat[ex.resultat.length - 1]) : visEnereResultatCiffer}
             variant={aktivKolonne === 'enere' ? 'input' : 'static'}
             isFinal={enereGodkendt || visEnereResultatCiffer !== null}
-            springDelay={!enereGodkendt && visEnereResultatCiffer ? 0.45 : 0}
+            springDelay={!enereGodkendt && visEnereResultatCiffer ? 0.7 : 0}
             inputProps={
               aktivKolonne === 'enere'
                 ? {
