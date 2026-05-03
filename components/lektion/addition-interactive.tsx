@@ -283,7 +283,7 @@ export function AdditionInteractive({ disciplinId }: Props) {
   const beskedTekst = beskedFor(fase, enereSvar2);
 
   return (
-    <main className="min-h-[100dvh] relative bg-slate-50/40 overflow-hidden">
+    <main className="h-[100dvh] relative bg-slate-50/40 overflow-hidden">
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 px-6 py-6 lg:px-12 lg:py-8 z-10">
         <Link

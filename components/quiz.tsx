@@ -351,7 +351,12 @@ export function Quiz({ disciplinId, disciplinNavn, opgaver, mode }: Props) {
   if (!aktivOpgave) return null;
 
   return (
-    <main className="min-h-[100dvh] bg-slate-50/40 flex flex-col">
+    // h-[100dvh] + overflow-hidden: når iOS-keyboard popper op, krymper
+    // viewport. Med min-h-[100dvh] overflower indholdet under keyboardet
+    // og siden bliver scrollable. Med fixed h + overflow-hidden låses
+    // højden til faktisk synlig plads — keyboard skubber ikke content,
+    // og side er ikke længere scrollable.
+    <main className="h-[100dvh] overflow-hidden bg-slate-50/40 flex flex-col">
       {/* Header */}
       <header className="px-6 py-6 lg:px-12 lg:py-8 flex items-center justify-between gap-4">
         <Link
