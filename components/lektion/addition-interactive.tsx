@@ -583,18 +583,28 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </h2>
       </motion.div>
 
-      {/* CTA — placering afhænger af fase:
-          Intro: lige under overskriften (top-1/2 + margin) så hint hører
-            visuelt sammen med "Her er et plusstykke" — det inviterer
-            til at klikke videre.
-          Aktiv-faser: bunden af skærmen — diskret, så stykket er fokus. */}
+      {/* CTA — placeres altid lige under det primære indhold:
+          Intro: under overskriften (= det eneste der er synligt).
+          Aktiv: under stykkets bund (samme afstand som overskriften har
+            til stykkets top). Hint flyder dermed med stykkets størrelse —
+            øjet falder naturligt fra stykke til hint. Tidligere bottom-[14vh]
+            tvang eleven til at lede efter knappen. */}
       <div
-        className={cn(
-          'absolute left-1/2 -translate-x-1/2 px-6 text-center pointer-events-auto z-[5]',
-          erIntro
-            ? 'top-1/2 mt-[clamp(36px,5.5vw,52px)]'
-            : 'bottom-[14vh]',
-        )}
+        className="absolute left-1/2 -translate-x-1/2 top-1/2 px-6 text-center pointer-events-auto z-[5] transition-[margin-top] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
+        style={{
+          marginTop: (() => {
+            if (erIntro) return 'clamp(36px, 5.5vw, 52px)';
+            const kompakt = keyboardViewport.keyboardOpen;
+            const halfMath =
+              layout === 'horisontal'
+                ? (kompakt ? 34 : 38)
+                : visMente
+                  ? (kompakt ? 120 : 136)
+                  : (kompakt ? 106 : 118);
+            const gap = kompakt ? 16 : 24;
+            return `${halfMath + gap}px`;
+          })(),
+        }}
       >
         <Hint fase={fase} disciplinId={disciplinId} advance={advance} />
       </div>
