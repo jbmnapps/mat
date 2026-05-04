@@ -224,21 +224,11 @@ export function AdditionInteractive({ disciplinId }: Props) {
     }
   }, [fase]);
 
-  // Auto-advance fra split-15 → mente-undervisning. Tidslinje:
-  //   T=0      fase blev split-15 (eleven har lige submittet 15)
-  //   T=0      '15' renderet på ener-pos som '1' og '5' tæt sammen
-  //   T=300    overskrift har fadet ind ('Det er 15.')
-  //   T=400    split begynder: '1' animerer mod mente-pos (col 3, row 1)
-  //   T=900    '1' er landet på mente-pos
-  //   T=1500   overskrift fader ud, fasen skifter til mente-undervisning
-  //            — '5' og mente-1 er allerede på samme positioner som
-  //            mente-undervisning's egne render: ingen visuelt jump.
-  useEffect(() => {
-    if (fase === 'split-15') {
-      const t = setTimeout(() => setFase('mente-undervisning'), 1500);
-      return () => clearTimeout(t);
-    }
-  }, [fase]);
+  // split-15 har INGEN auto-advance til mente-undervisning. Splittet selv
+  // (combined → splitted) animerer automatisk i FormulaScene via splitState,
+  // men overgangen til mente-undervisning kræver tryk fra eleven (advance).
+  // Begrundelse: eleven skal HAVE TID til at se splittet og forstå
+  // "1 skal rykkes" før vi går videre. En auto-advance pace'r det forkert.
 
   // Avancering — bruges af både Enter-tast og touch/click-knap.
   // Returnerer true hvis fase blev avanceret, false hvis nuværende fase
@@ -268,6 +258,13 @@ export function AdditionInteractive({ disciplinId }: Props) {
         return true;
       case 'broen':
         setFase('broen-morph');
+        return true;
+      case 'split-15':
+        // Eleven har set splittet og er klar til mente-undervisning.
+        // Splittet selv (combined → splitted) er færdiganimeret hurtigt —
+        // hvis eleven trykker FØR splittet er færdigt (sjældent), avancerer
+        // hun bare videre. Det er hendes valg.
+        setFase('mente-undervisning');
         return true;
       case 'mente-undervisning':
         setFase('spørg-tier-2');
@@ -344,11 +341,7 @@ export function AdditionInteractive({ disciplinId }: Props) {
       'spørg-enere-2',
       'spørg-tier-2',
     ];
-    // split-15 har auto-advance via setTimeout, så Enter må ikke springe
-    // den over (eleven skulle se splittet køre færdigt). Behandl den
-    // som "ikke en avance-fase" på samme måde som broen-morph.
-    const erIInputFase =
-      inputFaser.includes(fase) || fase === 'broen-morph' || fase === 'split-15';
+    const erIInputFase = inputFaser.includes(fase) || fase === 'broen-morph';
 
     const handler = (e: KeyboardEvent) => {
       const erIInputFelt = e.target instanceof HTMLInputElement;
@@ -500,14 +493,37 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </button>
       </header>
 
-      {/* MATH — koreograferet sekvens (ANIMATIONER.md Regel 5):
+      {/* MATH — bottom-anchored så stykket (row 2-3-4) står stille når
+          mente-row vokser ind på toppen. Math's bund er altid på
+          viewport.center + halfMath_uden_mente — dvs. samme position som
+          før mente blev synlig. Mente vokser opad i grid'en, men hverken
+          stykket eller resultat-rækken flytter sig.
+          translate(-100%) flytter elementet 100% af dens egen højde op,
+          så bunden ligger på top-koordinatet. Plus konstant offset gør
+          bunden stabil uanset visMente.
+          Koreograferet sekvens (ANIMATIONER.md Regel 5):
           Frem (intro → aktiv): overskriften flytter+skrumper først (0-500ms),
             stykket fader ind med delay 0.3s (300-650ms).
           Tilbage (aktiv → intro): stykket fader ud først (0-180ms, hurtig
-            exit), overskriften vokser+flytter med delay 0.2s (200-700ms).
-          Eksplicit forskellig transition på animate vs exit (Regel 4) så
-          enter-delayen ikke arves af exit. */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[3]">
+            exit), overskriften vokser+flytter med delay 0.2s (200-700ms). */}
+      <div
+        className="absolute left-1/2 z-[3]"
+        style={{
+          top: '50%',
+          transform: (() => {
+            if (erIntro) return 'translate(-50%, -50%)';
+            // Horisontal layout: center-anchored. Math er ~76px, ingen mente,
+            // så stykket har ikke noget der vokser i toppen — center virker.
+            if (layout === 'horisontal') return 'translate(-50%, -50%)';
+            // Vertikal layout: bottom-anchored på math's bund som hvis mente
+            // ikke var der (118px lg / 106px kompakt under viewport.center).
+            // Når mente-row vokser ind, bunden står stille — kun toppen
+            // forskyder sig op. Stykket og resultat-rækken er konstante.
+            return `translate(-50%, calc(-100% + ${keyboardViewport.keyboardOpen ? 106 : 118}px))`;
+          })(),
+          transition: `transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${erIntro ? '0.2s' : '0s'}`,
+        }}
+      >
         <AnimatePresence>
           {visFormula && (
             <motion.div
@@ -583,14 +599,19 @@ export function AdditionInteractive({ disciplinId }: Props) {
           transform: (() => {
             if (erIntro) return 'translate(-50%, -50%)';
             const kompakt = keyboardViewport.keyboardOpen;
-            const halfMath =
+            // Afstand fra viewport.center op til math's TOP (= overskriftens
+            // anker-punkt). I horisontal layout er math center-anchored og
+            // halvdelen af math's højde er distancen. I vertikal layout er
+            // math bottom-anchored; afstanden er hele math's højde minus
+            // den konstante 118px-bund-offset.
+            const distToMathTop =
               layout === 'horisontal'
                 ? (kompakt ? 34 : 38)
                 : visMente
-                  ? (kompakt ? 120 : 136)
+                  ? (kompakt ? 134 : 154)
                   : (kompakt ? 106 : 118);
             const gap = kompakt ? 16 : 24;
-            return `translate(-50%, calc(-100% - ${halfMath + gap}px))`;
+            return `translate(-50%, calc(-100% - ${distToMathTop + gap}px))`;
           })(),
           transition: `transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${erIntro ? '0.2s' : '0s'}`,
         }}
@@ -622,26 +643,25 @@ export function AdditionInteractive({ disciplinId }: Props) {
 
       {/* CTA — placeres på midtpunktet af spacet under det primære indhold:
           Intro: under overskriften (= det eneste der er synligt).
-          Aktiv: midt mellem stykkets bund og viewport-bunden — dvs. hint
-            top = 75dvh + halfMath/2. Klassisk primær-handling-zone (nederste
-            tredjedel) hvor øjet og fingeren naturligt lander. Lige under
-            stykket var for tæt; bottom-[14vh] var for langt nede. */}
+          Aktiv: midt mellem stykkets bund og viewport-bunden. Math er
+          bottom-anchored i vertikal layout (math.bund = 50% + 118), så
+          hint-positionen er konstant uanset visMente — kun layout-skift
+          flytter den. I horisontal layout er math center-anchored med
+          halv-math = 38px under center. */}
       <div
         className="absolute left-1/2 -translate-x-1/2 top-1/2 px-6 text-center pointer-events-auto z-[5] transition-[margin-top] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
         style={{
           marginTop: (() => {
             if (erIntro) return 'clamp(36px, 5.5vw, 52px)';
             const kompakt = keyboardViewport.keyboardOpen;
-            const halfMath =
+            const halvMathBund =
               layout === 'horisontal'
                 ? (kompakt ? 34 : 38)
-                : visMente
-                  ? (kompakt ? 120 : 136)
-                  : (kompakt ? 106 : 118);
-            // Midtpunkt mellem stykke-bund (50dvh + halfMath) og viewport-
-            // bund (100dvh) = 75dvh + halfMath/2. Som offset fra top:50%
-            // bliver det 25dvh + halfMath/2.
-            return `calc(25dvh + ${halfMath / 2}px)`;
+                : (kompakt ? 106 : 118);
+            // Midtpunkt mellem stykke-bund (50dvh + halvMathBund) og
+            // viewport-bund (100dvh) = 75dvh + halvMathBund/2. Som offset
+            // fra top:50% bliver det 25dvh + halvMathBund/2.
+            return `calc(25dvh + ${halvMathBund / 2}px)`;
           })(),
         }}
       >
