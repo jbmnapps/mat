@@ -814,31 +814,26 @@ function FormulaScene(props: FormulaSceneProps) {
           stregen og result-input-stregen visuelt er samme tykkelse.
           Tidligere h-[3px] var tykkere end input-stregen og virkede
           uforholdsmæssigt bred.
-          Exit-duration er 80ms (ikke 200ms): grid-template-rows animerer
-          row 4 fra 8px → 0px over 400ms ved skift til horisontal layout
-          (fejr-1 → broen). Hvis stregens exit varer 200ms, er den stadig
-          synlig mens row klemmes — det giver en tynd grå strimmel under
-          stykket i ex1→ex2-overgangen. 80ms gør den væk inden row
-          collapsen sker, hvilket lever op til Regel 5 (sekventielt). */}
-      <AnimatePresence>
-        {erVertikal && (
-          <motion.div
-            key="line"
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{
-              opacity: 1,
-              scaleX: 1,
-              transition: { duration: 0.4, delay: 0.5 },
-            }}
-            exit={{
-              opacity: 0,
-              transition: { duration: 0.08, ease: 'easeIn' },
-            }}
-            style={{ gridColumn: '3 / span 2', gridRow: 4 }}
-            className="bg-slate-900 h-[2px] w-full origin-left rounded-full"
-          />
-        )}
-      </AnimatePresence>
+          Stregen tilhører kun vertikalt layout. Ved skift til horisontal
+          (fejr-1 → broen) skal den væk øjeblikkeligt — ellers efterlader
+          den en grå strimmel under stykket mens grid-row 4 collapser fra
+          8px → 0px over 400ms. Vi unmounter via conditional rendering
+          (ingen AnimatePresence-exit) så stregen forsvinder samme frame
+          som layout-skiftet. Frem-vej (horisontal → vertikal) bevarer
+          enter-anim via initial+animate. */}
+      {erVertikal && (
+        <motion.div
+          key="line"
+          initial={{ opacity: 0, scaleX: 0 }}
+          animate={{
+            opacity: 1,
+            scaleX: 1,
+            transition: { duration: 0.4, delay: 0.5 },
+          }}
+          style={{ gridColumn: '3 / span 2', gridRow: 4 }}
+          className="bg-slate-900 h-[2px] w-full origin-left rounded-full"
+        />
+      )}
 
       {/* Resultat-række */}
       {erVertikal && (
