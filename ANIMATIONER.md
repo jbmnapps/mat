@@ -120,6 +120,36 @@ Når `key` ændres, gammel element unmountes instant og nyt element fader ind. I
 
 ---
 
+## Regel 5 — Sekventielt, ikke parallelt: ting skal forsvinde FØR de næste ankommer
+
+**Symptom:** Når man navigerer mellem to faser, sidder det gamle element synligt mens det nye allerede er i gang med at glide ind eller flytte sig — de "clasher" i overlap-perioden.
+
+**Årsag:** Begge animationer (exit på det gamle, enter/move på det nye) trigges af samme state-skift og starter ved T=0. Selvom durations er forskellige, overlapper de i åbningssekunderne.
+
+**Løsning:** Lav en koreografi: exit først, kort pause, enter/move bagefter. Tre konkrete patterns:
+
+1. **Hurtig exit, derefter enter med delay** — exit ~150-200ms, enter med `delay` der svarer til exit-varigheden:
+   ```tsx
+   exit={{ opacity: 0, transition: { duration: 0.18 } }}
+   animate={{ opacity: 1, transition: { duration: 0.35, delay: 0.2 } }}
+   ```
+
+2. **CSS transition-delay på det element der skal flytte sig** — hvis exiting-elementet er en AnimatePresence-child og moving-elementet er en motion.div, læg en delay på moving-elementet's transition så det venter på exit:
+   ```tsx
+   style={{
+     transition: `transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${gårTilbage ? '0.2s' : '0s'}`,
+   }}
+   ```
+   Den konditionelle delay matcher retning — kun forsink når der er noget der skal exit'e først.
+
+3. **Tag tidslinjen ned i en kommentar** når sekvensen er svær at se i koden alene.
+
+**Hvorfor det er vigtigt:** Brugerens regel — *"ting der forsvinder skal være væk før ting der ankommer"*. Parallelle animationer føles billige; sekventielle føles pro. Det er én af de "anti-pro skal fanges automatisk"-faldgruber: hvis to animationer kører samtidigt og kan ende oveni hinanden, er det per definition forkert design.
+
+**Eksempel hvor det blev løst:** Tilbage-navigation i `addition-interactive.tsx` — når eleven gik fra aktiv-mode tilbage til intro, ramte overskriftens tekst plusstykket før det fadede væk.
+
+---
+
 ## Sekvenser med flere animationer
 
 Ved fase-skift hvor flere ting skal animere i sekvens (overskrift rykker → tekst skifter → mente lander → result lander), brug eksplicitte `delay`-værdier til at koreografere rækkefølgen:

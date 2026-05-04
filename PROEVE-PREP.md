@@ -156,6 +156,15 @@ beder hovedsessionen flette ind. Detaljer i CLAUDE.md.
 
 ---
 
+## Efter prøven — prio-liste
+
+1. **Skill: "Byg ny lag-1-lektion"** *(første post-prøve-arbejde)*. Når addition-lektionen er låst, kapsel mønstret som en skill (via `/anthropic-skills:skill-creator`) der tager addition-interactive.tsx + TRAENINGSMODUL-RUBRIK.md som input og bootstrapper næste disciplin. Logikken: 12 disciplinerne tilbage — vi laver det rigtigt én gang i stedet for at gentage manuelt 12 gange.
+2. Andre skills overvejes når mønstre dukker op (promover-til-weekend-checklist, terpe-opgave-variant-generator).
+3. Sæt automatiske workflow-hooks op (type-check + lint efter Edit, pre-push reminder for reviewers).
+4. Resterende disciplinerne: lektion-træning (lag 1), terpe-opgaver (lag 2), FP9-replika (lag 3).
+
+---
+
 ## Branches
 
 - `weekend` → live på `/mat/`. Aktiv arbejdsbranch.

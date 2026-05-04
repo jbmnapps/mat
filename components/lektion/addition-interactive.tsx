@@ -182,16 +182,11 @@ export function AdditionInteractive({ disciplinId }: Props) {
       fase === 'fejr-2' ||
       fase === 'færdig');
 
-  // Reset state ved start af eksempel 2
-  useEffect(() => {
-    if (fase === 'broen') {
-      setEnereInput('');
-      setTierInput('');
-      setEnereGodkendt(false);
-      setTierGodkendt(false);
-      setEnereSvar2(null);
-    }
-  }, [fase]);
+  // Reset af ex1-state håndteres i advance(fejr-1 → broen), ikke i en
+  // useEffect på 'broen', fordi det ville slette ex1-svar (78) hvis eleven
+  // går tilbage TIL fejr-1 fra ex2-territoriet. Stages-modellen siger:
+  // tilbage-fra-ex2 = restart hele lektionen (intro-1) — det håndteres
+  // separat i forrigeFase.
 
   // Auto-fokus på input
   useEffect(() => {
@@ -233,6 +228,12 @@ export function AdditionInteractive({ disciplinId }: Props) {
         setFase('spørg-enere-1');
         return true;
       case 'fejr-1':
+        // Frem til ex2 — ryd ex1-svar så ex2 starter rent.
+        setEnereInput('');
+        setTierInput('');
+        setEnereGodkendt(false);
+        setTierGodkendt(false);
+        setEnereSvar2(null);
         setFase('broen');
         return true;
       case 'broen':
@@ -249,28 +250,48 @@ export function AdditionInteractive({ disciplinId }: Props) {
     }
   }, [fase]);
 
-  // Tilbage-navigation (regel: eleven skal kunne navigere frem og tilbage).
-  // Når tilbage lander på en input-fase, nulstilles dens godkendt-flag og
-  // input-værdi — ellers er feltet låst og eleven sidder fast på et tidligere
-  // godkendt svar uden at kunne svare igen. broen-morph springes over fordi
-  // den er en transition der auto-advancerer; at lande på den ved tilbage
-  // ville bare kaste eleven frem igen efter 800ms.
+  // Tilbage-navigation — stages-modellen:
+  //
+  //   Stage A (ex1): intro-1 → fejr-1. Tilbage går fase-for-fase. Hvis vi
+  //   lander på en input-fase, nulstilles dens godkendt-flag og input-værdi
+  //   så eleven kan svare igen i stedet for at sidde fast på et godkendt svar.
+  //
+  //   Stage B (ex2): broen → færdig. Tilbage HER hopper helt tilbage til
+  //   intro-1 og rydder al state. Ex1 starter forfra. Begrundelse: hvis hun
+  //   vil ind i ex1-territoriet igen, skal hun rejse hele turen — det
+  //   undgår en hel klasse af bugs (resultat-cellerne tomme, state-forvirring)
+  //   og pædagogisk er det fint at re-se betyder re-do.
   const forrigeFase = useCallback(() => {
+    const stageBFaser: Fase[] = [
+      'broen',
+      'broen-morph',
+      'spørg-enere-2',
+      'mente-undervisning',
+      'spørg-tier-2',
+      'fejr-2',
+      'færdig',
+    ];
+
+    if (stageBFaser.includes(fase)) {
+      // Stage B → restart hele lektionen.
+      setEnereInput('');
+      setTierInput('');
+      setEnereGodkendt(false);
+      setTierGodkendt(false);
+      setEnereSvar2(null);
+      setFase('intro-1');
+      return;
+    }
+
+    // Stage A — fase-for-fase tilbage.
     const idx = ALLE_FASER.indexOf(fase);
     if (idx <= 0) return;
-    let previousPhase = ALLE_FASER[idx - 1];
-    if (previousPhase === 'broen-morph') previousPhase = 'broen';
+    const previousPhase = ALLE_FASER[idx - 1];
 
     if (previousPhase === 'spørg-enere-1') {
       setEnereGodkendt(false);
       setEnereInput('');
     } else if (previousPhase === 'spørg-tier-1') {
-      setTierGodkendt(false);
-      setTierInput('');
-    } else if (previousPhase === 'spørg-enere-2') {
-      setEnereSvar2(null);
-      setEnereInput('');
-    } else if (previousPhase === 'spørg-tier-2') {
       setTierGodkendt(false);
       setTierInput('');
     }
@@ -427,22 +448,27 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </button>
       </header>
 
-      {/* MATH — fader ind med delay 300ms så overskriften kan flytte sig
-          op FØRST. Tidligere dukkede stykket op instant og overlappede
-          "Her er et plusstykke" mens overskriften prøvede at flytte sig. */}
+      {/* MATH — koreograferet sekvens (ANIMATIONER.md Regel 5):
+          Frem (intro → aktiv): overskriften flytter+skrumper først (0-500ms),
+            stykket fader ind med delay 0.3s (300-650ms).
+          Tilbage (aktiv → intro): stykket fader ud først (0-180ms, hurtig
+            exit), overskriften vokser+flytter med delay 0.2s (200-700ms).
+          Eksplicit forskellig transition på animate vs exit (Regel 4) så
+          enter-delayen ikke arves af exit. */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[3]">
         <AnimatePresence>
           {visFormula && (
             <motion.div
               key="formula-wrapper"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1, x: shake ? [-6, 6, -6, 6, 0] : 0 }}
-              exit={{ opacity: 0 }}
-              transition={
-                shake
+              animate={{
+                opacity: 1,
+                x: shake ? [-6, 6, -6, 6, 0] : 0,
+                transition: shake
                   ? { duration: 0.4 }
-                  : { duration: 0.35, delay: 0.3 }
-              }
+                  : { duration: 0.35, delay: 0.3 },
+              }}
+              exit={{ opacity: 0, transition: { duration: 0.18 } }}
             >
               <FormulaScene
                 ex={ex}
@@ -471,7 +497,13 @@ export function AdditionInteractive({ disciplinId }: Props) {
           'calc(-100% - Xpx)' (aktiv: bottom-anchored over math's top).
           Motion kan ikke smoothly interpolere mellem procent og calc-strings
           — det giver "hak"-effekt. Browseren CAN. fontSize animerer via
-          motion separat. */}
+          motion separat.
+
+          Konditionel delay (Regel 5 — sekventielt, ikke parallelt):
+          Når erIntro skifter til true (tilbage til intro), forsinkes både
+          transform og fontSize med 0.2s så stykket kan fade ud først.
+          Frem (erIntro=false) starter overskriften umiddelbart, og stykket
+          fader ind med delay 0.3s. Resultat: aldrig overlap-clash. */}
       <motion.div
         className="absolute top-1/2 left-1/2 px-6 max-w-2xl w-full text-center pointer-events-none z-[5]"
         initial={false}
@@ -480,7 +512,11 @@ export function AdditionInteractive({ disciplinId }: Props) {
             ? 'clamp(28px, 7.5vw, 44px)'
             : 'clamp(20px, 4.5vw, 28px)',
         }}
-        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+        transition={{
+          duration: 0.5,
+          ease: [0.4, 0, 0.2, 1],
+          delay: erIntro ? 0.2 : 0,
+        }}
         style={{
           transform: (() => {
             if (erIntro) return 'translate(-50%, -50%)';
@@ -494,7 +530,7 @@ export function AdditionInteractive({ disciplinId }: Props) {
             const gap = 24;
             return `translate(-50%, calc(-100% - ${halfMath + gap}px))`;
           })(),
-          transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: `transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${erIntro ? '0.2s' : '0s'}`,
         }}
       >
         <h2 className="font-display font-bold tracking-tight text-slate-900 leading-snug">
