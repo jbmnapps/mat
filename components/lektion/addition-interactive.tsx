@@ -34,6 +34,7 @@ type Fase =
   | 'broen' // 67+78 vises horisontalt
   | 'broen-morph' // morfer til vertikal og auto-advancer
   | 'spørg-enere-2'
+  | 'split-15' // 15 vises på ener-pos og splittes synligt: '1' op til mente, '5' bliver
   | 'mente-undervisning' // 15 splitter i 1 (mente) + 5 (enere) samtidigt
   | 'spørg-tier-2'
   | 'fejr-2'
@@ -43,6 +44,7 @@ const EKSEMPEL_2_FASER: Fase[] = [
   'broen',
   'broen-morph',
   'spørg-enere-2',
+  'split-15',
   'mente-undervisning',
   'spørg-tier-2',
   'fejr-2',
@@ -57,6 +59,7 @@ const VERTIKAL_FASER: Fase[] = [
   'fejr-1',
   'broen-morph',
   'spørg-enere-2',
+  'split-15',
   'mente-undervisning',
   'spørg-tier-2',
   'fejr-2',
@@ -75,6 +78,7 @@ const ALLE_FASER: Fase[] = [
   'broen',
   'broen-morph',
   'spørg-enere-2',
+  'split-15',
   'mente-undervisning',
   'spørg-tier-2',
   'fejr-2',
@@ -132,7 +136,13 @@ function beskedFor(fase: Fase, enereSvar2: 5 | 15 | null): string {
       return 'Hvad nu hvis tallene bliver større?';
     case 'spørg-enere-2':
       return 'Hvad er 7 + 8?';
+    case 'split-15':
+      // Kort, deklarativ, ingen jargon. Beskeden står stille mens
+      // splittet animerer — eleven læser tallet, ser splittet samtidig.
+      return 'Det er 15.';
     case 'mente-undervisning':
+      // enereSvar2 sættes nu altid til 15 (5-genvejen er fjernet i fase 3).
+      // Beholder check så ældre svar (5) håndteres pænt hvis der er state-leftover.
       return enereSvar2 === 5
         ? 'Du vidste det. 1 skal rykkes.'
         : '15 har 2 cifre. 1 skal rykkes.';
@@ -214,6 +224,22 @@ export function AdditionInteractive({ disciplinId }: Props) {
     }
   }, [fase]);
 
+  // Auto-advance fra split-15 → mente-undervisning. Tidslinje:
+  //   T=0      fase blev split-15 (eleven har lige submittet 15)
+  //   T=0      '15' renderet på ener-pos som '1' og '5' tæt sammen
+  //   T=300    overskrift har fadet ind ('Det er 15.')
+  //   T=400    split begynder: '1' animerer mod mente-pos (col 3, row 1)
+  //   T=900    '1' er landet på mente-pos
+  //   T=1500   overskrift fader ud, fasen skifter til mente-undervisning
+  //            — '5' og mente-1 er allerede på samme positioner som
+  //            mente-undervisning's egne render: ingen visuelt jump.
+  useEffect(() => {
+    if (fase === 'split-15') {
+      const t = setTimeout(() => setFase('mente-undervisning'), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [fase]);
+
   // Avancering — bruges af både Enter-tast og touch/click-knap.
   // Returnerer true hvis fase blev avanceret, false hvis nuværende fase
   // ikke skal reagere (input-faser, auto-advance).
@@ -270,6 +296,7 @@ export function AdditionInteractive({ disciplinId }: Props) {
       'broen',
       'broen-morph',
       'spørg-enere-2',
+      'split-15',
       'mente-undervisning',
       'spørg-tier-2',
       'fejr-2',
@@ -317,7 +344,11 @@ export function AdditionInteractive({ disciplinId }: Props) {
       'spørg-enere-2',
       'spørg-tier-2',
     ];
-    const erIInputFase = inputFaser.includes(fase) || fase === 'broen-morph';
+    // split-15 har auto-advance via setTimeout, så Enter må ikke springe
+    // den over (eleven skulle se splittet køre færdigt). Behandl den
+    // som "ikke en avance-fase" på samme måde som broen-morph.
+    const erIInputFase =
+      inputFaser.includes(fase) || fase === 'broen-morph' || fase === 'split-15';
 
     const handler = (e: KeyboardEvent) => {
       const erIInputFelt = e.target instanceof HTMLInputElement;
@@ -365,9 +396,15 @@ export function AdditionInteractive({ disciplinId }: Props) {
         setTimeout(() => setFase('spørg-tier-1'), 450);
       } else fail();
     } else if (fase === 'spørg-enere-2') {
-      // Accepter både 5 (eleven kender mente) og 15 (eleven har regnet det rå)
-      if (num === 15 || num === 5) {
-        setEnereSvar2(num as 5 | 15);
+      // 15 → split-anim viser at det er for stort til én plads. 1 flyver op,
+      // 5 bliver. Trin 2 i fase 3 (kommende) reject'er 5 og kræver 15 eksplicit.
+      if (num === 15) {
+        setEnereSvar2(15);
+        setTimeout(() => setFase('split-15'), 300);
+      } else if (num === 5) {
+        // Bevarer gammel sti midlertidigt — eleven der svarer 5 hopper direkte
+        // til mente-undervisning uden split-animation. Trin 2 ændrer dette.
+        setEnereSvar2(5);
         setTimeout(() => setFase('mente-undervisning'), 300);
       } else fail();
     }
@@ -688,7 +725,24 @@ function FormulaScene(props: FormulaSceneProps) {
     return false;
   };
 
-  // Mente-1 vises FRA mente-undervisning og frem (ikke længere først ved mente-anim)
+  // Split-anim på 'split-15': 'combined' = '1' og '5' står tæt på enere-pos
+  // som visuelt "15". Efter 700ms toggles til 'splitted' = '1' har glidet
+  // til mente-pos (col 3, row 1), '5' bliver på enere-pos. Motion bruger
+  // layoutId="splittal-1" / "splittal-5" til at morfe smooth mellem
+  // positionerne, så animationen er en glat split — ikke poof, ikke
+  // teleportér (jf. PLAN-ADDITION.md fase 3).
+  const [splitState, setSplitState] = useState<'combined' | 'splitted'>('combined');
+  useEffect(() => {
+    if (fase === 'split-15') {
+      setSplitState('combined');
+      const t = setTimeout(() => setSplitState('splitted'), 700);
+      return () => clearTimeout(t);
+    }
+  }, [fase]);
+
+  // Mente-1 (lille '1' over col 3) vises FRA mente-undervisning og frem.
+  // Under split-15 håndteres '1' separat via splittal-1 (med layoutId der
+  // morfer den glat fra ener-pos til mente-pos).
   const visMente =
     erEksempel2 &&
     (fase === 'mente-undervisning' ||
@@ -696,8 +750,14 @@ function FormulaScene(props: FormulaSceneProps) {
       fase === 'fejr-2' ||
       fase === 'færdig');
 
+  // Mente-row har plads (rowMente > 0px) under split-15 og frem, så '1' har
+  // et sted at lande når den glider op. Uden dette ville row 1 være 0px
+  // mens '1' er på vej derhen, og målpositionen ville flyde rundt.
+  const visMenteRow = visMente || fase === 'split-15';
+
   const harHundrede = ex.resultat.length === 3;
-  // Enere-resultatet "5" vises FRA mente-undervisning (samtidigt med mente-1)
+  // Enere-resultatet "5" vises FRA mente-undervisning. Under split-15
+  // vises '5' via splittal-5 (i flex-containeren).
   const visEnereResultatCiffer =
     erEksempel2 &&
     (fase === 'mente-undervisning' ||
@@ -727,7 +787,7 @@ function FormulaScene(props: FormulaSceneProps) {
   const gridRows =
     layout === 'horisontal'
       ? `0px 0px ${rowDigit} 0px 0px`
-      : visMente
+      : visMenteRow
         ? `${rowMente} ${rowDigit} ${rowDigit} ${rowLine} ${rowDigit}`
         : `0px ${rowDigit} ${rowDigit} ${rowLine} ${rowDigit}`;
 
@@ -772,6 +832,64 @@ function FormulaScene(props: FormulaSceneProps) {
         );
       })}
 
+      {/* Split-15 — visuelt split af '15' på enere-pos.
+          'combined': '1' og '5' står tæt sammen i en flex-container på
+            ener-pos, så de visuelt ligner ét tal "15". Eleven har lige
+            tastet 15, og ser nu tallet stort på enere-pladsen.
+          'splitted': '1' har glidet til mente-pos (col 3, row 1), '5'
+            er blevet på enere-pos. Motion bruger layoutId til at morfe
+            elementerne smooth — det er kerne-ideen i fase 3 ("vis vis
+            ikke fortæl"): eleven ser '1' bevæge sig ud af '15'.
+          mente-1 og '5' i de senere faser bruger samme layoutId, så
+            overgangen til mente-undervisning er sømløs (motion ser dem
+            som "samme element" der bare er flyttet i DOM). */}
+      {fase === 'split-15' && splitState === 'combined' && (
+        <div
+          style={{ gridColumn: 4, gridRow: 5 }}
+          className="flex items-center justify-center"
+        >
+          <motion.span
+            layoutId="splittal-1"
+            className={cn(
+              'font-display font-bold tabular-nums leading-none text-emerald-600 select-none',
+              kompakt ? 'text-3xl' : 'text-4xl sm:text-6xl lg:text-7xl',
+            )}
+          >
+            1
+          </motion.span>
+          <motion.span
+            layoutId="splittal-5"
+            className={cn(
+              'font-display font-bold tabular-nums leading-none text-emerald-600 select-none',
+              kompakt ? 'text-3xl' : 'text-4xl sm:text-6xl lg:text-7xl',
+            )}
+          >
+            5
+          </motion.span>
+        </div>
+      )}
+      {fase === 'split-15' && splitState === 'splitted' && (
+        <>
+          <motion.span
+            layoutId="splittal-1"
+            style={{ gridColumn: 3, gridRow: 1 }}
+            className="font-display text-3xl font-bold tabular-nums leading-none text-emerald-600 select-none"
+          >
+            1
+          </motion.span>
+          <motion.span
+            layoutId="splittal-5"
+            style={{ gridColumn: 4, gridRow: 5 }}
+            className={cn(
+              'font-display font-bold tabular-nums leading-none text-emerald-600 select-none mb-1',
+              kompakt ? 'text-3xl' : 'text-4xl sm:text-6xl lg:text-7xl',
+            )}
+          >
+            5
+          </motion.span>
+        </>
+      )}
+
       {/* Mente — over tier-søjlen (col 3). Delay 0.55s relativt til
           fase-skift (= ~250ms efter den nye tekst er fadet ind), så
           eleven har set teksten "15 har 2 cifre. 1 skal rykkes" først
@@ -780,11 +898,15 @@ function FormulaScene(props: FormulaSceneProps) {
           4): top-level transition med delay arves af exit, så mente-1
           ville hænge fast i 550ms ved tilbage-navigation før den fadede
           ud. Nu: exit er hurtig (140ms, ingen delay), enter beholder
-          spring + delay. */}
+          spring + delay.
+          layoutId="splittal-1" matcher split-anim's '1', så overgangen
+          fra split-15 → mente-undervisning er sømløs: motion ser de to
+          elementer som samme '1' der bare er flyttet i DOM, ingen pop. */}
       <AnimatePresence>
         {visMente && (
           <motion.span
             key="mente"
+            layoutId="splittal-1"
             initial={{ opacity: 0, y: 30, scale: 0.4 }}
             animate={{
               opacity: 1,
@@ -875,7 +997,14 @@ function FormulaScene(props: FormulaSceneProps) {
               undervisning, så '5' lander EFTER mente '1' (som har delay
               0.55). Sekvens: tekst → mente '1' → '5'. Når eleven svarer
               rigtigt (enereGodkendt), ingen delay — feedback skal være
-              snappy. */}
+              snappy.
+              layoutId="splittal-5" matcher split-15-anim's '5', så
+              overgangen fra split-15 → mente-undervisning er sømløs:
+              motion ser de to '5'-elementer som samme der bare er flyttet
+              i DOM (begge på col 4 row 5), ingen pop-anim. Bruges KUN
+              under mente-undervisning og frem (visEnereResultatCiffer);
+              når enereGodkendt er true (eleven har skrevet 145), bruger
+              vi ikke layoutId — ingen sammenhæng med split-anim. */}
           <ResultCell
             col={4}
             row={5}
@@ -883,6 +1012,7 @@ function FormulaScene(props: FormulaSceneProps) {
             variant={aktivKolonne === 'enere' ? 'input' : 'static'}
             isFinal={enereGodkendt || visEnereResultatCiffer !== null}
             springDelay={!enereGodkendt && visEnereResultatCiffer ? 0.7 : 0}
+            layoutId={visEnereResultatCiffer && !enereGodkendt ? 'splittal-5' : undefined}
             inputProps={
               aktivKolonne === 'enere'
                 ? {
@@ -917,6 +1047,10 @@ interface ResultCellProps {
    *  skal vente på en anden animation først (fx mente '1' der lander
    *  efter overskriften er flyttet i mente-undervisning fase). */
   springDelay?: number;
+  /** Motion layoutId på inner span. Bruges til at morfe sømløst fra
+   *  split-15-anim's '5' til mente-undervisning's ResultCell-5 — uden
+   *  layoutId ville '5' poppe væk og springe ind igen ved fase-skift. */
+  layoutId?: string;
   inputProps?: {
     value: string;
     onChange: (s: string) => void;
@@ -926,7 +1060,7 @@ interface ResultCellProps {
   };
 }
 
-function ResultCell({ col, row, value, variant, isFinal, springDelay = 0, inputProps }: ResultCellProps) {
+function ResultCell({ col, row, value, variant, isFinal, springDelay = 0, layoutId, inputProps }: ResultCellProps) {
   return (
     <div
       style={{ gridColumn: col, gridRow: row }}
@@ -938,6 +1072,7 @@ function ResultCell({ col, row, value, variant, isFinal, springDelay = 0, inputP
 
       {variant === 'static' && value && (
         <motion.span
+          layoutId={layoutId}
           initial={{ scale: 0.4, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 220, damping: 18, delay: springDelay }}
