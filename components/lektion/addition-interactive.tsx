@@ -523,15 +523,14 @@ export function AdditionInteractive({ disciplinId }: Props) {
         className="absolute top-1/2 left-1/2 px-6 max-w-2xl w-full text-center pointer-events-none z-[5]"
         initial={false}
         animate={{
-          // Aktiv-mode: overskrift skal være ~50-55% af stykket (sekundær til
-          // primær type-hierarki). Stykke er 36/60/72px på mobile/sm/lg, så
-          // overskrift på 22/32/36px holder forholdet harmonisk på alle
-          // breakpoints. Tidligere clamp(20, 4.5vw, 28) gav 39% på lg —
-          // for spinkel ift. stykket og det er det 'off'-forhold brugeren
-          // har fanget.
+          // Aktiv-mode: overskrift skal være sekundær til stykkets primær.
+          // Stykke er 36/60/72px på mobile/sm/lg. Overskrift 22/29/32px
+          // giver 61/48/44% — mærkbar støtte uden at konkurrere. Tidligere
+          // clamp(20, 4.5vw, 28) var for spinkel; clamp(22, 5vw, 36) var
+          // for stor.
           fontSize: erIntro
             ? 'clamp(28px, 7.5vw, 44px)'
-            : 'clamp(22px, 5vw, 36px)',
+            : 'clamp(22px, 4.5vw, 32px)',
         }}
         transition={{
           duration: 0.5,
@@ -539,11 +538,11 @@ export function AdditionInteractive({ disciplinId }: Props) {
           delay: erIntro ? 0.2 : 0,
         }}
         style={{
-          // Gap mellem overskrift-bund og stykke-top. Kompakt (mobil med
-          // tastatur oppe) bruger 16px fast — pladsen er knap. Normal-mode
-          // bruger clamp(20, 2.5vw, 32) så gap skalerer harmonisk med
-          // overskriftens line-height. Tidligere fast 24px var for tæt på
-          // desktop hvor overskrift = 36px.
+          // Gap mellem overskrift-bund og stykke-top. 16px på kompakt (mobil
+          // med tastatur oppe — pladsen er knap), 24px på normal — samme
+          // afstand uanset om stykket er horisontalt eller vertikalt. Større
+          // gap gjorde overskriften føles 'langt over stykket' når stykket
+          // står opstillet vertikalt.
           transform: (() => {
             if (erIntro) return 'translate(-50%, -50%)';
             const kompakt = keyboardViewport.keyboardOpen;
@@ -553,8 +552,8 @@ export function AdditionInteractive({ disciplinId }: Props) {
                 : visMente
                   ? (kompakt ? 120 : 136)
                   : (kompakt ? 106 : 118);
-            const gap = kompakt ? '16px' : 'clamp(20px, 2.5vw, 32px)';
-            return `translate(-50%, calc(-100% - ${halfMath}px - ${gap}))`;
+            const gap = kompakt ? 16 : 24;
+            return `translate(-50%, calc(-100% - ${halfMath + gap}px))`;
           })(),
           transition: `transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${erIntro ? '0.2s' : '0s'}`,
         }}
