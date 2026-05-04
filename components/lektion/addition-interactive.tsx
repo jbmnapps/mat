@@ -726,7 +726,10 @@ function FormulaScene(props: FormulaSceneProps) {
             transition={{ layout: { duration: 0.7, ease: [0.4, 0.0, 0.2, 1] } }}
             style={{ gridColumn: pos.col, gridRow: pos.row }}
             className={cn(
-              'font-display sm:text-6xl lg:text-7xl font-bold tabular-nums select-none transition-colors duration-300',
+              // leading-none så cifferets line-box matcher font-size eksakt.
+              // Default browser leading (~1.5x) giver overdrevet luft top og
+              // bund på cellen — uharmonisk forhold mellem tal og cellestørrelse.
+              'font-display sm:text-6xl lg:text-7xl font-bold tabular-nums select-none leading-none transition-colors duration-300',
               kompakt ? 'text-3xl' : 'text-4xl',
               erOperator ? 'text-emerald-600' : aktiv ? 'text-emerald-600' : 'text-slate-900',
             )}
@@ -916,16 +919,28 @@ function ResultCell({ col, row, value, variant, isFinal, springDelay = 0, inputP
             spellCheck={false}
             aria-label="Indtast resultat"
             className={cn(
-              // Bredt nok til 2 cifre — overflower lidt celle-bredden, fint
+              // Bredt nok til 2 cifre — overflower lidt celle-bredden, fint.
+              // Højde inkluderer plads til padding-top (presser tallet ned mod
+              // input-bunden) + 2px border-bottom. lg: tilføjet for text-7xl
+              // (72px font på desktop) der ellers overflower 63px-input.
               inputProps.kompakt
                 ? 'w-[52px] h-[40px] sm:w-[80px] sm:h-[63px]'
-                : 'w-[60px] h-[44px] sm:w-[80px] sm:h-[63px]',
+                : 'w-[60px] h-[44px] sm:w-[80px] sm:h-[63px] lg:h-[74px]',
               'box-border p-0',
+              // Padding-top presser tallet til input-bunden så dets visuelle
+              // bund-edge baseline-aligner med statiske tal i samme række
+              // (deres mb-1 + leading-none lander også med bunden ved
+              // cellebund-4px). Uden denne padding centreres tallet inde i
+              // inputtet og ender 2px højere oppe end statiske tal — det er
+              // det asymmetriske gap brugeren har fanget.
+              inputProps.kompakt
+                ? 'pt-[4px] sm:pt-[3px]'
+                : 'pt-[4px] sm:pt-[3px] lg:pt-[2px]',
               // Tekst
               'font-display sm:text-6xl lg:text-7xl font-bold tabular-nums text-center',
               inputProps.kompakt
                 ? 'text-3xl leading-[36px] sm:leading-[60px]'
-                : 'text-4xl leading-[40px] sm:leading-[60px]',
+                : 'text-4xl leading-[40px] sm:leading-[60px] lg:leading-[72px]',
               'text-slate-900 bg-transparent',
               // Streg
               'border-b-2 border-slate-900',
