@@ -775,19 +775,32 @@ function FormulaScene(props: FormulaSceneProps) {
       {/* Mente — over tier-søjlen (col 3). Delay 0.55s relativt til
           fase-skift (= ~250ms efter den nye tekst er fadet ind), så
           eleven har set teksten "15 har 2 cifre. 1 skal rykkes" først
-          og DEREFTER ser '1'-tallet animere ind. Sekventielt flow. */}
+          og DEREFTER ser '1'-tallet animere ind. Sekventielt flow.
+          Eksplicit transition på animate vs exit (ANIMATIONER.md Regel
+          4): top-level transition med delay arves af exit, så mente-1
+          ville hænge fast i 550ms ved tilbage-navigation før den fadede
+          ud. Nu: exit er hurtig (140ms, ingen delay), enter beholder
+          spring + delay. */}
       <AnimatePresence>
         {visMente && (
           <motion.span
             key="mente"
             initial={{ opacity: 0, y: 30, scale: 0.4 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5 }}
-            transition={{
-              type: 'spring',
-              stiffness: 200,
-              damping: 18,
-              delay: 0.55,
+            animate={{
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              transition: {
+                type: 'spring',
+                stiffness: 200,
+                damping: 18,
+                delay: 0.55,
+              },
+            }}
+            exit={{
+              opacity: 0,
+              scale: 0.5,
+              transition: { duration: 0.14, ease: 'easeIn' },
             }}
             style={{ gridColumn: 3, gridRow: 1 }}
             className="font-display text-3xl font-bold tabular-nums text-emerald-600"
@@ -800,7 +813,13 @@ function FormulaScene(props: FormulaSceneProps) {
       {/* Streg — h-[2px] matcher input-feltets border-bottom, så addition-
           stregen og result-input-stregen visuelt er samme tykkelse.
           Tidligere h-[3px] var tykkere end input-stregen og virkede
-          uforholdsmæssigt bred. */}
+          uforholdsmæssigt bred.
+          Exit-duration er 80ms (ikke 200ms): grid-template-rows animerer
+          row 4 fra 8px → 0px over 400ms ved skift til horisontal layout
+          (fejr-1 → broen). Hvis stregens exit varer 200ms, er den stadig
+          synlig mens row klemmes — det giver en tynd grå strimmel under
+          stykket i ex1→ex2-overgangen. 80ms gør den væk inden row
+          collapsen sker, hvilket lever op til Regel 5 (sekventielt). */}
       <AnimatePresence>
         {erVertikal && (
           <motion.div
@@ -813,7 +832,7 @@ function FormulaScene(props: FormulaSceneProps) {
             }}
             exit={{
               opacity: 0,
-              transition: { duration: 0.2 },
+              transition: { duration: 0.08, ease: 'easeIn' },
             }}
             style={{ gridColumn: '3 / span 2', gridRow: 4 }}
             className="bg-slate-900 h-[2px] w-full origin-left rounded-full"
