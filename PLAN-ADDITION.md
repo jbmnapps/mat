@@ -8,22 +8,45 @@
 
 ---
 
-## Status (opdateret 2026-05-03 søndag aften ~23:30)
+## Status (opdateret 2026-05-04 mandag formiddag)
 
-- **Fase 2 låst** — alle visuelle og strukturelle bugs fixet. Intro→aktiv-overgangen virker nu smooth (det blev løst sent på dagen — det var motion's manglende interpolation mellem unit-typer der gav et "hak"; løst med CSS-transition på transform).
+**Pivoteret strategi:** Vi skipper ikke længere "ship inden prøvedag". Eleverne kører på den gamle version på `/mat/`, det nye modul ligger på `/mat/test/` (auto-deploy fra `weekend-vision`). Nu spiller vi det lange spil: addition-lektionen skal være **fuldstændig perfekt** inden vi går videre, så er den et mønster der kan replikeres til subtraktion/multiplikation/division/osv.
+
+- **Fase 2 låst** — alle visuelle og strukturelle bugs fixet søndag aften.
+- **Forbedringer fra mandag** — se "Mandag-arbejde" nedenfor.
+- **Mobil-tjek venter** — alt arbejde i dag har været desktop. Mobil testes når desktop er fuldt låst.
 - **Fase 3 (mente-redesign) ikke startet.**
-- **4 kritiske UX-issues** fundet ved review — se AUDIT.md. Skal fixes før mandag eller leve med.
-- **Live på `/mat/test/`** (weekend-vision deployer auto). Eleverne ser stadig den oprindelige version på `/mat/`. Merge til `weekend` når brugeren er klar.
+- **Live på `/mat/test/`**. Brugeren kan teste der.
 
 ### Hvad der virker nu
-- Intro→aktiv-overgang: tekst rykker op + skrumper smooth, plusstykket fader ind med delay
+- Intro→aktiv-overgang: sekventiel anim (Regel 5 i ANIMATIONER.md)
 - Klik-overalt avancerer i ikke-input-faser; klik på baggrund i input-fase re-fokuserer input
 - Tilbage-knap i header (← knap + ArrowLeft tastatur-shortcut)
+- **Stages-model for tilbage-navigation** (se nedenfor)
+- **Forkert-svar-feedback**: "Prøv igen" i amber, 2 sek
 - Math står stille når overskrift har flere linjer (bottom-anchored layout)
 - Mente-undervisning sekventielt: tekst skifter → '1' lander → '5' lander
 - Dynamisk math-grid (rows er 0px når unused) → math-højde matcher synligt indhold
-- Addition-stregen er h-[2px] (matcher input-border) — ikke længere "for bred"
-- Animation-faldgruber dokumenteret i ANIMATIONER.md
+- **Input-tal og statiske tal baseline-aligner** (padding-top på input, lg-variant tilføjet)
+- **Overskrift-størrelse og gap harmoniseret** med stykket
+- **Hint kun på intro-1** — passiv-aggressiv UI fjernet på alle andre faser
+
+### Mandag-arbejde (2026-05-04)
+
+1. **Tilbage-bugs fixet** (3a + 3b): godkendt-flag nulstilles når tilbage lander på input-fase; broen-morph springs over så timeren ikke kaster eleven frem igen.
+2. **Stages-model**: Stage A (intro-1 → fejr-1) går fase-for-fase. Stage B (broen → færdig) hopper helt tilbage til vis-horisontal-1 og rydder ex1-state. Eliminerer en hel klasse af bugs.
+3. **Animation-clash ved tilbage til intro**: stykke fader ud først (180ms), pause, så vokser/flytter overskrift. Reglen "sekventielt, ikke parallelt" tilføjet til `ANIMATIONER.md` som Regel 5.
+4. **Forkert-svar-feedback**: "Prøv igen" i amber-600, 2 sekunder. Lukker AUDIT 🔥.
+5. **Alignment-pass**: input-tals padding-top så det baseline-aligner med statiske tal. lg:h-[74px] lg:leading-[72px] tilføjet (text-7xl overflowede før). leading-none på top-tal (24, 54).
+6. **Spacing/proportioner**: overskrift max 32px (var 28). Gap 24px (jf. brugerens "samme afstand som før det blev opstillet").
+7. **Hint-placering**: under primært indhold (intro: under overskrift, aktiv: midt mellem stykke-bund og viewport-bund), så fjernet helt på alle ikke-intro faser.
+
+### AUDIT-status efter mandagens arbejde
+- ✅ Tilbage-knap mental model — adresseret via stages-model (skjuler ikke knap, men nu er der ingen state-fælde)
+- ✅ Tilbage efter godkendt = sidder fast — fixet
+- ✅ Forkert svar = bare shake — fixet med "Prøv igen"-besked
+- ❌ 67+78 enere accepterer både 5 og 15 — IKKE fixet endnu (fase 3-arbejde)
+- ✅ broen-morph 800ms auto-advance bryder tilbage — fixet via stages-model
 
 ---
 
