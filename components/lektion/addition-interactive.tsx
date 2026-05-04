@@ -583,8 +583,19 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </h2>
       </motion.div>
 
-      {/* CTA — original diskret stil, ikke generisk knap */}
-      <div className="absolute bottom-[14vh] left-1/2 -translate-x-1/2 px-6 text-center pointer-events-auto z-[5]">
+      {/* CTA — placering afhænger af fase:
+          Intro: lige under overskriften (top-1/2 + margin) så hint hører
+            visuelt sammen med "Her er et plusstykke" — det inviterer
+            til at klikke videre.
+          Aktiv-faser: bunden af skærmen — diskret, så stykket er fokus. */}
+      <div
+        className={cn(
+          'absolute left-1/2 -translate-x-1/2 px-6 text-center pointer-events-auto z-[5]',
+          erIntro
+            ? 'top-1/2 mt-[clamp(36px,5.5vw,52px)]'
+            : 'bottom-[14vh]',
+        )}
+      >
         <Hint fase={fase} disciplinId={disciplinId} advance={advance} />
       </div>
     </main>
