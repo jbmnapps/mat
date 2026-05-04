@@ -1019,18 +1019,11 @@ function Hint({
   disciplinId: DisciplinId;
   advance: () => boolean;
 }) {
-  const enterFaser: Fase[] = [
-    'intro-1',
-    'vis-horisontal-1',
-    'spørg-hvordan-1',
-    'forklarer-omarranger-1',
-    'fejr-1',
-    'broen',
-    'mente-undervisning',
-    'fejr-2',
-  ];
-
-  if (enterFaser.includes(fase)) {
+  // Hint vises KUN på intro-1 — inviterer eleven til at klikke første gang.
+  // Når hun har klikket én gang, har hun lært det: klik-overalt avancerer
+  // (handleScreenClick på <main>) og Enter på desktop. At gentage hintet
+  // på hver fase er passiv-aggressiv UI (jf. SMAG.md / TRAENINGSMODUL-RUBRIK).
+  if (fase === 'intro-1') {
     return (
       <motion.button
         key="enter-hint"
