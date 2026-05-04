@@ -583,12 +583,12 @@ export function AdditionInteractive({ disciplinId }: Props) {
         </h2>
       </motion.div>
 
-      {/* CTA — placeres altid lige under det primære indhold:
+      {/* CTA — placeres på midtpunktet af spacet under det primære indhold:
           Intro: under overskriften (= det eneste der er synligt).
-          Aktiv: under stykkets bund (samme afstand som overskriften har
-            til stykkets top). Hint flyder dermed med stykkets størrelse —
-            øjet falder naturligt fra stykke til hint. Tidligere bottom-[14vh]
-            tvang eleven til at lede efter knappen. */}
+          Aktiv: midt mellem stykkets bund og viewport-bunden — dvs. hint
+            top = 75dvh + halfMath/2. Klassisk primær-handling-zone (nederste
+            tredjedel) hvor øjet og fingeren naturligt lander. Lige under
+            stykket var for tæt; bottom-[14vh] var for langt nede. */}
       <div
         className="absolute left-1/2 -translate-x-1/2 top-1/2 px-6 text-center pointer-events-auto z-[5] transition-[margin-top] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
         style={{
@@ -601,8 +601,10 @@ export function AdditionInteractive({ disciplinId }: Props) {
                 : visMente
                   ? (kompakt ? 120 : 136)
                   : (kompakt ? 106 : 118);
-            const gap = kompakt ? 16 : 24;
-            return `${halfMath + gap}px`;
+            // Midtpunkt mellem stykke-bund (50dvh + halfMath) og viewport-
+            // bund (100dvh) = 75dvh + halfMath/2. Som offset fra top:50%
+            // bliver det 25dvh + halfMath/2.
+            return `calc(25dvh + ${halfMath / 2}px)`;
           })(),
         }}
       >
