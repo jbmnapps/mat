@@ -161,6 +161,10 @@ export function AdditionInteractive({ disciplinId }: Props) {
   const [tierGodkendt, setTierGodkendt] = useState(false);
   const [enereSvar2, setEnereSvar2] = useState<5 | 15 | null>(null);
   const [shake, setShake] = useState(false);
+  // Vises midlertidigt i overskriften efter forkert svar. Override af
+  // beskedTekst i 2 sekunder. Pædagogisk tone, ikke "FEJL". Nulstilles
+  // automatisk ved fase-skift (frem eller tilbage).
+  const [fejlBesked, setFejlBesked] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const keyboardViewport = useKeyboardViewport();
@@ -341,8 +345,16 @@ export function AdditionInteractive({ disciplinId }: Props) {
     setShake(true);
     setEnereInput('');
     setTierInput('');
+    setFejlBesked('Prøv igen');
     setTimeout(() => setShake(false), 400);
+    setTimeout(() => setFejlBesked(null), 2000);
   }, []);
+
+  // Ryd fejl-besked ved fase-skift så den ikke hænger fast hvis eleven
+  // navigerer videre under fejl-besked-perioden.
+  useEffect(() => {
+    setFejlBesked(null);
+  }, [fase]);
 
   const submitEnere = (e: React.FormEvent) => {
     e.preventDefault();
@@ -377,7 +389,7 @@ export function AdditionInteractive({ disciplinId }: Props) {
     }
   };
 
-  const beskedTekst = beskedFor(fase, enereSvar2);
+  const beskedTekst = fejlBesked ?? beskedFor(fase, enereSvar2);
 
   // Klik-overalt-avancerer. Klik på input/knap/link/form ignoreres så
   // native adfærd virker. I input-faser re-fokuseres input-feltet
@@ -536,7 +548,11 @@ export function AdditionInteractive({ disciplinId }: Props) {
           transition: `transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${erIntro ? '0.2s' : '0s'}`,
         }}
       >
-        <h2 className="font-display font-bold tracking-tight text-slate-900 leading-snug">
+        <h2 className={cn(
+          'font-display font-bold tracking-tight leading-snug transition-colors duration-300',
+          // Mild farve-skift ved fejl-besked — pædagogisk, ikke "FEJL".
+          fejlBesked ? 'text-amber-600' : 'text-slate-900',
+        )}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
               key={beskedTekst}
