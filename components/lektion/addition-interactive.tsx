@@ -273,13 +273,16 @@ export function AdditionInteractive({ disciplinId }: Props) {
     ];
 
     if (stageBFaser.includes(fase)) {
-      // Stage B → restart hele lektionen.
+      // Stage B → tilbage til vis-horisontal-1: "Her er et plusstykke" +
+      // stykket synligt horisontalt. Mild reminder før eleven regner videre,
+      // og kun ét klik væk fra vertikal opstilling. Ex1-state ryddes så hun
+      // kan løse den igen.
       setEnereInput('');
       setTierInput('');
       setEnereGodkendt(false);
       setTierGodkendt(false);
       setEnereSvar2(null);
-      setFase('intro-1');
+      setFase('vis-horisontal-1');
       return;
     }
 
